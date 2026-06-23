@@ -1,9 +1,11 @@
 # --- Local planning & reference docs (kept locally, not tracked) ---
-plan.md
-ui-guidelines.md
-feather-linux-saran.md
-feather-logo.svg
-feather-mockup.html
+# Anchored to the repo root so tracked copies elsewhere (e.g. the logo bundled
+# under resources/icons/) are NOT ignored.
+/plan.md
+/ui-guidelines.md
+/feather-linux-saran.md
+/feather-logo.svg
+/feather-mockup.html
 
 # --- Build output ---
 /build/
