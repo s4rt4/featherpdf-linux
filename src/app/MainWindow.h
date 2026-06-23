@@ -21,6 +21,7 @@
 
 class FeatherDocument;
 class Viewport;
+class HomeView;
 class TabStrip;
 class CommandBar;
 class NavigationRail;
@@ -29,6 +30,7 @@ class FloatingPill;
 class Toast;
 class QAction;
 class QMenu;
+class QStackedWidget;
 
 // The application shell (ui-guidelines §5): a tabbed Acrobat-style workspace —
 // menu bar, tab strip, command toolbar, then the body (left navigation rail ·
@@ -57,6 +59,11 @@ private:
     void nextPage();
     void previousPage();
 
+    // Switch the center between the Home start screen and the document workspace,
+    // toggling the document-only chrome (rail · command bar · Tools pane · pill).
+    void showHome();
+    void showDocument();
+
     void updateWindowTitle();
     void updateChromeState();
     void updatePageIndicator();
@@ -71,6 +78,8 @@ private:
 
     FeatherDocument* m_doc = nullptr;
     Viewport* m_viewport = nullptr;
+    HomeView* m_home = nullptr;
+    QStackedWidget* m_centerStack = nullptr;
     TabStrip* m_tabStrip = nullptr;
     CommandBar* m_commandBar = nullptr;
     NavigationRail* m_rail = nullptr;

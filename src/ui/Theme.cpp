@@ -231,6 +231,17 @@ QString Theme::styleSheet() const {
                "#ToolsPane QPushButton#CustomizeTools:hover { color:%4; }")
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.text), css(p.canvas));
 
+    // Home start screen — canvas backdrop, big suggested action, recent cards.
+    qss += QStringLiteral(
+               "#HomeView { background:%1; }"
+               "QPushButton#HomePrimary { background:%2; color:#FFFFFF; border:none;"
+               " border-radius:10px; padding:11px 22px; font-size:14px; font-weight:600; }"
+               "QPushButton#HomePrimary:hover { background:%3; }"
+               "#RecentCard { background:%4; border:1px solid %5; border-radius:12px; }"
+               "#RecentCard:hover { border:1px solid %2; }")
+               .arg(css(p.canvas), css(p.accent), css(p.accentHover), css(p.surface),
+                    css(p.hairline));
+
     return qss;
 }
 
@@ -268,4 +279,18 @@ QIcon Theme::icon(const QString& name, QColor color) const {
     QIcon ic(pm);
     cache.insert(key, ic);
     return ic;
+}
+
+QPixmap Theme::brandLogo(int size) const {
+    const qreal dpr = qApp ? qApp->devicePixelRatio() : 1.0;
+    QSvgRenderer renderer(QStringLiteral(":/icons/feather-logo.svg"));
+    QPixmap pm(QSize(size, size) * dpr);
+    pm.setDevicePixelRatio(dpr);
+    pm.fill(Qt::transparent);
+    if (renderer.isValid()) {
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing, true);
+        renderer.render(&p, QRectF(0, 0, size, size));
+    }
+    return pm;
 }

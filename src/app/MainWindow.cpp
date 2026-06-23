@@ -19,6 +19,7 @@
 #include "core/FeatherDocument.h"
 #include "ui/CommandBar.h"
 #include "ui/FloatingPill.h"
+#include "ui/HomeView.h"
 #include "ui/NavigationRail.h"
 #include "ui/TabStrip.h"
 #include "ui/Theme.h"
@@ -36,6 +37,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSettings>
+#include <QStackedWidget>
 #include <QStandardPaths>
 #include <QVBoxLayout>
 
@@ -54,6 +56,7 @@ MainWindow::MainWindow(QWidget* parent)
     updateWindowTitle();
     updateChromeState();
     rebuildRecentMenu();
+    showHome(); // land on the start screen until a document is opened
 }
 
 MainWindow::~MainWindow() = default;
@@ -91,13 +94,15 @@ void MainWindow::buildActions() {
 
     m_aboutAct = new QAction(tr("&About Feather PDF"), this);
     connect(m_aboutAct, &QAction::triggered, this, [this] {
-        QMessageBox::about(
-            this, tr("About Feather PDF"),
-            tr("<h3>Feather PDF %1</h3>"
-               "<p>Light on the system, full-featured on PDF.</p>"
-               "<p>A native, open-source PDF tool for Linux.</p>"
-               "<p>Licensed under the GNU General Public License v3.</p>")
-                .arg(QStringLiteral(FEATHERPDF_VERSION)));
+        QMessageBox about(this);
+        about.setWindowTitle(tr("About Feather PDF"));
+        about.setIconPixmap(Theme::instance().brandLogo(72));
+        about.setText(tr("<h3>Feather PDF %1</h3>"
+                         "<p>Light on the system, full-featured on PDF.</p>"
+                         "<p>A native, open-source PDF tool for Linux.</p>"
+                         "<p>Licensed under the GNU General Public License v3.</p>")
+                          .arg(QStringLiteral(FEATHERPDF_VERSION)));
+        about.exec();
     });
 }
 
@@ -173,9 +178,16 @@ void MainWindow::buildShell() {
 
     m_rail = new NavigationRail(body);
     m_viewport = new Viewport(body);
+    m_home = new HomeView(body);
     m_toolsPane = new ToolsPane(body);
+
+    // The center swaps between the Home start screen and the document viewport.
+    m_centerStack = new QStackedWidget(body);
+    m_centerStack->addWidget(m_home);     // index 0
+    m_centerStack->addWidget(m_viewport); // index 1
+
     bodyRow->addWidget(m_rail);
-    bodyRow->addWidget(m_viewport, 1);
+    bodyRow->addWidget(m_centerStack, 1);
     bodyRow->addWidget(m_toolsPane);
     outer->addWidget(body, 1);
 
@@ -184,13 +196,37 @@ void MainWindow::buildShell() {
     m_toast = new Toast(shell);
 }
 
+void MainWindow::showHome() {
+    m_home->refresh();
+    m_centerStack->setCurrentWidget(m_home);
+    m_rail->setVisible(false);
+    m_toolsPane->setVisible(false);
+    m_commandBar->setVisible(false);
+    m_pill->setVisible(false);
+    m_tabStrip->setActive(TabStrip::Active::Home);
+}
+
+void MainWindow::showDocument() {
+    m_centerStack->setCurrentWidget(m_viewport);
+    m_rail->setVisible(true);
+    m_toolsPane->setVisible(true);
+    m_commandBar->setVisible(true);
+    m_pill->setVisible(true);
+    m_tabStrip->setActive(TabStrip::Active::Document);
+}
+
 void MainWindow::wireSignals() {
-    // Document load → wire into the viewport and refresh the whole chrome.
+    // Document load → wire into the viewport, refresh chrome, enter the workspace.
     connect(m_doc, &FeatherDocument::loaded, this, [this] {
         m_viewport->setDocument(m_doc);
         updateWindowTitle();
         updateChromeState();
+        showDocument();
     });
+
+    // Home start screen → open a file or a recent.
+    connect(m_home, &HomeView::openRequested, this, &MainWindow::openFileDialog);
+    connect(m_home, &HomeView::openPathRequested, this, [this](const QString& path) { openPath(path); });
 
     // Viewport → indicators (command bar + pill).
     connect(m_viewport, &Viewport::currentPageChanged, this, &MainWindow::updatePageIndicator);
@@ -237,7 +273,11 @@ void MainWindow::wireSignals() {
     connect(m_toolsPane, &ToolsPane::customizeRequested, this, [this] { notImplemented(tr("Customize tools")); });
 
     // Tab strip.
-    connect(m_tabStrip, &TabStrip::homeSelected, this, [this] { notImplemented(tr("Home")); });
+    connect(m_tabStrip, &TabStrip::homeSelected, this, &MainWindow::showHome);
+    connect(m_tabStrip, &TabStrip::documentSelected, this, [this] {
+        if (m_doc->isLoaded())
+            showDocument();
+    });
     connect(m_tabStrip, &TabStrip::toolsSelected, this, [this] { notImplemented(tr("Tools gallery")); });
     connect(m_tabStrip, &TabStrip::newTabRequested, this, &MainWindow::openFileDialog);
     connect(m_tabStrip, &TabStrip::closeDocumentRequested, this, &MainWindow::closeDocument);
@@ -291,6 +331,7 @@ void MainWindow::closeDocument() {
     m_doc->close();
     updateWindowTitle();
     updateChromeState();
+    showHome();
 }
 
 void MainWindow::updateWindowTitle() {
@@ -311,10 +352,10 @@ void MainWindow::updateChromeState() {
     m_fitPageAct->setEnabled(loaded);
 
     m_commandBar->setDocumentLoaded(loaded);
-    m_pill->setVisible(loaded);
 
+    // The document tab reflects the open file; view-switching (showHome /
+    // showDocument) owns which tab is active and the document-only chrome.
     m_tabStrip->setDocumentTitle(loaded ? m_doc->title() : QString());
-    m_tabStrip->setActive(loaded ? TabStrip::Active::Document : TabStrip::Active::Home);
 
     updatePageIndicator();
     updateZoomIndicator();

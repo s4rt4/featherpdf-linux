@@ -19,6 +19,7 @@
 #include "ui/Theme.h"
 
 #include <QApplication>
+#include <QIcon>
 #include <QTimer>
 
 int main(int argc, char** argv) {
@@ -29,6 +30,7 @@ int main(int argc, char** argv) {
     QCoreApplication::setApplicationVersion(QStringLiteral(FEATHERPDF_VERSION));
     // Lets the GNOME shell / Wayland associate the window with its .desktop file.
     QGuiApplication::setDesktopFileName(QStringLiteral(FEATHERPDF_APP_ID));
+    QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/feather-logo.svg")));
 
     // The design system: tokens + global style sheet, following the system
     // light/dark preference (ui-guidelines §2).

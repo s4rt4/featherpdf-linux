@@ -71,6 +71,11 @@ public:
     // When color is invalid, the current `text` token is used.
     QIcon icon(const QString& name, QColor color = QColor()) const;
 
+    // The full-colour brand logo (the prepared feather mark), rendered at `size`
+    // logical px without tinting — used on the Home screen, the window icon, and
+    // the About box.
+    QPixmap brandLogo(int size) const;
+
 signals:
     // Emitted whenever the active palette changes (system flip or manual toggle)
     // so chrome that paints tokens itself can repaint.
