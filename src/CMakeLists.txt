@@ -65,3 +65,5 @@ install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.desktop
 install(FILES ${CMAKE_SOURCE_DIR}/resources/icons/feather-logo.svg
     DESTINATION share/icons/hicolor/scalable/apps
     RENAME io.github.s4rt4.FeatherPDF.svg)
+install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.metainfo.xml
+    DESTINATION share/metainfo)
