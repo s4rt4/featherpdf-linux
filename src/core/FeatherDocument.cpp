@@ -53,7 +53,11 @@ FeatherDocument::LoadResult FeatherDocument::load(const QString& path) {
 
     if (result == LoadResult::Ok) {
         m_filePath = path;
-        m_rotations.assign(m_pdf->pageCount(), 0);
+        const int n = m_pdf->pageCount();
+        m_order.resize(n);
+        for (int i = 0; i < n; ++i)
+            m_order[i] = i; // identity arrangement to start
+        m_rot.assign(n, 0);
         setModified(false);
         emit loaded();
     } else {
@@ -62,21 +66,59 @@ FeatherDocument::LoadResult FeatherDocument::load(const QString& path) {
     return result;
 }
 
-int FeatherDocument::rotation(int page) const {
-    return (page >= 0 && page < m_rotations.size()) ? m_rotations[page] : 0;
+int FeatherDocument::originalPageCount() const {
+    return m_pdf->pageCount();
 }
 
-void FeatherDocument::rotatePage(int page, int deltaDegrees) {
-    if (page < 0 || page >= m_rotations.size())
+int FeatherDocument::rotation(int displayIndex) const {
+    return (displayIndex >= 0 && displayIndex < m_rot.size()) ? m_rot[displayIndex] : 0;
+}
+
+int FeatherDocument::originalPageAt(int displayIndex) const {
+    return (displayIndex >= 0 && displayIndex < m_order.size()) ? m_order[displayIndex] : -1;
+}
+
+void FeatherDocument::rotatePage(int displayIndex, int deltaDegrees) {
+    if (displayIndex < 0 || displayIndex >= m_rot.size())
         return;
-    int next = (m_rotations[page] + deltaDegrees) % 360;
+    int next = (m_rot[displayIndex] + deltaDegrees) % 360;
     if (next < 0)
         next += 360;
-    if (next == m_rotations[page])
+    if (next == m_rot[displayIndex])
         return;
-    m_rotations[page] = next;
+    m_rot[displayIndex] = next;
     setModified(true);
-    emit pageEdited(page);
+    emit pageEdited(displayIndex);
+}
+
+void FeatherDocument::removePage(int displayIndex, int* originalOut, int* rotationOut) {
+    if (displayIndex < 0 || displayIndex >= m_order.size())
+        return;
+    if (originalOut)
+        *originalOut = m_order[displayIndex];
+    if (rotationOut)
+        *rotationOut = m_rot[displayIndex];
+    m_order.remove(displayIndex);
+    m_rot.remove(displayIndex);
+    setModified(true);
+    emit arrangementChanged();
+}
+
+void FeatherDocument::insertPage(int displayIndex, int originalPage, int rotation) {
+    displayIndex = qBound(0, displayIndex, m_order.size());
+    m_order.insert(displayIndex, originalPage);
+    m_rot.insert(displayIndex, ((rotation % 360) + 360) % 360);
+    setModified(true);
+    emit arrangementChanged();
+}
+
+void FeatherDocument::movePage(int from, int to) {
+    if (from < 0 || from >= m_order.size() || to < 0 || to >= m_order.size() || from == to)
+        return;
+    m_order.move(from, to);
+    m_rot.move(from, to);
+    setModified(true);
+    emit arrangementChanged();
 }
 
 void FeatherDocument::markSaved() {
@@ -95,7 +137,8 @@ void FeatherDocument::close() {
         return;
     m_pdf->close();
     m_filePath.clear();
-    m_rotations.clear();
+    m_order.clear();
+    m_rot.clear();
     setModified(false);
     emit closed();
 }
@@ -114,7 +157,7 @@ QString FeatherDocument::title() const {
 }
 
 int FeatherDocument::pageCount() const {
-    return m_pdf->pageCount();
+    return m_order.size(); // current (display) count after edits
 }
 
 QString FeatherDocument::describe(LoadResult result) {

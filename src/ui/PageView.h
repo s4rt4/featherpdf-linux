@@ -51,11 +51,12 @@ public:
 
     void setDocument(QPdfDocument* doc);
 
-    // Per-page rotation (degrees clockwise) from the façade's edit model.
-    void setRotations(const QVector<int>& rotations);
-    void setRotation(int page, int degrees);
+    // The page arrangement from the façade: order[i] is the original page shown
+    // in display slot i, rot[i] its rotation. setRotation updates one slot.
+    void setArrangement(const QVector<int>& order, const QVector<int>& rotations);
+    void setRotation(int slot, int degrees);
 
-    int pageCount() const { return m_pageSizes.size(); }
+    int pageCount() const { return m_order.size(); } // display slots
     int currentPage() const { return m_currentPage; }
     void goToPage(int page); // 0-based, scroll to its top
 
@@ -94,19 +95,28 @@ protected:
 
 private:
     // Layout (all in logical px unless noted). Pages are grouped into rows — one
-    // page per row for single/continuous, two per row for facing. Sizes are the
-    // *effective* size, with width/height swapped for 90°/270° rotation.
-    int rotationOf(int page) const {
-        return (page >= 0 && page < m_rotations.size()) ? m_rotations[page] : 0;
+    // slot per row for single/continuous, two per row for facing. Sizes are the
+    // *effective* size, with width/height swapped for 90°/270° rotation. Indices
+    // below are DISPLAY SLOTS; the page they render is m_order[slot].
+    int originalOf(int slot) const {
+        return (slot >= 0 && slot < m_order.size()) ? m_order[slot] : -1;
     }
-    double pageWidthPx(int page) const {
-        const int r = rotationOf(page);
-        const QSizeF& s = m_pageSizes[page];
+    int rotationOf(int slot) const {
+        return (slot >= 0 && slot < m_rot.size()) ? m_rot[slot] : 0;
+    }
+    const QSizeF& sizeOf(int slot) const {
+        static const QSizeF kFallback(1, 1);
+        const int o = originalOf(slot);
+        return (o >= 0 && o < m_pageSizes.size()) ? m_pageSizes[o] : kFallback;
+    }
+    double pageWidthPx(int slot) const {
+        const int r = rotationOf(slot);
+        const QSizeF& s = sizeOf(slot);
         return ((r == 90 || r == 270) ? s.height() : s.width()) * m_zoom;
     }
-    double pageHeightPx(int page) const {
-        const int r = rotationOf(page);
-        const QSizeF& s = m_pageSizes[page];
+    double pageHeightPx(int slot) const {
+        const int r = rotationOf(slot);
+        const QSizeF& s = sizeOf(slot);
         return ((r == 90 || r == 270) ? s.width() : s.height()) * m_zoom;
     }
     void buildRows();
@@ -129,9 +139,10 @@ private:
     QPdfSearchModel* m_search = nullptr;
     int m_currentResult = -1;
 
-    QList<QSizeF> m_pageSizes;    // points, per page (unrotated)
-    QVector<int> m_rotations;     // degrees clockwise, per page
-    QList<QList<int>> m_rows;     // page indices grouped into rows
+    QList<QSizeF> m_pageSizes;    // points, per ORIGINAL page (unrotated)
+    QVector<int> m_order;         // display slot → original page index
+    QVector<int> m_rot;           // display slot → rotation (degrees clockwise)
+    QList<QList<int>> m_rows;     // display slots grouped into rows
     QList<int> m_pageRow;         // page → row index
     QList<double> m_rowTop;       // cumulative row top offset, logical px
     double m_maxPageWPoints = 1.0;
@@ -144,7 +155,8 @@ private:
     QList<int> m_lru;             // most-recent at back
     QSet<int> m_pending;          // in-flight render requests
     quint64 m_gen = 0;            // render generation; bumped on zoom/rotation
-    QHash<quint64, quint64> m_reqGen; // request id → generation it was made in
+    QHash<quint64, quint64> m_reqGen;  // request id → generation it was made in
+    QHash<quint64, int> m_reqSlot;     // request id → display slot it was for
 
     bool m_hud = false;
     int m_renderedCount = 0;      // HUD: total renders delivered

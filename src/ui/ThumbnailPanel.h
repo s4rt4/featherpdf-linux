@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <QVector>
 #include <QWidget>
 
 class ThumbnailModel;
@@ -38,6 +39,8 @@ public:
     explicit ThumbnailPanel(QWidget* parent = nullptr);
 
     void setDocument(QPdfDocument* doc);
+    void setArrangement(const QVector<int>& order, const QVector<int>& rotations);
+    void setRotation(int slot, int degrees);
     void clear();
     void setCurrentPage(int page); // highlight + scroll into view
 

@@ -42,3 +42,38 @@ private:
     int m_page;
     int m_delta;
 };
+
+class DeletePageCommand : public QUndoCommand {
+    Q_DECLARE_TR_FUNCTIONS(DeletePageCommand)
+
+public:
+    DeletePageCommand(FeatherDocument* doc, int index) : m_doc(doc), m_index(index) {
+        setText(tr("Delete page %1").arg(index + 1));
+    }
+
+    void redo() override { m_doc->removePage(m_index, &m_originalPage, &m_rotation); }
+    void undo() override { m_doc->insertPage(m_index, m_originalPage, m_rotation); }
+
+private:
+    FeatherDocument* m_doc;
+    int m_index;
+    int m_originalPage = -1; // captured on first redo, restored on undo
+    int m_rotation = 0;
+};
+
+class MovePageCommand : public QUndoCommand {
+    Q_DECLARE_TR_FUNCTIONS(MovePageCommand)
+
+public:
+    MovePageCommand(FeatherDocument* doc, int from, int to) : m_doc(doc), m_from(from), m_to(to) {
+        setText(tr("Move page %1 to %2").arg(from + 1).arg(to + 1));
+    }
+
+    void redo() override { m_doc->movePage(m_from, m_to); }
+    void undo() override { m_doc->movePage(m_to, m_from); }
+
+private:
+    FeatherDocument* m_doc;
+    int m_from;
+    int m_to;
+};

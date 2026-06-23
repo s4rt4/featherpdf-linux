@@ -27,8 +27,9 @@
 #include <qpdf/QPDFPageObjectHelper.hh>
 #include <qpdf/QPDFWriter.hh>
 
-bool PdfEditor::saveRotated(const QString& inputPath, const QString& outputPath,
-                            const QVector<int>& rotations, QString* error) {
+bool PdfEditor::saveArrangement(const QString& inputPath, const QString& outputPath,
+                                const QVector<int>& order, const QVector<int>& rotations,
+                                QString* error) {
     const bool inPlace =
         QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
     // Never write over the file we are reading — go through a sibling temp file.
@@ -39,12 +40,27 @@ bool PdfEditor::saveRotated(const QString& inputPath, const QString& outputPath,
         qpdf.processFile(inputPath.toLocal8Bit().constData());
 
         QPDFPageDocumentHelper dh(qpdf);
-        std::vector<QPDFPageObjectHelper> pages = dh.getAllPages();
-        for (size_t i = 0; i < pages.size(); ++i) {
-            int rot = (i < static_cast<size_t>(rotations.size())) ? rotations[int(i)] : 0;
+        // Make each page self-contained (own MediaBox/Resources) before we detach
+        // them from the page tree, so re-adding in a new order keeps fidelity.
+        dh.pushInheritedAttributesToPage();
+        std::vector<QPDFPageObjectHelper> original = dh.getAllPages();
+
+        // Detach every page, then re-add only those in `order`, in that order,
+        // each rotated as requested. Dropped pages simply never come back.
+        for (auto& page : original)
+            dh.removePage(page);
+
+        const int n = static_cast<int>(original.size());
+        for (int slot = 0; slot < order.size(); ++slot) {
+            const int orig = order[slot];
+            if (orig < 0 || orig >= n)
+                continue;
+            QPDFPageObjectHelper page = original[orig];
+            int rot = (slot < rotations.size()) ? rotations[slot] : 0;
             rot = ((rot % 360) + 360) % 360;
             if (rot != 0)
-                pages[i].rotatePage(rot, /*relative=*/true); // add to the page's own /Rotate
+                page.rotatePage(rot, /*relative=*/true);
+            dh.addPage(page, /*first=*/false);
         }
 
         QPDFWriter writer(qpdf, target.toLocal8Bit().constData());

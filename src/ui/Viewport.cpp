@@ -40,14 +40,19 @@ Viewport::~Viewport() = default;
 
 void Viewport::setDocument(FeatherDocument* doc) {
     if (m_doc)
-        disconnect(m_doc, &FeatherDocument::pageEdited, this, nullptr);
+        disconnect(m_doc, nullptr, this, nullptr);
     m_doc = doc;
     m_view->setDocument(doc ? doc->pdf() : nullptr);
     if (doc) {
-        m_view->setRotations(doc->rotations());
-        // Follow façade edits (rotation today; deletes/reorder later).
+        m_view->setArrangement(doc->pageOrder(), doc->rotations());
+        // Follow façade edits: a single slot's rotation, or a structure change.
         connect(doc, &FeatherDocument::pageEdited, this,
-                [this, doc](int page) { m_view->setRotation(page, doc->rotation(page)); });
+                [this, doc](int slot) { m_view->setRotation(slot, doc->rotation(slot)); });
+        connect(doc, &FeatherDocument::arrangementChanged, this, [this, doc] {
+            m_view->setArrangement(doc->pageOrder(), doc->rotations());
+            emit pageCountChanged(pageCount());
+            emit currentPageChanged(currentPage());
+        });
     }
     emit pageCountChanged(pageCount());
     emit currentPageChanged(currentPage());

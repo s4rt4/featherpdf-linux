@@ -59,8 +59,15 @@ public:
 public slots:
     void openFileDialog();
     void closeDocument();
+    void closeTab(int id); // prompts to save if the tab is dirty, then closes it
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
 
 private:
+    // Returns true if it is OK to proceed (saved or discarded); false to cancel.
+    bool maybeSaveSession(int id);
+
     void buildActions();
     void buildMenus();
     void buildShell();
@@ -71,6 +78,7 @@ private:
 
     // Page edits (M1).
     void rotateActivePage(int deltaDegrees);
+    void deleteActivePage();
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
 
@@ -150,6 +158,7 @@ private:
     QAction* m_redoAct = nullptr;
     QAction* m_rotateLeftAct = nullptr;
     QAction* m_rotateRightAct = nullptr;
+    QAction* m_deletePageAct = nullptr;
     QUndoGroup* m_undoGroup = nullptr;
     QAction* m_zoomInAct = nullptr;
     QAction* m_zoomOutAct = nullptr;

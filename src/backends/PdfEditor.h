@@ -24,10 +24,13 @@
 // applying per-page rotation; deletes and reordering join the same writer.
 class PdfEditor {
 public:
-    // Write `inputPath` to `outputPath`, applying each page's rotation delta
-    // (degrees clockwise, relative to the page's original orientation). Writing
+    // Write `inputPath` to `outputPath` as the arrangement described by `order`
+    // (display slot → original 0-based page index) and `rotations` (per slot,
+    // degrees clockwise relative to the page's original orientation). Pages not
+    // present in `order` are dropped; repeats/reordering are honoured. Writing
     // over the input is handled safely (temp file + atomic rename). Returns true
     // on success; on failure fills *error with a friendly message.
-    static bool saveRotated(const QString& inputPath, const QString& outputPath,
-                            const QVector<int>& rotations, QString* error);
+    static bool saveArrangement(const QString& inputPath, const QString& outputPath,
+                                const QVector<int>& order, const QVector<int>& rotations,
+                                QString* error);
 };

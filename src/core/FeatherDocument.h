@@ -51,7 +51,8 @@ public:
     QString filePath() const { return m_filePath; }
     QString fileName() const;       // base name, e.g. "Annual-Report.pdf"
     QString title() const;          // metadata title, falls back to file name
-    int pageCount() const;
+    int pageCount() const;          // CURRENT (display) page count after edits
+    int originalPageCount() const;  // pages in the file on disk
 
     // The rendering backend handle. The viewport (QtPdf) renders from this.
     // This accessor is the *one* sanctioned exception to "modules never touch a
@@ -62,13 +63,22 @@ public:
     static QString describe(LoadResult result);
 
     // ── Page edits (M1) ──────────────────────────────────────────────────────
-    // The façade owns the editable page arrangement. For now that is a rotation
-    // per page (degrees clockwise, 0/90/180/270); deletes and reordering join it
-    // later. Edits are applied at render time and made lossless on save (QPDF).
+    // The façade owns the editable page arrangement as parallel per-slot arrays:
+    // m_order[i] is the original (on-disk) page shown in display slot i, and
+    // m_rot[i] its clockwise rotation. Rotate edits one slot; delete/insert/move
+    // change the arrangement. Edits apply at render time and are made lossless on
+    // save (QPDF copies the original page objects in this order).
 
-    int rotation(int page) const; // 0, 90, 180, or 270
-    void rotatePage(int page, int deltaDegrees); // delta is added, normalised
-    const QVector<int>& rotations() const { return m_rotations; }
+    int rotation(int displayIndex) const;     // 0, 90, 180, or 270
+    int originalPageAt(int displayIndex) const; // -1 if out of range
+    const QVector<int>& pageOrder() const { return m_order; }
+    const QVector<int>& rotations() const { return m_rot; }
+
+    void rotatePage(int displayIndex, int deltaDegrees);
+    // Removes a slot; reports its original page + rotation so it can be restored.
+    void removePage(int displayIndex, int* originalOut = nullptr, int* rotationOut = nullptr);
+    void insertPage(int displayIndex, int originalPage, int rotation);
+    void movePage(int from, int to);
 
     bool isModified() const { return m_modified; }
     void markSaved(); // clears the modified flag (after a successful save)
@@ -76,7 +86,8 @@ public:
 signals:
     void loaded();
     void closed();
-    void pageEdited(int page);       // a single page's edit changed
+    void pageEdited(int displayIndex); // a slot's rotation changed
+    void arrangementChanged();         // pages added/removed/reordered
     void modifiedChanged(bool modified);
 
 private:
@@ -84,6 +95,7 @@ private:
 
     QPdfDocument* m_pdf;
     QString m_filePath;
-    QVector<int> m_rotations; // size == pageCount once loaded
+    QVector<int> m_order; // display slot → original page index
+    QVector<int> m_rot;   // display slot → rotation (degrees clockwise)
     bool m_modified = false;
 };

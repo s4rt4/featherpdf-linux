@@ -35,6 +35,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
+#include <QCloseEvent>
 #include <QEasingCurve>
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
@@ -100,13 +101,17 @@ void MainWindow::buildActions() {
     m_rotateRightAct->setShortcut(Qt::CTRL | Qt::Key_BracketRight);
     connect(m_rotateRightAct, &QAction::triggered, this, [this] { rotateActivePage(90); });
 
+    m_deletePageAct = new QAction(tr("&Delete Page"), this);
+    connect(m_deletePageAct, &QAction::triggered, this, &MainWindow::deleteActivePage);
+
     m_closeAct = new QAction(tr("&Close"), this);
     m_closeAct->setShortcut(QKeySequence::Close);
     connect(m_closeAct, &QAction::triggered, this, &MainWindow::closeDocument);
 
     m_quitAct = new QAction(tr("&Quit"), this);
     m_quitAct->setShortcut(QKeySequence::Quit);
-    connect(m_quitAct, &QAction::triggered, qApp, &QApplication::quit);
+    // Route Quit through close() so it goes past the unsaved-changes guard.
+    connect(m_quitAct, &QAction::triggered, this, &MainWindow::close);
 
     m_zoomInAct = new QAction(tr("Zoom &In"), this);
     m_zoomInAct->setShortcut(QKeySequence::ZoomIn);
@@ -212,6 +217,7 @@ void MainWindow::buildMenus() {
     QMenu* document = menuBar()->addMenu(tr("&Document"));
     document->addAction(m_rotateLeftAct);
     document->addAction(m_rotateRightAct);
+    document->addAction(m_deletePageAct);
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
     connect(props, &QAction::triggered, this, [this] { notImplemented(tr("Document properties")); });
@@ -433,6 +439,7 @@ void MainWindow::wireSignals() {
         QMenu menu(this);
         menu.addAction(m_rotateLeftAct);
         menu.addAction(m_rotateRightAct);
+        menu.addAction(m_deletePageAct);
         menu.addSeparator();
         menu.addAction(m_singlePageAct);
         menu.addAction(m_continuousAct);
@@ -517,7 +524,7 @@ void MainWindow::wireSignals() {
     connect(m_tabStrip, &TabStrip::documentSelected, this, &MainWindow::activateSession);
     connect(m_tabStrip, &TabStrip::toolsSelected, this, [this] { notImplemented(tr("Tools gallery")); });
     connect(m_tabStrip, &TabStrip::newTabRequested, this, &MainWindow::openFileDialog);
-    connect(m_tabStrip, &TabStrip::closeDocumentRequested, this, &MainWindow::closeSession);
+    connect(m_tabStrip, &TabStrip::closeDocumentRequested, this, &MainWindow::closeTab);
     connect(m_tabStrip, &TabStrip::searchRequested, this, &MainWindow::openFind);
 
     // Find bar ↔ viewport search.
@@ -554,6 +561,17 @@ void MainWindow::rotateActivePage(int deltaDegrees) {
     s->undo->push(new RotatePageCommand(s->doc, m_viewport->currentPage(), deltaDegrees));
 }
 
+void MainWindow::deleteActivePage() {
+    Session* s = session(m_activeId);
+    if (!s || !hasActiveDoc() || !s->undo)
+        return;
+    if (m_doc->pageCount() <= 1) {
+        m_toast->show(tr("A document must keep at least one page."));
+        return;
+    }
+    s->undo->push(new DeletePageCommand(s->doc, m_viewport->currentPage()));
+}
+
 bool MainWindow::saveActiveAs() {
     if (!hasActiveDoc())
         return false;
@@ -567,7 +585,8 @@ bool MainWindow::saveActiveAs() {
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
-    const bool ok = PdfEditor::saveRotated(m_doc->filePath(), out, m_doc->rotations(), &error);
+    const bool ok = PdfEditor::saveArrangement(m_doc->filePath(), out, m_doc->pageOrder(),
+                                               m_doc->rotations(), &error);
     QApplication::restoreOverrideCursor();
 
     if (!ok) {
@@ -587,8 +606,8 @@ bool MainWindow::saveActive() {
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
-    const bool ok =
-        PdfEditor::saveRotated(m_doc->filePath(), m_doc->filePath(), m_doc->rotations(), &error);
+    const bool ok = PdfEditor::saveArrangement(m_doc->filePath(), m_doc->filePath(),
+                                               m_doc->pageOrder(), m_doc->rotations(), &error);
     QApplication::restoreOverrideCursor();
 
     if (!ok) {
@@ -676,6 +695,17 @@ bool MainWindow::openPath(const QString& path) {
     const int sid = s.id;
     connect(s.undo, &QUndoStack::cleanChanged, this,
             [this, sid](bool clean) { m_tabStrip->setDocumentDirty(sid, !clean); });
+    // Keep the thumbnail panel in step with edits to this document while active.
+    connect(doc, &FeatherDocument::pageEdited, this, [this, doc](int slot) {
+        if (m_doc == doc)
+            m_thumbnails->setRotation(slot, doc->rotation(slot));
+    });
+    connect(doc, &FeatherDocument::arrangementChanged, this, [this, doc] {
+        if (m_doc == doc) {
+            m_thumbnails->setArrangement(doc->pageOrder(), doc->rotations());
+            updatePageIndicator();
+        }
+    });
     m_sessions.append(s);
     activateSession(s.id);
     return true;
@@ -707,6 +737,7 @@ void MainWindow::activateSession(int id) {
     m_viewport->setDocument(m_doc);
     m_viewport->goToPage(target->lastPage);
     m_thumbnails->setDocument(m_doc->pdf());
+    m_thumbnails->setArrangement(m_doc->pageOrder(), m_doc->rotations());
     m_thumbnails->setCurrentPage(target->lastPage);
     m_outline->setDocument(m_doc->pdf());
 
@@ -771,7 +802,81 @@ void MainWindow::openFileDialog() {
 
 void MainWindow::closeDocument() {
     if (m_activeId != -1)
-        closeSession(m_activeId);
+        closeTab(m_activeId);
+}
+
+void MainWindow::closeTab(int id) {
+    if (maybeSaveSession(id))
+        closeSession(id);
+}
+
+bool MainWindow::maybeSaveSession(int id) {
+    Session* s = session(id);
+    if (!s || !s->undo || s->undo->isClean())
+        return true; // nothing unsaved
+
+    activateSession(id); // show the document the prompt is about
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Warning);
+    box.setWindowTitle(tr("Unsaved changes"));
+    box.setText(tr("Save changes to “%1” before closing?").arg(s->doc->title()));
+    box.setInformativeText(tr("Your changes will be lost if you don't save them."));
+    box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    box.setDefaultButton(QMessageBox::Save);
+    switch (box.exec()) {
+    case QMessageBox::Save:
+        return saveActive(); // abort the close if the save fails
+    case QMessageBox::Discard:
+        return true;
+    default:
+        return false; // Cancel
+    }
+}
+
+void MainWindow::closeEvent(QCloseEvent* event) {
+    // Collect tabs with unsaved changes.
+    QVector<int> dirty;
+    for (const Session& s : m_sessions) {
+        if (s.undo && !s.undo->isClean())
+            dirty.append(s.id);
+    }
+
+    if (!dirty.isEmpty()) {
+        QMessageBox box(this);
+        box.setIcon(QMessageBox::Warning);
+        box.setWindowTitle(tr("Unsaved changes"));
+        box.setText(tr("%n document(s) have unsaved changes.", "", dirty.size()));
+        box.setInformativeText(tr("Save them before closing Feather PDF?"));
+        box.setStandardButtons(QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
+        box.setDefaultButton(QMessageBox::SaveAll);
+        switch (box.exec()) {
+        case QMessageBox::SaveAll:
+            for (int id : dirty) {
+                activateSession(id);
+                if (!saveActive()) { // a failed/cancelled save aborts the quit
+                    event->ignore();
+                    return;
+                }
+            }
+            break;
+        case QMessageBox::Discard:
+            break;
+        default:
+            event->ignore();
+            return;
+        }
+    } else if (m_sessions.size() > 1) {
+        // No unsaved work, but several tabs are open — confirm the bulk close.
+        const auto choice = QMessageBox::question(
+            this, tr("Close Feather PDF"),
+            tr("%n tab(s) are open. Close them all?", "", m_sessions.size()),
+            QMessageBox::Close | QMessageBox::Cancel, QMessageBox::Close);
+        if (choice != QMessageBox::Close) {
+            event->ignore();
+            return;
+        }
+    }
+    event->accept();
 }
 
 void MainWindow::updateWindowTitle() {
@@ -788,6 +893,7 @@ void MainWindow::updateChromeState() {
     m_saveAsAct->setEnabled(loaded);
     m_rotateLeftAct->setEnabled(loaded);
     m_rotateRightAct->setEnabled(loaded);
+    m_deletePageAct->setEnabled(loaded);
     m_closeAct->setEnabled(loaded);
     m_zoomInAct->setEnabled(loaded);
     m_zoomOutAct->setEnabled(loaded);

@@ -25,10 +25,12 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPdfDocument>
+#include <QPdfDocumentRenderOptions>
 #include <QPdfPageRenderer>
 #include <QSet>
 #include <QStyledItemDelegate>
 #include <QVBoxLayout>
+#include <QVector>
 
 namespace {
 constexpr int kThumbWidth = 140; // logical px
@@ -55,20 +57,46 @@ public:
         m_renderer->setDocument(doc);
         m_cache.clear();
         m_pending.clear();
+        m_reqRow.clear();
         endResetModel();
+    }
+
+    // The arrangement from the façade: order[i] = original page in display slot i.
+    void setArrangement(const QVector<int>& order, const QVector<int>& rotations) {
+        beginResetModel();
+        m_order = order;
+        m_rot = rotations;
+        m_rot.resize(m_order.size());
+        m_cache.clear();
+        m_pending.clear();
+        m_reqRow.clear();
+        endResetModel();
+    }
+
+    void setRotation(int slot, int degrees) {
+        if (slot < 0 || slot >= m_rot.size())
+            return;
+        m_rot[slot] = degrees;
+        m_cache.remove(slot);
+        m_pending.remove(slot);
+        const QModelIndex idx = index(slot);
+        emit dataChanged(idx, idx, {Qt::DecorationRole});
     }
 
     int rowCount(const QModelIndex& parent = {}) const override {
         if (parent.isValid() || !m_doc)
             return 0;
-        return m_doc->pageCount();
+        return m_order.size();
     }
 
-    // Logical size of a thumbnail for `page`, preserving the page aspect ratio.
-    QSize thumbSize(int page) const {
-        if (!m_doc)
+    // Logical size of a thumbnail for display slot `row`, with rotation applied.
+    QSize thumbSize(int row) const {
+        if (!m_doc || row < 0 || row >= m_order.size())
             return {kThumbWidth, kThumbWidth};
-        const QSizeF pt = m_doc->pagePointSize(page);
+        QSizeF pt = m_doc->pagePointSize(m_order[row]);
+        const int rot = (row < m_rot.size()) ? m_rot[row] : 0;
+        if (rot == 90 || rot == 270)
+            pt.transpose();
         if (pt.width() <= 0 || pt.height() <= 0)
             return {kThumbWidth, kThumbWidth};
         const int h = qRound(kThumbWidth * pt.height() / pt.width());
@@ -78,42 +106,56 @@ public:
     QVariant data(const QModelIndex& index, int role) const override {
         if (!index.isValid() || !m_doc)
             return {};
-        const int page = index.row();
+        const int row = index.row();
         if (role == Qt::DecorationRole) {
-            if (auto it = m_cache.constFind(page); it != m_cache.constEnd())
+            if (auto it = m_cache.constFind(row); it != m_cache.constEnd())
                 return *it;
-            const_cast<ThumbnailModel*>(this)->request(page); // lazy: only visible rows reach here
+            const_cast<ThumbnailModel*>(this)->request(row); // lazy: only visible rows reach here
             return {};
         }
         return {};
     }
 
 private slots:
-    void onRendered(int page, QSize, const QImage& image, QPdfDocumentRenderOptions, quint64) {
-        if (image.isNull())
+    void onRendered(int, QSize, const QImage& image, QPdfDocumentRenderOptions, quint64 id) {
+        const int row = m_reqRow.take(id);
+        if (image.isNull() || row < 0 || row >= m_order.size())
             return;
         QPixmap pm = QPixmap::fromImage(image);
         pm.setDevicePixelRatio(dpr());
-        m_cache.insert(page, pm);
-        m_pending.remove(page);
-        const QModelIndex idx = index(page);
+        m_cache.insert(row, pm);
+        m_pending.remove(row);
+        const QModelIndex idx = index(row);
         emit dataChanged(idx, idx, {Qt::DecorationRole});
     }
 
 private:
     static qreal dpr() { return qApp ? qApp->devicePixelRatio() : 1.0; }
 
-    void request(int page) {
-        if (m_pending.contains(page) || m_cache.contains(page) || !m_doc)
+    void request(int row) {
+        if (m_pending.contains(row) || m_cache.contains(row) || !m_doc)
             return;
-        m_pending.insert(page);
-        m_renderer->requestPage(page, thumbSize(page) * dpr());
+        if (row < 0 || row >= m_order.size())
+            return;
+        m_pending.insert(row);
+        QPdfDocumentRenderOptions opts;
+        switch ((row < m_rot.size()) ? m_rot[row] : 0) {
+        case 90: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise90); break;
+        case 180: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise180); break;
+        case 270: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise270); break;
+        default: break;
+        }
+        const quint64 reqId = m_renderer->requestPage(m_order[row], thumbSize(row) * dpr(), opts);
+        m_reqRow.insert(reqId, row);
     }
 
     QPdfDocument* m_doc = nullptr;
     QPdfPageRenderer* m_renderer = nullptr;
+    QVector<int> m_order;
+    QVector<int> m_rot;
     QHash<int, QPixmap> m_cache;
     QSet<int> m_pending;
+    QHash<quint64, int> m_reqRow;
 };
 
 // ── Delegate ─────────────────────────────────────────────────────────────────
@@ -210,6 +252,14 @@ void ThumbnailPanel::setDocument(QPdfDocument* doc) {
     m_model->setDocument(doc);
     m_delegate->setCurrentPage(0);
     m_view->scrollToTop();
+}
+
+void ThumbnailPanel::setArrangement(const QVector<int>& order, const QVector<int>& rotations) {
+    m_model->setArrangement(order, rotations);
+}
+
+void ThumbnailPanel::setRotation(int slot, int degrees) {
+    m_model->setRotation(slot, degrees);
 }
 
 void ThumbnailPanel::clear() {

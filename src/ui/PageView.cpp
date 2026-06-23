@@ -48,17 +48,18 @@ PageView::PageView(QWidget* parent) : QAbstractScrollArea(parent) {
     m_renderer = new QPdfPageRenderer(this);
     m_renderer->setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
     connect(m_renderer, &QPdfPageRenderer::pageRendered, this,
-            [this](int page, QSize, const QImage& image, QPdfDocumentRenderOptions, quint64 id) {
-                // Drop results from a superseded generation (zoom or rotation changed).
+            [this](int, QSize, const QImage& image, QPdfDocumentRenderOptions, quint64 id) {
+                // Drop results from a superseded generation (zoom/rotation/edit).
                 const quint64 g = m_reqGen.take(id);
-                if (image.isNull() || g != m_gen)
+                const int slot = m_reqSlot.take(id);
+                if (image.isNull() || g != m_gen || slot < 0)
                     return;
-                m_pending.remove(page);
+                m_pending.remove(slot);
                 QPixmap pm = QPixmap::fromImage(image);
                 pm.setDevicePixelRatio(devicePixelRatioF());
-                m_cache.insert(page, pm);
-                m_lru.removeAll(page);
-                m_lru.append(page);
+                m_cache.insert(slot, pm);
+                m_lru.removeAll(slot);
+                m_lru.append(slot);
                 ++m_renderedCount;
                 dropStaleCache();
                 viewport()->update();
@@ -105,7 +106,12 @@ void PageView::setDocument(QPdfDocument* doc) {
             m_maxPageWPoints = std::max(m_maxPageWPoints, s.width());
         }
     }
-    m_rotations.assign(m_pageSizes.size(), 0);
+    // Identity arrangement until the façade pushes its edit model.
+    const int n = m_pageSizes.size();
+    m_order.resize(n);
+    for (int i = 0; i < n; ++i)
+        m_order[i] = i;
+    m_rot.assign(n, 0);
 
     relayout();
     verticalScrollBar()->setValue(0);
@@ -140,10 +146,10 @@ void PageView::buildRows() {
     m_maxRowWPoints = 1.0;
     for (int r = 0; r < m_rows.size(); ++r) {
         double w = 0;
-        for (int p : m_rows[r]) {
-            m_pageRow[p] = r;
-            const int rot = rotationOf(p);
-            const QSizeF& s = m_pageSizes[p];
+        for (int slot : m_rows[r]) {
+            m_pageRow[slot] = r;
+            const int rot = rotationOf(slot);
+            const QSizeF& s = sizeOf(slot);
             w += (rot == 90 || rot == 270) ? s.height() : s.width(); // effective width
         }
         m_maxRowWPoints = std::max(m_maxRowWPoints, w);
@@ -241,19 +247,23 @@ QSize PageView::pixelSize(int page) const {
     return QSize(qRound(pageWidthPx(page) * dpr), qRound(pageHeightPx(page) * dpr));
 }
 
-void PageView::request(int page) {
-    if (!m_doc || m_pending.contains(page) || m_cache.contains(page))
+void PageView::request(int slot) {
+    if (!m_doc || m_pending.contains(slot) || m_cache.contains(slot))
         return;
-    m_pending.insert(page);
+    const int orig = originalOf(slot);
+    if (orig < 0)
+        return;
+    m_pending.insert(slot);
     QPdfDocumentRenderOptions opts;
-    switch (rotationOf(page)) {
+    switch (rotationOf(slot)) {
     case 90: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise90); break;
     case 180: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise180); break;
     case 270: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise270); break;
     default: break;
     }
-    const quint64 id = m_renderer->requestPage(page, pixelSize(page), opts);
+    const quint64 id = m_renderer->requestPage(orig, pixelSize(slot), opts);
     m_reqGen.insert(id, m_gen);
+    m_reqSlot.insert(id, slot);
 }
 
 void PageView::dropStaleCache() {
@@ -264,29 +274,31 @@ void PageView::dropStaleCache() {
 }
 
 void PageView::invalidateRenders() {
-    // Everything in flight or cached is now wrong (different zoom or rotation).
+    // Everything in flight or cached is now wrong (zoom, rotation, or edit).
     ++m_gen;
     m_cache.clear();
     m_lru.clear();
     m_pending.clear();
     m_reqGen.clear();
+    m_reqSlot.clear();
 }
 
-void PageView::setRotations(const QVector<int>& rotations) {
-    m_rotations = rotations;
-    m_rotations.resize(pageCount()); // stay in step with the page count
+void PageView::setArrangement(const QVector<int>& order, const QVector<int>& rotations) {
+    m_order = order;
+    m_rot = rotations;
+    m_rot.resize(m_order.size());
+    m_currentPage = std::clamp(m_currentPage, 0, std::max(0, pageCount() - 1));
     invalidateRenders();
     relayout();
+    updateCurrentPage();
     viewport()->update();
 }
 
-void PageView::setRotation(int page, int degrees) {
-    if (page < 0 || page >= pageCount())
+void PageView::setRotation(int slot, int degrees) {
+    if (slot < 0 || slot >= m_rot.size())
         return;
-    if (m_rotations.size() < pageCount())
-        m_rotations.resize(pageCount());
-    m_rotations[page] = ((degrees % 360) + 360) % 360;
-    invalidateRenders();
+    m_rot[slot] = ((degrees % 360) + 360) % 360;
+    invalidateRenders(); // the slot's pixmap is now wrong
     relayout();
     viewport()->update();
 }
@@ -304,7 +316,8 @@ void PageView::paintEvent(QPaintEvent*) {
     const int vpH = viewport()->height();
     const double centerSpace = std::max(contentWidthPx(), double(viewport()->width()));
 
-    auto drawPage = [&](const QRect& r, int page) {
+    auto drawPage = [&](const QRect& r, int slot) {
+        const int page = originalOf(slot); // search/highlights are keyed by the original page
         // The page's soft shadow — the only prominent shadow (ui-guidelines §4).
         p.setPen(Qt::NoPen);
         for (int s = 6; s >= 1; --s) {
@@ -312,12 +325,12 @@ void PageView::paintEvent(QPaintEvent*) {
             p.drawRoundedRect(r.adjusted(-s, -s + 2, s, s + 2), 3, 3);
         }
         p.fillRect(r, QColor(255, 255, 255));
-        if (auto it = m_cache.constFind(page); it != m_cache.constEnd()) {
+        if (auto it = m_cache.constFind(slot); it != m_cache.constEnd()) {
             p.drawPixmap(r, *it);
-            m_lru.removeAll(page);
-            m_lru.append(page);
+            m_lru.removeAll(slot);
+            m_lru.append(slot);
         } else {
-            request(page);
+            request(slot);
         }
         const QList<QPdfLink> results = m_search->resultsOnPage(page);
         if (!results.isEmpty()) {
@@ -354,10 +367,12 @@ void PageView::paintEvent(QPaintEvent*) {
         }
     }
 
-    // The active match, emphasised.
+    // The active match, emphasised. link.page() is an original page; find the
+    // display slot that shows it.
     if (m_currentResult >= 0) {
         const QPdfLink link = m_search->resultAtIndex(m_currentResult);
-        const QRect r = pageRect(link.page());
+        const int slot = m_order.indexOf(link.page());
+        const QRect r = slot >= 0 ? pageRect(slot) : QRect();
         if (!r.isNull()) {
             QColor hi = pal.accent;
             hi.setAlpha(150);
@@ -490,7 +505,7 @@ void PageView::fitToWidth() {
 void PageView::fitWholePage() {
     if (pageCount() == 0)
         return;
-    const QSizeF s = m_pageSizes[m_currentPage];
+    const QSizeF s = sizeOf(m_currentPage);
     const double zW = (viewport()->width() - 2.0 * kMargin) / s.width();
     const double zH = (viewport()->height() - 2.0 * kMargin) / s.height();
     setZoom(std::min(zW, zH));
@@ -514,13 +529,14 @@ void PageView::showSearchResult(int index) {
         return;
     m_currentResult = ((index % count) + count) % count;
     const QPdfLink link = m_search->resultAtIndex(m_currentResult);
-    if (link.page() >= 0) {
+    const int slot = m_order.indexOf(link.page()); // original page → display slot
+    if (slot >= 0) {
         if (m_mode == LayoutMode::SinglePage) {
-            m_currentPage = link.page();
+            m_currentPage = slot;
             relayout();
             emit currentPageChanged(m_currentPage);
         }
-        const int r = (link.page() < m_pageRow.size()) ? m_pageRow[link.page()] : 0;
+        const int r = (slot < m_pageRow.size()) ? m_pageRow[slot] : 0;
         const double y = m_rowTop[std::max(0, r)] + link.location().y() * m_zoom - 40;
         verticalScrollBar()->setValue(qRound(std::max(0.0, y)));
     }
