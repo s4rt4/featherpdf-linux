@@ -56,3 +56,12 @@ target_link_libraries(feather-pdf PRIVATE
 )
 
 install(TARGETS feather-pdf RUNTIME DESTINATION bin)
+
+# Desktop integration — the .desktop file (app-id io.github.s4rt4.FeatherPDF) and
+# the brand logo installed into the hicolor icon theme under that same id, so the
+# GNOME/Wayland shell shows the logo in the dash/dock and as the window icon.
+install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.desktop
+    DESTINATION share/applications)
+install(FILES ${CMAKE_SOURCE_DIR}/resources/icons/feather-logo.svg
+    DESTINATION share/icons/hicolor/scalable/apps
+    RENAME io.github.s4rt4.FeatherPDF.svg)
