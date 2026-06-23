@@ -1,0 +1,29 @@
+# Feather PDF — light on the system, full-featured on PDF.
+# Copyright (C) 2026 Feather PDF contributors. Licensed under GPLv3 (see LICENSE).
+
+cmake_minimum_required(VERSION 3.21)
+
+project(FeatherPDF
+    VERSION 0.0.1
+    DESCRIPTION "Native, open-source PDF tool for Linux"
+    HOMEPAGE_URL "https://github.com/s4rt4/featherpdf-linux"
+    LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Default to a sensible build type for single-config generators.
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Build type" FORCE)
+endif()
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# M0 needs: Core/Gui/Widgets (shell), Pdf/PdfWidgets (PDFium rendering),
+# Concurrent (off-UI-thread work). Poppler/QPDF are added when their modules land.
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Pdf PdfWidgets Concurrent)
+
+qt_standard_project_setup()
+
+add_subdirectory(src)
