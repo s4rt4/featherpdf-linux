@@ -19,17 +19,13 @@
 #include <QWidget>
 
 class FeatherDocument;
-class QPdfView;
-class QPdfSearchModel;
+class PageView;
 
 // The document viewport: where the page floats on the canvas.
 //
-// M0 wraps QtPdf's QPdfView to validate the full stack end-to-end and ship a
-// navigable, zoomable viewer immediately. The custom render service the saran
-// notes call for — LRU cache, two-pass preview→full, render cancellation,
-// integer device-pixel layout for fractional HiDPI, and a debug HUD — replaces
-// the internals of this class in a later increment. Keeping that behind this
-// interface means MainWindow never has to change when it does.
+// A thin wrapper over PageView — the custom continuous render pipeline (off-UI-
+// thread render, LRU cache, arithmetic layout). Keeping that behind this stable
+// interface means MainWindow never sees the renderer change.
 class Viewport : public QWidget {
     Q_OBJECT
 
@@ -69,14 +65,6 @@ signals:
     void searchResultsChanged(int count);
 
 private:
-    void applyZoomFactor(double factor);
-    void applyCanvasColor();
-
     FeatherDocument* m_doc = nullptr;
-    QPdfView* m_view;
-    QPdfSearchModel* m_searchModel = nullptr;
-
-    static constexpr double kZoomStep = 1.2;
-    static constexpr double kMinZoom = 0.1;
-    static constexpr double kMaxZoom = 8.0;
+    PageView* m_view;
 };

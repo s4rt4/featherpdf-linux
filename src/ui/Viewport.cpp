@@ -17,90 +17,21 @@
 #include "ui/Viewport.h"
 
 #include "core/FeatherDocument.h"
-#include "ui/Theme.h"
+#include "ui/PageView.h"
 
-#include <QPdfDocument>
-#include <QPdfLink>
-#include <QPdfPageNavigator>
-#include <QPdfSearchModel>
-#include <QPdfView>
 #include <QVBoxLayout>
-#include <algorithm>
 
-Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new QPdfView(this)) {
+Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)) {
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_view);
 
-    // Continuous scroll by default, with breathing room around each page so it
-    // reads as paper floating on the canvas (§5 of the UI guidelines).
-    m_view->setPageMode(QPdfView::PageMode::MultiPage);
-    m_view->setZoomMode(QPdfView::ZoomMode::Custom);
-    m_view->setPageSpacing(12);
-    m_view->setDocumentMargins(QMargins(16, 16, 16, 16));
-
-    connect(m_view, &QPdfView::zoomFactorChanged, this,
-            [this](qreal f) { emit zoomChanged(static_cast<double>(f)); });
-
-    if (auto* nav = m_view->pageNavigator()) {
-        connect(nav, &QPdfPageNavigator::currentPageChanged, this,
-                [this](int page) { emit currentPageChanged(page); });
-    }
-
-    // Text search: QPdfView highlights every match from this model and the
-    // count grows live as the background search walks the pages.
-    m_searchModel = new QPdfSearchModel(this);
-    m_view->setSearchModel(m_searchModel);
-    auto emitCount = [this] { emit searchResultsChanged(searchResultCount()); };
-    connect(m_searchModel, &QAbstractItemModel::rowsInserted, this, emitCount);
-    connect(m_searchModel, &QAbstractItemModel::rowsRemoved, this, emitCount);
-    connect(m_searchModel, &QAbstractItemModel::modelReset, this, emitCount);
-    connect(m_searchModel, &QAbstractItemModel::layoutChanged, this, emitCount);
-
-    // The canvas behind the page is `surface-sunken`, so white pages pop and
-    // carry the only prominent shadow (ui-guidelines §1, §5.6).
-    applyCanvasColor();
-    connect(&Theme::instance(), &Theme::changed, this, &Viewport::applyCanvasColor);
-}
-
-int Viewport::search(const QString& query) {
-    m_searchModel->setSearchString(query);
-    return searchResultCount();
-}
-
-void Viewport::clearSearch() {
-    m_searchModel->setSearchString(QString());
-    m_view->setCurrentSearchResultIndex(-1);
-}
-
-void Viewport::showSearchResult(int index) {
-    const int count = searchResultCount();
-    if (count <= 0)
-        return;
-    const int wrapped = ((index % count) + count) % count; // wrap both directions
-    m_view->setCurrentSearchResultIndex(wrapped);
-
-    // Highlighting alone doesn't move the page in MultiPage mode, so jump to the
-    // match: scroll to its page and the match's location (in points).
-    const QPdfLink link = m_searchModel->resultAtIndex(wrapped);
-    if (link.page() < 0)
-        return;
-    if (auto* nav = m_view->pageNavigator()) {
-        // Land a little above the match so it isn't flush against the top edge.
-        QPointF where = link.location();
-        where.setY(qMax(0.0, where.y() - 40));
-        nav->jump(link.page(), where, nav->currentZoom());
-    }
-}
-
-int Viewport::searchResultCount() const {
-    return m_searchModel->rowCount(QModelIndex());
-}
-
-void Viewport::applyCanvasColor() {
-    const QColor sunken = Theme::instance().palette().sunken;
-    m_view->setStyleSheet(QStringLiteral("QPdfView { background:%1; border:none; }")
-                              .arg(sunken.name()));
+    connect(m_view, &PageView::zoomChanged, this,
+            [this](double f) { emit zoomChanged(f); });
+    connect(m_view, &PageView::currentPageChanged, this,
+            [this](int page) { emit currentPageChanged(page); });
+    connect(m_view, &PageView::searchResultsChanged, this,
+            [this](int count) { emit searchResultsChanged(count); });
 }
 
 Viewport::~Viewport() = default;
@@ -108,8 +39,6 @@ Viewport::~Viewport() = default;
 void Viewport::setDocument(FeatherDocument* doc) {
     m_doc = doc;
     m_view->setDocument(doc ? doc->pdf() : nullptr);
-    m_searchModel->setSearchString(QString());
-    m_searchModel->setDocument(doc ? doc->pdf() : nullptr);
     emit pageCountChanged(pageCount());
     emit currentPageChanged(currentPage());
     emit zoomChanged(zoomFactor());
@@ -126,38 +55,31 @@ bool Viewport::hasDocument() const {
 }
 
 double Viewport::zoomFactor() const {
-    return static_cast<double>(m_view->zoomFactor());
-}
-
-void Viewport::applyZoomFactor(double factor) {
-    factor = std::clamp(factor, kMinZoom, kMaxZoom);
-    m_view->setZoomMode(QPdfView::ZoomMode::Custom);
-    m_view->setZoomFactor(factor);
+    return m_view->zoom();
 }
 
 void Viewport::zoomIn() {
-    applyZoomFactor(zoomFactor() * kZoomStep);
+    m_view->zoomIn();
 }
 
 void Viewport::zoomOut() {
-    applyZoomFactor(zoomFactor() / kZoomStep);
+    m_view->zoomOut();
 }
 
 void Viewport::zoomActualSize() {
-    applyZoomFactor(1.0);
+    m_view->zoomActualSize();
 }
 
 void Viewport::fitToWidth() {
-    m_view->setZoomMode(QPdfView::ZoomMode::FitToWidth);
+    m_view->fitToWidth();
 }
 
 void Viewport::fitWholePage() {
-    m_view->setZoomMode(QPdfView::ZoomMode::FitInView);
+    m_view->fitWholePage();
 }
 
 int Viewport::currentPage() const {
-    auto* nav = m_view->pageNavigator();
-    return nav ? nav->currentPage() : 0;
+    return m_view->currentPage();
 }
 
 int Viewport::pageCount() const {
@@ -165,12 +87,21 @@ int Viewport::pageCount() const {
 }
 
 void Viewport::goToPage(int page) {
-    auto* nav = m_view->pageNavigator();
-    if (!nav || pageCount() <= 0)
-        return;
-    page = std::clamp(page, 0, pageCount() - 1);
-    // Jump straight to the page top — accurate long jumps must be instant, not
-    // animated (saran §2). Animated smooth-scroll is unreliable across hundreds
-    // of pages.
-    nav->jump(page, QPointF(0, 0), nav->currentZoom());
+    m_view->goToPage(page);
+}
+
+int Viewport::search(const QString& query) {
+    return m_view->search(query);
+}
+
+void Viewport::clearSearch() {
+    m_view->clearSearch();
+}
+
+void Viewport::showSearchResult(int index) {
+    m_view->showSearchResult(index);
+}
+
+int Viewport::searchResultCount() const {
+    return m_view->searchResultCount();
 }
