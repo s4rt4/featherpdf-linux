@@ -60,6 +60,7 @@ signals:
 
 private:
     void applyZoomFactor(double factor);
+    void applyCanvasColor();
 
     FeatherDocument* m_doc = nullptr;
     QPdfView* m_view;

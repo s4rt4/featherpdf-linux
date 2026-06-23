@@ -17,6 +17,7 @@
 #include "ui/Viewport.h"
 
 #include "core/FeatherDocument.h"
+#include "ui/Theme.h"
 
 #include <QPdfDocument>
 #include <QPdfPageNavigator>
@@ -43,6 +44,17 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new QPdfView(this)
         connect(nav, &QPdfPageNavigator::currentPageChanged, this,
                 [this](int page) { emit currentPageChanged(page); });
     }
+
+    // The canvas behind the page is `surface-sunken`, so white pages pop and
+    // carry the only prominent shadow (ui-guidelines §1, §5.6).
+    applyCanvasColor();
+    connect(&Theme::instance(), &Theme::changed, this, &Viewport::applyCanvasColor);
+}
+
+void Viewport::applyCanvasColor() {
+    const QColor sunken = Theme::instance().palette().sunken;
+    m_view->setStyleSheet(QStringLiteral("QPdfView { background:%1; border:none; }")
+                              .arg(sunken.name()));
 }
 
 Viewport::~Viewport() = default;

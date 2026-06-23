@@ -17,51 +17,42 @@
 #include "app/MainWindow.h"
 
 #include "core/FeatherDocument.h"
+#include "ui/CommandBar.h"
+#include "ui/FloatingPill.h"
+#include "ui/NavigationRail.h"
+#include "ui/TabStrip.h"
+#include "ui/Theme.h"
+#include "ui/Toast.h"
+#include "ui/ToolsPane.h"
 #include "ui/Viewport.h"
 
 #include <QAction>
 #include <QApplication>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QHBoxLayout>
 #include <QKeySequence>
-#include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QStatusBar>
-#include <QToolBar>
+#include <QVBoxLayout>
 
 namespace {
 constexpr auto kRecentFilesKey = "recentFiles";
 }
 
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent), m_doc(new FeatherDocument(this)), m_viewport(new Viewport(this)) {
-    setCentralWidget(m_viewport);
-
+    : QMainWindow(parent), m_doc(new FeatherDocument(this)) {
     buildActions();
     buildMenus();
-    buildToolBar();
-    buildStatusBar();
+    buildShell();
+    wireSignals();
 
-    connect(m_viewport, &Viewport::currentPageChanged, this, &MainWindow::updatePageIndicator);
-    connect(m_viewport, &Viewport::pageCountChanged, this, &MainWindow::updatePageIndicator);
-    connect(m_viewport, &Viewport::zoomChanged, this, &MainWindow::updateZoomIndicator);
-    connect(m_doc, &FeatherDocument::loaded, this, [this] {
-        m_viewport->setDocument(m_doc);
-        updateWindowTitle();
-        updateActionsEnabled();
-        updatePageIndicator();
-        updateZoomIndicator();
-    });
-
-    resize(1100, 760);
+    resize(1180, 820);
     updateWindowTitle();
-    updateActionsEnabled();
-    updatePageIndicator();
-    updateZoomIndicator();
+    updateChromeState();
     rebuildRecentMenu();
 }
 
@@ -70,7 +61,6 @@ MainWindow::~MainWindow() = default;
 void MainWindow::buildActions() {
     m_openAct = new QAction(tr("&Open…"), this);
     m_openAct->setShortcut(QKeySequence::Open);
-    m_openAct->setIcon(QIcon::fromTheme("document-open"));
     connect(m_openAct, &QAction::triggered, this, &MainWindow::openFileDialog);
 
     m_closeAct = new QAction(tr("&Close"), this);
@@ -83,25 +73,21 @@ void MainWindow::buildActions() {
 
     m_zoomInAct = new QAction(tr("Zoom &In"), this);
     m_zoomInAct->setShortcut(QKeySequence::ZoomIn);
-    m_zoomInAct->setIcon(QIcon::fromTheme("zoom-in"));
-    connect(m_zoomInAct, &QAction::triggered, m_viewport, &Viewport::zoomIn);
 
     m_zoomOutAct = new QAction(tr("Zoom &Out"), this);
     m_zoomOutAct->setShortcut(QKeySequence::ZoomOut);
-    m_zoomOutAct->setIcon(QIcon::fromTheme("zoom-out"));
-    connect(m_zoomOutAct, &QAction::triggered, m_viewport, &Viewport::zoomOut);
 
     m_zoomActualAct = new QAction(tr("&Actual Size"), this);
     m_zoomActualAct->setShortcut(Qt::CTRL | Qt::Key_0);
-    connect(m_zoomActualAct, &QAction::triggered, m_viewport, &Viewport::zoomActualSize);
 
     m_fitWidthAct = new QAction(tr("Fit &Width"), this);
     m_fitWidthAct->setShortcut(Qt::CTRL | Qt::Key_1);
-    connect(m_fitWidthAct, &QAction::triggered, m_viewport, &Viewport::fitToWidth);
 
     m_fitPageAct = new QAction(tr("Fit &Page"), this);
     m_fitPageAct->setShortcut(Qt::CTRL | Qt::Key_2);
-    connect(m_fitPageAct, &QAction::triggered, m_viewport, &Viewport::fitWholePage);
+
+    m_toggleThemeAct = new QAction(tr("Toggle &Light / Dark"), this);
+    connect(m_toggleThemeAct, &QAction::triggered, this, [] { Theme::instance().toggleMode(); });
 
     m_aboutAct = new QAction(tr("&About Feather PDF"), this);
     connect(m_aboutAct, &QAction::triggered, this, [this] {
@@ -116,54 +102,169 @@ void MainWindow::buildActions() {
 }
 
 void MainWindow::buildMenus() {
-    QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(m_openAct);
-    m_recentMenu = fileMenu->addMenu(tr("Open &Recent"));
-    fileMenu->addSeparator();
-    fileMenu->addAction(m_closeAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(m_quitAct);
+    QMenu* file = menuBar()->addMenu(tr("&File"));
+    file->addAction(m_openAct);
+    m_recentMenu = file->addMenu(tr("Open &Recent"));
+    file->addSeparator();
+    file->addAction(m_closeAct);
+    file->addSeparator();
+    file->addAction(m_quitAct);
 
-    QMenu* viewMenu = menuBar()->addMenu(tr("&View"));
-    viewMenu->addAction(m_zoomInAct);
-    viewMenu->addAction(m_zoomOutAct);
-    viewMenu->addAction(m_zoomActualAct);
-    viewMenu->addSeparator();
-    viewMenu->addAction(m_fitWidthAct);
-    viewMenu->addAction(m_fitPageAct);
+    QMenu* edit = menuBar()->addMenu(tr("&Edit"));
+    QAction* undo = edit->addAction(tr("&Undo"));
+    QAction* redo = edit->addAction(tr("&Redo"));
+    undo->setShortcut(QKeySequence::Undo);
+    redo->setShortcut(QKeySequence::Redo);
+    undo->setEnabled(false); // a unified undo stack arrives with editing milestones
+    redo->setEnabled(false);
+    edit->addSeparator();
+    QAction* find = edit->addAction(tr("&Find…"));
+    find->setShortcut(QKeySequence::Find);
+    connect(find, &QAction::triggered, this, [this] { notImplemented(tr("Find")); });
 
-    QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(m_aboutAct);
+    QMenu* view = menuBar()->addMenu(tr("&View"));
+    view->addAction(m_zoomInAct);
+    view->addAction(m_zoomOutAct);
+    view->addAction(m_zoomActualAct);
+    view->addSeparator();
+    view->addAction(m_fitWidthAct);
+    view->addAction(m_fitPageAct);
+    view->addSeparator();
+    view->addAction(m_toggleThemeAct);
+
+    QMenu* document = menuBar()->addMenu(tr("&Document"));
+    for (const auto& [label, feature] :
+         {std::pair{tr("Rotate View"), tr("Rotate view")},
+          std::pair{tr("Properties…"), tr("Document properties")}}) {
+        QAction* a = document->addAction(label);
+        const QString f = feature;
+        connect(a, &QAction::triggered, this, [this, f] { notImplemented(f); });
+    }
+
+    QMenu* tools = menuBar()->addMenu(tr("&Tools"));
+    for (const QString& name : {tr("Export"), tr("Create"), tr("Edit"), tr("Comment"),
+                                tr("Combine"), tr("Organize"), tr("Redact"), tr("Sign")}) {
+        QAction* a = tools->addAction(name);
+        connect(a, &QAction::triggered, this, [this, name] { notImplemented(name); });
+    }
+
+    QMenu* help = menuBar()->addMenu(tr("&Help"));
+    help->addAction(m_aboutAct);
 }
 
-void MainWindow::buildToolBar() {
-    QToolBar* tb = addToolBar(tr("Main"));
-    tb->setMovable(false);
-    tb->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    tb->addAction(m_openAct);
-    tb->addSeparator();
-    tb->addAction(m_zoomOutAct);
-    tb->addAction(m_zoomInAct);
-    tb->addAction(m_fitWidthAct);
+void MainWindow::buildShell() {
+    auto* shell = new QWidget(this);
+    shell->setObjectName("Shell");
+    setCentralWidget(shell);
+
+    auto* outer = new QVBoxLayout(shell);
+    outer->setContentsMargins(0, 0, 0, 0);
+    outer->setSpacing(0);
+
+    m_tabStrip = new TabStrip(shell);
+    m_commandBar = new CommandBar(shell);
+    outer->addWidget(m_tabStrip);
+    outer->addWidget(m_commandBar);
+
+    auto* body = new QWidget(shell);
+    auto* bodyRow = new QHBoxLayout(body);
+    bodyRow->setContentsMargins(0, 0, 0, 0);
+    bodyRow->setSpacing(0);
+
+    m_rail = new NavigationRail(body);
+    m_viewport = new Viewport(body);
+    m_toolsPane = new ToolsPane(body);
+    bodyRow->addWidget(m_rail);
+    bodyRow->addWidget(m_viewport, 1);
+    bodyRow->addWidget(m_toolsPane);
+    outer->addWidget(body, 1);
+
+    // Overlays: the floating pill rides the viewport; the toast rides the shell.
+    m_pill = new FloatingPill(m_viewport);
+    m_toast = new Toast(shell);
 }
 
-void MainWindow::buildStatusBar() {
-    m_pageLabel = new QLabel(this);
-    m_zoomLabel = new QLabel(this);
-    // Page counter and zoom are precise technical values → monospace (typography §3).
-    QFont mono = m_pageLabel->font();
-    mono.setStyleHint(QFont::Monospace);
-    mono.setFamily("monospace");
-    m_pageLabel->setFont(mono);
-    m_zoomLabel->setFont(mono);
-    statusBar()->addPermanentWidget(m_zoomLabel);
-    statusBar()->addPermanentWidget(m_pageLabel);
+void MainWindow::wireSignals() {
+    // Document load → wire into the viewport and refresh the whole chrome.
+    connect(m_doc, &FeatherDocument::loaded, this, [this] {
+        m_viewport->setDocument(m_doc);
+        updateWindowTitle();
+        updateChromeState();
+    });
+
+    // Viewport → indicators (command bar + pill).
+    connect(m_viewport, &Viewport::currentPageChanged, this, &MainWindow::updatePageIndicator);
+    connect(m_viewport, &Viewport::pageCountChanged, this, &MainWindow::updatePageIndicator);
+    connect(m_viewport, &Viewport::zoomChanged, this, &MainWindow::updateZoomIndicator);
+
+    // Command bar.
+    connect(m_commandBar, &CommandBar::zoomInRequested, m_viewport, &Viewport::zoomIn);
+    connect(m_commandBar, &CommandBar::zoomOutRequested, m_viewport, &Viewport::zoomOut);
+    connect(m_commandBar, &CommandBar::nextPageRequested, this, &MainWindow::nextPage);
+    connect(m_commandBar, &CommandBar::prevPageRequested, this, &MainWindow::previousPage);
+    connect(m_commandBar, &CommandBar::saveRequested, this, [this] { notImplemented(tr("Save")); });
+    connect(m_commandBar, &CommandBar::exportRequested, this, [this] { notImplemented(tr("Export")); });
+    connect(m_commandBar, &CommandBar::printRequested, this, [this] { notImplemented(tr("Print")); });
+    connect(m_commandBar, &CommandBar::emailRequested, this, [this] { notImplemented(tr("Email")); });
+    connect(m_commandBar, &CommandBar::findRequested, this, [this] { notImplemented(tr("Find")); });
+    connect(m_commandBar, &CommandBar::moreRequested, this, [this] { notImplemented(tr("More options")); });
+    connect(m_commandBar, &CommandBar::shareRequested, this, [this] { notImplemented(tr("Share")); });
+
+    // Floating pill.
+    connect(m_pill, &FloatingPill::zoomInRequested, m_viewport, &Viewport::zoomIn);
+    connect(m_pill, &FloatingPill::zoomOutRequested, m_viewport, &Viewport::zoomOut);
+    connect(m_pill, &FloatingPill::nextPageRequested, this, &MainWindow::nextPage);
+    connect(m_pill, &FloatingPill::prevPageRequested, this, &MainWindow::previousPage);
+
+    // View actions → viewport.
+    connect(m_zoomInAct, &QAction::triggered, m_viewport, &Viewport::zoomIn);
+    connect(m_zoomOutAct, &QAction::triggered, m_viewport, &Viewport::zoomOut);
+    connect(m_zoomActualAct, &QAction::triggered, m_viewport, &Viewport::zoomActualSize);
+    connect(m_fitWidthAct, &QAction::triggered, m_viewport, &Viewport::fitToWidth);
+    connect(m_fitPageAct, &QAction::triggered, m_viewport, &Viewport::fitWholePage);
+
+    // Navigation rail → panels (arrive later).
+    connect(m_rail, &NavigationRail::panelChanged, this, [this](NavigationRail::Panel p) {
+        if (p == NavigationRail::Panel::None)
+            return;
+        notImplemented(tr("Side panels"));
+    });
+
+    // Tools pane.
+    connect(m_toolsPane, &ToolsPane::toolActivated, this, [this](const QString& id) {
+        notImplemented(id.left(1).toUpper() + id.mid(1));
+    });
+    connect(m_toolsPane, &ToolsPane::customizeRequested, this, [this] { notImplemented(tr("Customize tools")); });
+
+    // Tab strip.
+    connect(m_tabStrip, &TabStrip::homeSelected, this, [this] { notImplemented(tr("Home")); });
+    connect(m_tabStrip, &TabStrip::toolsSelected, this, [this] { notImplemented(tr("Tools gallery")); });
+    connect(m_tabStrip, &TabStrip::newTabRequested, this, &MainWindow::openFileDialog);
+    connect(m_tabStrip, &TabStrip::closeDocumentRequested, this, &MainWindow::closeDocument);
+    connect(m_tabStrip, &TabStrip::searchRequested, this, [this] { notImplemented(tr("Search")); });
+    connect(m_tabStrip, &TabStrip::menuRequested, this, [this] {
+        QMenu menu(this);
+        menu.addAction(m_openAct);
+        menu.addAction(m_toggleThemeAct);
+        menu.addSeparator();
+        menu.addAction(m_aboutAct);
+        menu.addAction(m_quitAct);
+        menu.exec(QCursor::pos());
+    });
+}
+
+void MainWindow::nextPage() {
+    if (m_viewport->hasDocument())
+        m_viewport->goToPage(m_viewport->currentPage() + 1);
+}
+
+void MainWindow::previousPage() {
+    if (m_viewport->hasDocument())
+        m_viewport->goToPage(m_viewport->currentPage() - 1);
 }
 
 bool MainWindow::openPath(const QString& path) {
     const QString absolute = QFileInfo(path).absoluteFilePath();
-    // Loading large documents blocks the UI thread today (the custom render
-    // pipeline will move it off-thread); a busy cursor is the honest feedback.
     QApplication::setOverrideCursor(Qt::WaitCursor);
     const FeatherDocument::LoadResult result = m_doc->load(absolute);
     QApplication::restoreOverrideCursor();
@@ -178,8 +279,7 @@ bool MainWindow::openPath(const QString& path) {
 }
 
 void MainWindow::openFileDialog() {
-    const QString start =
-        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    const QString start = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     const QString path = QFileDialog::getOpenFileName(
         this, tr("Open PDF"), start, tr("PDF documents (*.pdf);;All files (*)"));
     if (!path.isEmpty())
@@ -190,9 +290,7 @@ void MainWindow::closeDocument() {
     m_viewport->clear();
     m_doc->close();
     updateWindowTitle();
-    updateActionsEnabled();
-    updatePageIndicator();
-    updateZoomIndicator();
+    updateChromeState();
 }
 
 void MainWindow::updateWindowTitle() {
@@ -202,32 +300,51 @@ void MainWindow::updateWindowTitle() {
         setWindowTitle(tr("Feather PDF"));
 }
 
-void MainWindow::updateActionsEnabled() {
+void MainWindow::updateChromeState() {
     const bool loaded = m_doc->isLoaded();
+
     m_closeAct->setEnabled(loaded);
     m_zoomInAct->setEnabled(loaded);
     m_zoomOutAct->setEnabled(loaded);
     m_zoomActualAct->setEnabled(loaded);
     m_fitWidthAct->setEnabled(loaded);
     m_fitPageAct->setEnabled(loaded);
+
+    m_commandBar->setDocumentLoaded(loaded);
+    m_pill->setVisible(loaded);
+
+    m_tabStrip->setDocumentTitle(loaded ? m_doc->title() : QString());
+    m_tabStrip->setActive(loaded ? TabStrip::Active::Document : TabStrip::Active::Home);
+
+    updatePageIndicator();
+    updateZoomIndicator();
 }
 
 void MainWindow::updatePageIndicator() {
     if (!m_doc->isLoaded()) {
-        m_pageLabel->clear();
+        m_commandBar->setPageText("— / —");
+        m_pill->setPageText("— / —");
         return;
     }
-    // currentPage() is 0-based; show 1-based to the user.
-    m_pageLabel->setText(
-        tr("%1 / %2").arg(m_viewport->currentPage() + 1).arg(m_viewport->pageCount()));
+    const QString text =
+        tr("%1 / %2").arg(m_viewport->currentPage() + 1).arg(m_viewport->pageCount());
+    m_commandBar->setPageText(text);
+    m_pill->setPageText(text);
 }
 
 void MainWindow::updateZoomIndicator() {
     if (!m_doc->isLoaded()) {
-        m_zoomLabel->clear();
+        m_commandBar->setZoomText("—");
+        m_pill->setZoomText("—");
         return;
     }
-    m_zoomLabel->setText(tr("%1%").arg(qRound(m_viewport->zoomFactor() * 100.0)));
+    const QString text = tr("%1%").arg(qRound(m_viewport->zoomFactor() * 100.0));
+    m_commandBar->setZoomText(text);
+    m_pill->setZoomText(text);
+}
+
+void MainWindow::notImplemented(const QString& feature) {
+    m_toast->show(tr("%1 arrives in a later milestone.").arg(feature));
 }
 
 QStringList MainWindow::recentFiles() const {

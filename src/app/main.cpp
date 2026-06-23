@@ -16,6 +16,8 @@
 
 #include "app/MainWindow.h"
 
+#include "ui/Theme.h"
+
 #include <QApplication>
 #include <QTimer>
 
@@ -27,6 +29,10 @@ int main(int argc, char** argv) {
     QCoreApplication::setApplicationVersion(QStringLiteral(FEATHERPDF_VERSION));
     // Lets the GNOME shell / Wayland associate the window with its .desktop file.
     QGuiApplication::setDesktopFileName(QStringLiteral(FEATHERPDF_APP_ID));
+
+    // The design system: tokens + global style sheet, following the system
+    // light/dark preference (ui-guidelines §2).
+    Theme::instance().apply();
 
     MainWindow window;
     window.show();

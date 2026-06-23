@@ -21,12 +21,19 @@
 
 class FeatherDocument;
 class Viewport;
+class TabStrip;
+class CommandBar;
+class NavigationRail;
+class ToolsPane;
+class FloatingPill;
+class Toast;
 class QAction;
-class QLabel;
 class QMenu;
 
-// The application shell. M0 is intentionally a single-document window; the
-// Acrobat-style tab strip (multiple documents) arrives in a later increment.
+// The application shell (ui-guidelines §5): a tabbed Acrobat-style workspace —
+// menu bar, tab strip, command toolbar, then the body (left navigation rail ·
+// center viewport with its floating pill · right Tools pane). M0 is a single
+// document; the multi-document tab workspace builds on this same shell.
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -44,11 +51,14 @@ public slots:
 private:
     void buildActions();
     void buildMenus();
-    void buildToolBar();
-    void buildStatusBar();
+    void buildShell();
+    void wireSignals();
+
+    void nextPage();
+    void previousPage();
 
     void updateWindowTitle();
-    void updateActionsEnabled();
+    void updateChromeState();
     void updatePageIndicator();
     void updateZoomIndicator();
 
@@ -56,10 +66,19 @@ private:
     void rebuildRecentMenu();
     QStringList recentFiles() const;
 
-    FeatherDocument* m_doc;
-    Viewport* m_viewport;
+    // Honest placeholder for features that arrive in later milestones.
+    void notImplemented(const QString& feature);
 
-    // Actions
+    FeatherDocument* m_doc = nullptr;
+    Viewport* m_viewport = nullptr;
+    TabStrip* m_tabStrip = nullptr;
+    CommandBar* m_commandBar = nullptr;
+    NavigationRail* m_rail = nullptr;
+    ToolsPane* m_toolsPane = nullptr;
+    FloatingPill* m_pill = nullptr;
+    Toast* m_toast = nullptr;
+
+    // Actions (centralized; menus and shortcuts use these).
     QAction* m_openAct = nullptr;
     QAction* m_closeAct = nullptr;
     QAction* m_quitAct = nullptr;
@@ -68,13 +87,10 @@ private:
     QAction* m_zoomActualAct = nullptr;
     QAction* m_fitWidthAct = nullptr;
     QAction* m_fitPageAct = nullptr;
+    QAction* m_toggleThemeAct = nullptr;
     QAction* m_aboutAct = nullptr;
 
     QMenu* m_recentMenu = nullptr;
-
-    // Status bar widgets
-    QLabel* m_pageLabel = nullptr;
-    QLabel* m_zoomLabel = nullptr;
 
     static constexpr int kMaxRecentFiles = 10;
 };

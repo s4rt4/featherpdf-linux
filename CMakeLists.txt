@@ -21,9 +21,14 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # M0 needs: Core/Gui/Widgets (shell), Pdf/PdfWidgets (PDFium rendering),
-# Concurrent (off-UI-thread work). Poppler/QPDF are added when their modules land.
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Pdf PdfWidgets Concurrent)
+# Svg (symbolic icons), Concurrent (off-UI-thread work). Poppler/QPDF are added
+# when their modules land.
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Pdf PdfWidgets Svg Concurrent)
 
 qt_standard_project_setup()
+
+# qt_standard_project_setup() turns on AUTOMOC/AUTOUIC but not AUTORCC; we embed
+# the symbolic-icon resource via a .qrc, so enable it explicitly.
+set(CMAKE_AUTORCC ON)
 
 add_subdirectory(src)

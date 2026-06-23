@@ -1,0 +1,37 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/icons">
+  <file alias="attachment.svg">icons/attachment.svg</file>
+  <file alias="chevron-down.svg">icons/chevron-down.svg</file>
+  <file alias="chevron-left.svg">icons/chevron-left.svg</file>
+  <file alias="chevron-right.svg">icons/chevron-right.svg</file>
+  <file alias="chevron-up.svg">icons/chevron-up.svg</file>
+  <file alias="combine.svg">icons/combine.svg</file>
+  <file alias="comment.svg">icons/comment.svg</file>
+  <file alias="create.svg">icons/create.svg</file>
+  <file alias="dots-horizontal.svg">icons/dots-horizontal.svg</file>
+  <file alias="dots-vertical.svg">icons/dots-vertical.svg</file>
+  <file alias="edit.svg">icons/edit.svg</file>
+  <file alias="export.svg">icons/export.svg</file>
+  <file alias="feather.svg">icons/feather.svg</file>
+  <file alias="folder-open.svg">icons/folder-open.svg</file>
+  <file alias="gear.svg">icons/gear.svg</file>
+  <file alias="home.svg">icons/home.svg</file>
+  <file alias="layers.svg">icons/layers.svg</file>
+  <file alias="mail.svg">icons/mail.svg</file>
+  <file alias="minus.svg">icons/minus.svg</file>
+  <file alias="moon.svg">icons/moon.svg</file>
+  <file alias="organize.svg">icons/organize.svg</file>
+  <file alias="outline.svg">icons/outline.svg</file>
+  <file alias="plus.svg">icons/plus.svg</file>
+  <file alias="print.svg">icons/print.svg</file>
+  <file alias="redact.svg">icons/redact.svg</file>
+  <file alias="save.svg">icons/save.svg</file>
+  <file alias="search.svg">icons/search.svg</file>
+  <file alias="share.svg">icons/share.svg</file>
+  <file alias="sign.svg">icons/sign.svg</file>
+  <file alias="sliders.svg">icons/sliders.svg</file>
+  <file alias="sun.svg">icons/sun.svg</file>
+  <file alias="thumbnails.svg">icons/thumbnails.svg</file>
+  <file alias="x.svg">icons/x.svg</file>
+</qresource>
+</RCC>
