@@ -273,11 +273,13 @@ void PageView::dropStaleCache() {
     }
 }
 
-void PageView::invalidateRenders() {
-    // Everything in flight or cached is now wrong (zoom, rotation, or edit).
+void PageView::invalidateRenders(bool dropCache) {
+    // In-flight requests are now from a superseded generation.
     ++m_gen;
-    m_cache.clear();
-    m_lru.clear();
+    if (dropCache) {
+        m_cache.clear();
+        m_lru.clear();
+    }
     m_pending.clear();
     m_reqGen.clear();
     m_reqSlot.clear();
@@ -298,7 +300,10 @@ void PageView::setRotation(int slot, int degrees) {
     if (slot < 0 || slot >= m_rot.size())
         return;
     m_rot[slot] = ((degrees % 360) + 360) % 360;
-    invalidateRenders(); // the slot's pixmap is now wrong
+    // Only this slot's pixmap is wrong; keep the rest so the view doesn't flash.
+    m_cache.remove(slot);
+    m_lru.removeAll(slot);
+    invalidateRenders(/*dropCache=*/false);
     relayout();
     viewport()->update();
 }
@@ -306,6 +311,7 @@ void PageView::setRotation(int slot, int degrees) {
 void PageView::paintEvent(QPaintEvent*) {
     const auto& pal = Theme::instance().palette();
     QPainter p(viewport());
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true); // clean scaled previews
     p.fillRect(viewport()->rect(), pal.sunken);
 
     if (!m_doc || m_rows.isEmpty())
@@ -510,7 +516,9 @@ void PageView::setZoom(double zoom) {
     const double frac = rowHeightPx(r) > 0 ? (topY - m_rowTop[r]) / rowHeightPx(r) : 0.0;
 
     m_zoom = zoom;
-    invalidateRenders(); // pixmaps are the wrong size now
+    // Keep the old pixmaps — drawn scaled as a preview — so zooming never flashes
+    // white; the crisp render at the new size replaces them as it arrives.
+    invalidateRenders(/*dropCache=*/false);
     relayout();
 
     if (r < m_rowTop.size())

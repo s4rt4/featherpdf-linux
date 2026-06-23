@@ -131,7 +131,10 @@ private:
     // Rendering.
     void request(int page);
     void dropStaleCache();        // keep the cache near the viewport, bounded
-    void invalidateRenders();     // drop cache + in-flight on zoom/rotation change
+    // Mark renders stale. dropCache=false keeps the old pixmaps so they can be
+    // drawn scaled as a preview (no white flash on zoom) until the crisp render
+    // at the new size arrives.
+    void invalidateRenders(bool dropCache = true);
     QSize pixelSize(int page) const;
 
     QPdfDocument* m_doc = nullptr;
