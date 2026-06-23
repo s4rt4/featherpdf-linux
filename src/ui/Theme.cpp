@@ -254,9 +254,13 @@ QString Theme::styleSheet() const {
                "#ThumbnailList::item:hover { background:%4; }"
                "#OutlineEmpty { color:%3; font-size:13px; }"
                "#OutlineTree { background:transparent; outline:0; }"
-               "#OutlineTree::item { padding:5px 4px; border-radius:6px; color:%6; }"
-               "#OutlineTree::item:hover { background:%4; }"
-               "#OutlineTree::item:selected { background:%7; color:%8; }")
+               // Flat full-row selection: the item cell AND the branch (arrow)
+               // cell share one colour, so there is no stray differently-tinted
+               // box beside the text. No radius → a clean continuous bar.
+               "#OutlineTree::item { padding:5px 6px; color:%6; }"
+               "#OutlineTree::item:hover, #OutlineTree::branch:hover { background:%4; }"
+               "#OutlineTree::item:selected, #OutlineTree::branch:selected { background:%7; }"
+               "#OutlineTree::item:selected { color:%8; }")
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.canvas))
                .arg(css(p.text), css(p.accentTint), css(p.accent));
 
