@@ -23,6 +23,7 @@
 #include "ui/NavigationRail.h"
 #include "ui/TabStrip.h"
 #include "ui/Theme.h"
+#include "ui/ThumbnailPanel.h"
 #include "ui/Toast.h"
 #include "ui/ToolsPane.h"
 #include "ui/Viewport.h"
@@ -33,6 +34,7 @@
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QKeySequence>
+#include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -45,8 +47,7 @@ namespace {
 constexpr auto kRecentFilesKey = "recentFiles";
 }
 
-MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent), m_doc(new FeatherDocument(this)) {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     buildActions();
     buildMenus();
     buildShell();
@@ -181,12 +182,36 @@ void MainWindow::buildShell() {
     m_home = new HomeView(body);
     m_toolsPane = new ToolsPane(body);
 
+    // The rail's expandable panel (Thumbnails real; others a placeholder for now).
+    m_panelHost = new QWidget(body);
+    m_panelHost->setObjectName("RailPanel");
+    m_panelHost->setFixedWidth(200);
+    auto* panelCol = new QVBoxLayout(m_panelHost);
+    panelCol->setContentsMargins(0, 0, 0, 0);
+    panelCol->setSpacing(0);
+    m_panelHead = new QLabel(m_panelHost);
+    m_panelHead->setObjectName("RailPanelHead");
+    m_panelHead->setContentsMargins(16, 14, 16, 8);
+    panelCol->addWidget(m_panelHead);
+    m_panelStack = new QStackedWidget(m_panelHost);
+    m_thumbnails = new ThumbnailPanel(m_panelHost);
+    m_panelPlaceholder = new QLabel(m_panelHost);
+    m_panelPlaceholder->setObjectName("RailPanelPlaceholder");
+    m_panelPlaceholder->setAlignment(Qt::AlignCenter);
+    m_panelPlaceholder->setWordWrap(true);
+    m_panelPlaceholder->setContentsMargins(16, 16, 16, 16);
+    m_panelStack->addWidget(m_thumbnails);       // index 0
+    m_panelStack->addWidget(m_panelPlaceholder); // index 1
+    panelCol->addWidget(m_panelStack, 1);
+    m_panelHost->setVisible(false);
+
     // The center swaps between the Home start screen and the document viewport.
     m_centerStack = new QStackedWidget(body);
     m_centerStack->addWidget(m_home);     // index 0
     m_centerStack->addWidget(m_viewport); // index 1
 
     bodyRow->addWidget(m_rail);
+    bodyRow->addWidget(m_panelHost);
     bodyRow->addWidget(m_centerStack, 1);
     bodyRow->addWidget(m_toolsPane);
     outer->addWidget(body, 1);
@@ -200,30 +225,25 @@ void MainWindow::showHome() {
     m_home->refresh();
     m_centerStack->setCurrentWidget(m_home);
     m_rail->setVisible(false);
+    m_panelHost->setVisible(false);
     m_toolsPane->setVisible(false);
     m_commandBar->setVisible(false);
     m_pill->setVisible(false);
-    m_tabStrip->setActive(TabStrip::Active::Home);
+    m_tabStrip->setActiveHome();
 }
 
 void MainWindow::showDocument() {
     m_centerStack->setCurrentWidget(m_viewport);
     m_rail->setVisible(true);
+    // Restore the rail panel if one was open before we left for Home.
+    m_panelHost->setVisible(m_rail->current() != NavigationRail::Panel::None);
     m_toolsPane->setVisible(true);
     m_commandBar->setVisible(true);
     m_pill->setVisible(true);
-    m_tabStrip->setActive(TabStrip::Active::Document);
+    // activateSession() owns which document tab is active.
 }
 
 void MainWindow::wireSignals() {
-    // Document load → wire into the viewport, refresh chrome, enter the workspace.
-    connect(m_doc, &FeatherDocument::loaded, this, [this] {
-        m_viewport->setDocument(m_doc);
-        updateWindowTitle();
-        updateChromeState();
-        showDocument();
-    });
-
     // Home start screen → open a file or a recent.
     connect(m_home, &HomeView::openRequested, this, &MainWindow::openFileDialog);
     connect(m_home, &HomeView::openPathRequested, this, [this](const QString& path) { openPath(path); });
@@ -259,12 +279,32 @@ void MainWindow::wireSignals() {
     connect(m_fitWidthAct, &QAction::triggered, m_viewport, &Viewport::fitToWidth);
     connect(m_fitPageAct, &QAction::triggered, m_viewport, &Viewport::fitWholePage);
 
-    // Navigation rail → panels (arrive later).
+    // Navigation rail → expandable panel. Thumbnails is real; the others show a
+    // placeholder until their increments land.
     connect(m_rail, &NavigationRail::panelChanged, this, [this](NavigationRail::Panel p) {
-        if (p == NavigationRail::Panel::None)
+        if (p == NavigationRail::Panel::None) {
+            m_panelHost->setVisible(false);
             return;
-        notImplemented(tr("Side panels"));
+        }
+        if (p == NavigationRail::Panel::Thumbnails) {
+            m_panelHead->setText(tr("THUMBNAILS"));
+            m_panelStack->setCurrentWidget(m_thumbnails);
+        } else {
+            static const QHash<NavigationRail::Panel, QString> names{
+                {NavigationRail::Panel::Outline, tr("OUTLINE")},
+                {NavigationRail::Panel::Annotations, tr("ANNOTATIONS")},
+                {NavigationRail::Panel::Attachments, tr("ATTACHMENTS")},
+                {NavigationRail::Panel::Layers, tr("LAYERS")}};
+            m_panelHead->setText(names.value(p));
+            m_panelPlaceholder->setText(tr("This panel arrives in a later milestone."));
+            m_panelStack->setCurrentWidget(m_panelPlaceholder);
+        }
+        m_panelHost->setVisible(true);
     });
+
+    // Thumbnails ↔ viewport: click navigates; the current page stays highlighted.
+    connect(m_thumbnails, &ThumbnailPanel::pageActivated, m_viewport, &Viewport::goToPage);
+    connect(m_viewport, &Viewport::currentPageChanged, m_thumbnails, &ThumbnailPanel::setCurrentPage);
 
     // Tools pane.
     connect(m_toolsPane, &ToolsPane::toolActivated, this, [this](const QString& id) {
@@ -274,13 +314,10 @@ void MainWindow::wireSignals() {
 
     // Tab strip.
     connect(m_tabStrip, &TabStrip::homeSelected, this, &MainWindow::showHome);
-    connect(m_tabStrip, &TabStrip::documentSelected, this, [this] {
-        if (m_doc->isLoaded())
-            showDocument();
-    });
+    connect(m_tabStrip, &TabStrip::documentSelected, this, &MainWindow::activateSession);
     connect(m_tabStrip, &TabStrip::toolsSelected, this, [this] { notImplemented(tr("Tools gallery")); });
     connect(m_tabStrip, &TabStrip::newTabRequested, this, &MainWindow::openFileDialog);
-    connect(m_tabStrip, &TabStrip::closeDocumentRequested, this, &MainWindow::closeDocument);
+    connect(m_tabStrip, &TabStrip::closeDocumentRequested, this, &MainWindow::closeSession);
     connect(m_tabStrip, &TabStrip::searchRequested, this, [this] { notImplemented(tr("Search")); });
     connect(m_tabStrip, &TabStrip::menuRequested, this, [this] {
         QMenu menu(this);
@@ -305,17 +342,106 @@ void MainWindow::previousPage() {
 
 bool MainWindow::openPath(const QString& path) {
     const QString absolute = QFileInfo(path).absoluteFilePath();
+
+    // Already open? Just focus that tab instead of opening a duplicate.
+    for (const Session& s : m_sessions) {
+        if (s.path == absolute) {
+            activateSession(s.id);
+            return true;
+        }
+    }
+
+    auto* doc = new FeatherDocument(this);
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    const FeatherDocument::LoadResult result = m_doc->load(absolute);
+    const FeatherDocument::LoadResult result = doc->load(absolute);
     QApplication::restoreOverrideCursor();
     if (result != FeatherDocument::LoadResult::Ok) {
         QMessageBox::warning(this, tr("Couldn't open document"),
                              FeatherDocument::describe(result));
+        doc->deleteLater();
         return false;
     }
+
     addRecentFile(absolute);
     rebuildRecentMenu();
+
+    // A new session gets its own tab; opening focuses it.
+    Session s;
+    s.doc = doc;
+    s.path = absolute;
+    s.id = m_tabStrip->addDocument(doc->title());
+    m_sessions.append(s);
+    activateSession(s.id);
     return true;
+}
+
+MainWindow::Session* MainWindow::session(int id) {
+    for (Session& s : m_sessions) {
+        if (s.id == id)
+            return &s;
+    }
+    return nullptr;
+}
+
+void MainWindow::activateSession(int id) {
+    Session* target = session(id);
+    if (!target)
+        return;
+
+    // Remember where the outgoing document was before we swap it out.
+    if (Session* current = session(m_activeId); current && m_viewport->hasDocument())
+        current->lastPage = m_viewport->currentPage();
+
+    m_activeId = id;
+    m_doc = target->doc;
+    m_viewport->setDocument(m_doc);
+    m_viewport->goToPage(target->lastPage);
+    m_thumbnails->setDocument(m_doc->pdf());
+    m_thumbnails->setCurrentPage(target->lastPage);
+
+    m_tabStrip->setActiveDocument(id);
+    updateWindowTitle();
+    updateChromeState();
+    showDocument();
+}
+
+void MainWindow::closeSession(int id) {
+    const int idx = [this, id] {
+        for (int i = 0; i < m_sessions.size(); ++i)
+            if (m_sessions[i].id == id)
+                return i;
+        return -1;
+    }();
+    if (idx < 0)
+        return;
+
+    FeatherDocument* doc = m_sessions[idx].doc;
+    m_sessions.remove(idx);
+    m_tabStrip->removeDocument(id);
+
+    const bool wasActive = (id == m_activeId);
+    if (wasActive) {
+        m_activeId = -1;
+        m_doc = nullptr;
+        m_viewport->clear();
+        m_thumbnails->clear();
+    }
+    if (doc)
+        doc->deleteLater();
+
+    if (wasActive) {
+        if (!m_sessions.isEmpty())
+            activateSession(m_sessions.last().id); // focus the next remaining tab
+        else {
+            updateWindowTitle();
+            updateChromeState();
+            showHome();
+        }
+    }
+}
+
+bool MainWindow::hasActiveDoc() const {
+    return m_doc != nullptr && m_doc->isLoaded();
 }
 
 void MainWindow::openFileDialog() {
@@ -327,22 +453,19 @@ void MainWindow::openFileDialog() {
 }
 
 void MainWindow::closeDocument() {
-    m_viewport->clear();
-    m_doc->close();
-    updateWindowTitle();
-    updateChromeState();
-    showHome();
+    if (m_activeId != -1)
+        closeSession(m_activeId);
 }
 
 void MainWindow::updateWindowTitle() {
-    if (m_doc->isLoaded())
+    if (hasActiveDoc())
         setWindowTitle(tr("%1 — Feather PDF").arg(m_doc->title()));
     else
         setWindowTitle(tr("Feather PDF"));
 }
 
 void MainWindow::updateChromeState() {
-    const bool loaded = m_doc->isLoaded();
+    const bool loaded = hasActiveDoc();
 
     m_closeAct->setEnabled(loaded);
     m_zoomInAct->setEnabled(loaded);
@@ -353,16 +476,12 @@ void MainWindow::updateChromeState() {
 
     m_commandBar->setDocumentLoaded(loaded);
 
-    // The document tab reflects the open file; view-switching (showHome /
-    // showDocument) owns which tab is active and the document-only chrome.
-    m_tabStrip->setDocumentTitle(loaded ? m_doc->title() : QString());
-
     updatePageIndicator();
     updateZoomIndicator();
 }
 
 void MainWindow::updatePageIndicator() {
-    if (!m_doc->isLoaded()) {
+    if (!hasActiveDoc()) {
         m_commandBar->setPageText("— / —");
         m_pill->setPageText("— / —");
         return;
@@ -374,7 +493,7 @@ void MainWindow::updatePageIndicator() {
 }
 
 void MainWindow::updateZoomIndicator() {
-    if (!m_doc->isLoaded()) {
+    if (!hasActiveDoc()) {
         m_commandBar->setZoomText("—");
         m_pill->setZoomText("—");
         return;

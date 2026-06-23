@@ -18,10 +18,12 @@
 
 #include <QMainWindow>
 #include <QStringList>
+#include <QVector>
 
 class FeatherDocument;
 class Viewport;
 class HomeView;
+class ThumbnailPanel;
 class TabStrip;
 class CommandBar;
 class NavigationRail;
@@ -29,6 +31,7 @@ class ToolsPane;
 class FloatingPill;
 class Toast;
 class QAction;
+class QLabel;
 class QMenu;
 class QStackedWidget;
 
@@ -59,6 +62,19 @@ private:
     void nextPage();
     void previousPage();
 
+    // One open document = one tab. Each session owns its FeatherDocument and
+    // remembers the page it was last on so switching tabs restores the spot.
+    struct Session {
+        int id = -1;
+        FeatherDocument* doc = nullptr;
+        QString path;
+        int lastPage = 0;
+    };
+    Session* session(int id);
+    void activateSession(int id);
+    void closeSession(int id);
+    bool hasActiveDoc() const;
+
     // Switch the center between the Home start screen and the document workspace,
     // toggling the document-only chrome (rail · command bar · Tools pane · pill).
     void showHome();
@@ -76,11 +92,21 @@ private:
     // Honest placeholder for features that arrive in later milestones.
     void notImplemented(const QString& feature);
 
-    FeatherDocument* m_doc = nullptr;
+    QVector<Session> m_sessions;
+    int m_activeId = -1;
+    FeatherDocument* m_doc = nullptr; // the active session's document, or nullptr
+
     Viewport* m_viewport = nullptr;
     HomeView* m_home = nullptr;
     QStackedWidget* m_centerStack = nullptr;
     TabStrip* m_tabStrip = nullptr;
+
+    // Left rail expandable panel (one at a time).
+    QWidget* m_panelHost = nullptr;
+    QStackedWidget* m_panelStack = nullptr;
+    QLabel* m_panelHead = nullptr;
+    QLabel* m_panelPlaceholder = nullptr;
+    ThumbnailPanel* m_thumbnails = nullptr;
     CommandBar* m_commandBar = nullptr;
     NavigationRail* m_rail = nullptr;
     ToolsPane* m_toolsPane = nullptr;

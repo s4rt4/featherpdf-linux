@@ -13,6 +13,8 @@ qt_add_executable(feather-pdf
     ui/Viewport.h
     ui/HomeView.cpp
     ui/HomeView.h
+    ui/ThumbnailPanel.cpp
+    ui/ThumbnailPanel.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

@@ -220,24 +220,18 @@ TabStrip::TabStrip(QWidget* parent) : QWidget(parent) {
     m_layout->setAlignment(Qt::AlignBottom | Qt::AlignLeft);
 
     m_home = new Tab(Tab::Kind::Home, "home", tr("Home"), this);
-    m_tools = new Tab(Tab::Kind::Tools, "gear", tr("Tools"), this);
-    m_doc = new Tab(Tab::Kind::Document, QString(), tr("Untitled"), this);
+    m_tools = new Tab(Tab::Kind::Tools, "wrench", tr("Tools"), this);
     m_add = new Tab(Tab::Kind::Add, QString(), QString(), this);
     m_add->setToolTip(tr("Open a document in a new tab"));
 
-    for (Tab* t : {m_home, m_tools, m_doc, m_add})
-        m_layout->addWidget(t);
+    // Document tabs are inserted between Tools and the "+".
+    m_layout->addWidget(m_home);
+    m_layout->addWidget(m_tools);
+    m_layout->addWidget(m_add);
     m_layout->addStretch(1);
 
-    connect(m_home, &Tab::clicked, this, [this] { setActive(Active::Home); emit homeSelected(); });
-    connect(m_tools, &Tab::clicked, this, [this] { setActive(Active::Tools); emit toolsSelected(); });
-    connect(m_doc, &Tab::clicked, this, [this] {
-        if (m_hasDocument) {
-            setActive(Active::Document);
-            emit documentSelected();
-        }
-    });
-    connect(m_doc, &Tab::closeClicked, this, &TabStrip::closeDocumentRequested);
+    connect(m_home, &Tab::clicked, this, [this] { emit homeSelected(); });
+    connect(m_tools, &Tab::clicked, this, [this] { emit toolsSelected(); });
     connect(m_add, &Tab::clicked, this, &TabStrip::newTabRequested);
 
     // Right-side controls: search · theme · menu.
@@ -253,9 +247,55 @@ TabStrip::TabStrip(QWidget* parent) : QWidget(parent) {
     for (QToolButton* b : {m_search, m_theme, m_menu})
         m_layout->addWidget(b, 0, Qt::AlignBottom);
 
-    setActive(Active::Home);
+    setActiveHome();
     refreshIcons();
     connect(&Theme::instance(), &Theme::changed, this, &TabStrip::refreshIcons);
+}
+
+int TabStrip::addDocument(const QString& title) {
+    const int id = m_nextId++;
+    auto* tab = new Tab(Tab::Kind::Document, QString(), title, this);
+    m_docTabs.insert(id, tab);
+    m_layout->insertWidget(m_layout->indexOf(m_add), tab);
+
+    connect(tab, &Tab::clicked, this, [this, id] { emit documentSelected(id); });
+    connect(tab, &Tab::closeClicked, this, [this, id] { emit closeDocumentRequested(id); });
+    return id;
+}
+
+void TabStrip::removeDocument(int id) {
+    if (Tab* tab = m_docTabs.take(id)) {
+        m_layout->removeWidget(tab);
+        tab->deleteLater();
+    }
+}
+
+void TabStrip::setActiveDocument(int id) {
+    clearActiveStates();
+    if (Tab* tab = m_docTabs.value(id, nullptr))
+        tab->setActive(true);
+}
+
+void TabStrip::setActiveHome() {
+    clearActiveStates();
+    m_home->setActive(true);
+}
+
+void TabStrip::clearActiveStates() {
+    m_home->setActive(false);
+    m_tools->setActive(false);
+    for (Tab* tab : std::as_const(m_docTabs))
+        tab->setActive(false);
+}
+
+void TabStrip::setDocumentTitle(int id, const QString& title) {
+    if (Tab* tab = m_docTabs.value(id, nullptr))
+        tab->setLabel(title);
+}
+
+void TabStrip::setDocumentDirty(int id, bool dirty) {
+    if (Tab* tab = m_docTabs.value(id, nullptr))
+        tab->setDirty(dirty);
 }
 
 QToolButton* TabStrip::makeRightButton(const QString& iconName, const QString& tip) {
@@ -269,25 +309,6 @@ QToolButton* TabStrip::makeRightButton(const QString& iconName, const QString& t
     b->setIconSize(QSize(16, 16));
     b->setAutoRaise(true);
     return b;
-}
-
-void TabStrip::setDocumentTitle(const QString& title) {
-    m_hasDocument = !title.isEmpty();
-    m_doc->setLabel(m_hasDocument ? title : tr("Untitled"));
-    if (m_hasDocument)
-        setActive(Active::Document);
-    else
-        m_doc->setDirty(false);
-}
-
-void TabStrip::setDocumentDirty(bool dirty) {
-    m_doc->setDirty(dirty && m_hasDocument);
-}
-
-void TabStrip::setActive(Active which) {
-    m_home->setActive(which == Active::Home);
-    m_tools->setActive(which == Active::Tools);
-    m_doc->setActive(which == Active::Document);
 }
 
 void TabStrip::refreshIcons() {

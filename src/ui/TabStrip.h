@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <QHash>
 #include <QWidget>
 
 class Tab;
@@ -28,47 +29,50 @@ class QToolButton;
 // indicator, and connects seamlessly to the command toolbar below. Right of the
 // strip: quick search, a light/dark affordance, and the app menu.
 //
-// M0 is single-document, so there is exactly one document tab; true multi-tab
-// document management arrives with the tabbed-workspace increment.
+// Document tabs are dynamic: each open file gets its own tab, identified by an
+// integer id the caller maps to its document session.
 class TabStrip : public QWidget {
     Q_OBJECT
 
 public:
-    enum class Active { Home, Tools, Document };
-
     explicit TabStrip(QWidget* parent = nullptr);
 
-    // Set the document tab's title (file name) and dirty state. An empty title
-    // means no document is open — the document tab shows a neutral placeholder
-    // and Home stays active.
-    void setDocumentTitle(const QString& title);
-    void setDocumentDirty(bool dirty);
-    void setActive(Active which);
-    bool hasDocument() const { return m_hasDocument; }
+    // Document-tab management. addDocument returns a new id; the rest address a
+    // tab by that id.
+    int addDocument(const QString& title);
+    void removeDocument(int id);
+    void setActiveDocument(int id);
+    void setDocumentTitle(int id, const QString& title);
+    void setDocumentDirty(int id, bool dirty);
 
-protected:
-    void paintEvent(QPaintEvent* event) override;
+    void setActiveHome(); // make the Home tab the active one
+    int documentCount() const { return m_docTabs.size(); }
 
 signals:
     void homeSelected();
     void toolsSelected();
-    void documentSelected();
+    void documentSelected(int id);
     void newTabRequested();
-    void closeDocumentRequested();
+    void closeDocumentRequested(int id);
     void searchRequested();
     void menuRequested();
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
 
 private:
     QToolButton* makeRightButton(const QString& iconName, const QString& tip);
     void refreshIcons();
+    void clearActiveStates();
 
     QHBoxLayout* m_layout = nullptr;
     Tab* m_home = nullptr;
     Tab* m_tools = nullptr;
-    Tab* m_doc = nullptr;
     Tab* m_add = nullptr;
     QToolButton* m_search = nullptr;
     QToolButton* m_theme = nullptr;
     QToolButton* m_menu = nullptr;
-    bool m_hasDocument = false;
+
+    QHash<int, Tab*> m_docTabs;
+    int m_nextId = 1;
 };

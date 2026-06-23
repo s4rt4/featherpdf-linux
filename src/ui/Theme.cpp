@@ -231,6 +231,15 @@ QString Theme::styleSheet() const {
                "#ToolsPane QPushButton#CustomizeTools:hover { color:%4; }")
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.text), css(p.canvas));
 
+    // Left rail expandable panel (Thumbnails / Outline / …).
+    qss += QStringLiteral(
+               "#RailPanel { background:%1; border-right:1px solid %2; }"
+               "#RailPanelHead { color:%3; font-size:11px; font-weight:700; letter-spacing:.5px; }"
+               "#RailPanelPlaceholder { color:%3; font-size:13px; }"
+               "#ThumbnailList { background:transparent; }"
+               "#ThumbnailList::item:hover { background:%4; }")
+               .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.canvas));
+
     // Home start screen — canvas backdrop, big suggested action, recent cards.
     qss += QStringLiteral(
                "#HomeView { background:%1; }"
