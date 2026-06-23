@@ -20,7 +20,9 @@
 #include "ui/Theme.h"
 
 #include <QPdfDocument>
+#include <QPdfLink>
 #include <QPdfPageNavigator>
+#include <QPdfSearchModel>
 #include <QPdfView>
 #include <QVBoxLayout>
 #include <algorithm>
@@ -45,10 +47,54 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new QPdfView(this)
                 [this](int page) { emit currentPageChanged(page); });
     }
 
+    // Text search: QPdfView highlights every match from this model and the
+    // count grows live as the background search walks the pages.
+    m_searchModel = new QPdfSearchModel(this);
+    m_view->setSearchModel(m_searchModel);
+    auto emitCount = [this] { emit searchResultsChanged(searchResultCount()); };
+    connect(m_searchModel, &QAbstractItemModel::rowsInserted, this, emitCount);
+    connect(m_searchModel, &QAbstractItemModel::rowsRemoved, this, emitCount);
+    connect(m_searchModel, &QAbstractItemModel::modelReset, this, emitCount);
+    connect(m_searchModel, &QAbstractItemModel::layoutChanged, this, emitCount);
+
     // The canvas behind the page is `surface-sunken`, so white pages pop and
     // carry the only prominent shadow (ui-guidelines §1, §5.6).
     applyCanvasColor();
     connect(&Theme::instance(), &Theme::changed, this, &Viewport::applyCanvasColor);
+}
+
+int Viewport::search(const QString& query) {
+    m_searchModel->setSearchString(query);
+    return searchResultCount();
+}
+
+void Viewport::clearSearch() {
+    m_searchModel->setSearchString(QString());
+    m_view->setCurrentSearchResultIndex(-1);
+}
+
+void Viewport::showSearchResult(int index) {
+    const int count = searchResultCount();
+    if (count <= 0)
+        return;
+    const int wrapped = ((index % count) + count) % count; // wrap both directions
+    m_view->setCurrentSearchResultIndex(wrapped);
+
+    // Highlighting alone doesn't move the page in MultiPage mode, so jump to the
+    // match: scroll to its page and the match's location (in points).
+    const QPdfLink link = m_searchModel->resultAtIndex(wrapped);
+    if (link.page() < 0)
+        return;
+    if (auto* nav = m_view->pageNavigator()) {
+        // Land a little above the match so it isn't flush against the top edge.
+        QPointF where = link.location();
+        where.setY(qMax(0.0, where.y() - 40));
+        nav->jump(link.page(), where, nav->currentZoom());
+    }
+}
+
+int Viewport::searchResultCount() const {
+    return m_searchModel->rowCount(QModelIndex());
 }
 
 void Viewport::applyCanvasColor() {
@@ -62,6 +108,8 @@ Viewport::~Viewport() = default;
 void Viewport::setDocument(FeatherDocument* doc) {
     m_doc = doc;
     m_view->setDocument(doc ? doc->pdf() : nullptr);
+    m_searchModel->setSearchString(QString());
+    m_searchModel->setDocument(doc ? doc->pdf() : nullptr);
     emit pageCountChanged(pageCount());
     emit currentPageChanged(currentPage());
     emit zoomChanged(zoomFactor());

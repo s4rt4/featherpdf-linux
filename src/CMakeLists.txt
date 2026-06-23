@@ -19,6 +19,8 @@ qt_add_executable(feather-pdf
     ui/TabStrip.h
     ui/CommandBar.cpp
     ui/CommandBar.h
+    ui/FindBar.cpp
+    ui/FindBar.h
     ui/NavigationRail.cpp
     ui/NavigationRail.h
     ui/ToolsPane.cpp

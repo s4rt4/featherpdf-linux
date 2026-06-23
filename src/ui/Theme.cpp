@@ -231,6 +231,20 @@ QString Theme::styleSheet() const {
                "#ToolsPane QPushButton#CustomizeTools:hover { color:%4; }")
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.text), css(p.canvas));
 
+    // Find bar — slim strip beneath the command toolbar.
+    qss += QStringLiteral(
+               "#FindBar { background:%1; border-bottom:1px solid %2; }"
+               "#FindBar QToolButton { background:transparent; border:none; border-radius:7px; }"
+               "#FindBar QToolButton:hover { background:%3; }"
+               "#FindBar QLabel#FindCount { color:%4; font-family:'Source Code Pro',monospace;"
+               " font-size:13px; }"
+               "QLineEdit#FindInput { background:%3; border:1px solid %2; border-radius:8px;"
+               " padding:5px 9px; color:%5; selection-background-color:%6;"
+               " selection-color:#FFFFFF; }"
+               "QLineEdit#FindInput:focus { border:1px solid %6; }")
+               .arg(css(p.surface), css(p.hairline), css(p.canvas), css(p.dim), css(p.text),
+                    css(p.accent));
+
     // Left rail expandable panel (Thumbnails / Outline / …).
     qss += QStringLiteral(
                "#RailPanel { background:%1; border-right:1px solid %2; }"

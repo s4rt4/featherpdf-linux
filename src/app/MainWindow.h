@@ -26,6 +26,7 @@ class HomeView;
 class ThumbnailPanel;
 class TabStrip;
 class CommandBar;
+class FindBar;
 class NavigationRail;
 class ToolsPane;
 class FloatingPill;
@@ -61,6 +62,11 @@ private:
 
     void nextPage();
     void previousPage();
+
+    // Find: open the find bar, drive matches, and report the running count.
+    void openFind();
+    void stepFind(int delta);
+    void updateFindCount();
 
     // One open document = one tab. Each session owns its FeatherDocument and
     // remembers the page it was last on so switching tabs restores the spot.
@@ -108,6 +114,8 @@ private:
     QLabel* m_panelPlaceholder = nullptr;
     ThumbnailPanel* m_thumbnails = nullptr;
     CommandBar* m_commandBar = nullptr;
+    FindBar* m_findBar = nullptr;
+    int m_searchIndex = 0;
     NavigationRail* m_rail = nullptr;
     ToolsPane* m_toolsPane = nullptr;
     FloatingPill* m_pill = nullptr;

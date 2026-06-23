@@ -20,6 +20,7 @@
 
 class FeatherDocument;
 class QPdfView;
+class QPdfSearchModel;
 
 // The document viewport: where the page floats on the canvas.
 //
@@ -53,10 +54,19 @@ public:
     int pageCount() const;
     void goToPage(int page); // 0-based
 
+    // Text search. The query highlights all matches on every page; the result
+    // count updates live as the background search progresses (searchResults
+    // Changed). showSearchResult cycles the highlighted/active match.
+    int search(const QString& query); // sets the query, returns current count
+    void clearSearch();
+    void showSearchResult(int index); // wraps; navigates to and highlights it
+    int searchResultCount() const;
+
 signals:
     void zoomChanged(double factor);
     void currentPageChanged(int page); // 0-based
     void pageCountChanged(int count);
+    void searchResultsChanged(int count);
 
 private:
     void applyZoomFactor(double factor);
@@ -64,6 +74,7 @@ private:
 
     FeatherDocument* m_doc = nullptr;
     QPdfView* m_view;
+    QPdfSearchModel* m_searchModel = nullptr;
 
     static constexpr double kZoomStep = 1.2;
     static constexpr double kMinZoom = 0.1;

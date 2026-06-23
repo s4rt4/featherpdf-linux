@@ -18,6 +18,7 @@
 
 #include "core/FeatherDocument.h"
 #include "ui/CommandBar.h"
+#include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
 #include "ui/HomeView.h"
 #include "ui/NavigationRail.h"
@@ -126,7 +127,7 @@ void MainWindow::buildMenus() {
     edit->addSeparator();
     QAction* find = edit->addAction(tr("&Find…"));
     find->setShortcut(QKeySequence::Find);
-    connect(find, &QAction::triggered, this, [this] { notImplemented(tr("Find")); });
+    connect(find, &QAction::triggered, this, &MainWindow::openFind);
 
     QMenu* view = menuBar()->addMenu(tr("&View"));
     view->addAction(m_zoomInAct);
@@ -169,8 +170,11 @@ void MainWindow::buildShell() {
 
     m_tabStrip = new TabStrip(shell);
     m_commandBar = new CommandBar(shell);
+    m_findBar = new FindBar(shell);
+    m_findBar->hide();
     outer->addWidget(m_tabStrip);
     outer->addWidget(m_commandBar);
+    outer->addWidget(m_findBar);
 
     auto* body = new QWidget(shell);
     auto* bodyRow = new QHBoxLayout(body);
@@ -223,6 +227,7 @@ void MainWindow::buildShell() {
 
 void MainWindow::showHome() {
     m_home->refresh();
+    m_findBar->hide();
     m_centerStack->setCurrentWidget(m_home);
     m_rail->setVisible(false);
     m_panelHost->setVisible(false);
@@ -262,7 +267,7 @@ void MainWindow::wireSignals() {
     connect(m_commandBar, &CommandBar::exportRequested, this, [this] { notImplemented(tr("Export")); });
     connect(m_commandBar, &CommandBar::printRequested, this, [this] { notImplemented(tr("Print")); });
     connect(m_commandBar, &CommandBar::emailRequested, this, [this] { notImplemented(tr("Email")); });
-    connect(m_commandBar, &CommandBar::findRequested, this, [this] { notImplemented(tr("Find")); });
+    connect(m_commandBar, &CommandBar::findRequested, this, &MainWindow::openFind);
     connect(m_commandBar, &CommandBar::moreRequested, this, [this] { notImplemented(tr("More options")); });
     connect(m_commandBar, &CommandBar::shareRequested, this, [this] { notImplemented(tr("Share")); });
 
@@ -318,7 +323,24 @@ void MainWindow::wireSignals() {
     connect(m_tabStrip, &TabStrip::toolsSelected, this, [this] { notImplemented(tr("Tools gallery")); });
     connect(m_tabStrip, &TabStrip::newTabRequested, this, &MainWindow::openFileDialog);
     connect(m_tabStrip, &TabStrip::closeDocumentRequested, this, &MainWindow::closeSession);
-    connect(m_tabStrip, &TabStrip::searchRequested, this, [this] { notImplemented(tr("Search")); });
+    connect(m_tabStrip, &TabStrip::searchRequested, this, &MainWindow::openFind);
+
+    // Find bar ↔ viewport search.
+    connect(m_findBar, &FindBar::queryChanged, this, [this](const QString& q) {
+        m_searchIndex = 0;
+        const int count = m_viewport->search(q);
+        if (count > 0)
+            m_viewport->showSearchResult(0);
+        updateFindCount();
+    });
+    connect(m_findBar, &FindBar::findNext, this, [this] { stepFind(1); });
+    connect(m_findBar, &FindBar::findPrevious, this, [this] { stepFind(-1); });
+    connect(m_findBar, &FindBar::closed, this, [this] {
+        m_viewport->clearSearch();
+        m_findBar->hide();
+        m_viewport->setFocus();
+    });
+    connect(m_viewport, &Viewport::searchResultsChanged, this, &MainWindow::updateFindCount);
     connect(m_tabStrip, &TabStrip::menuRequested, this, [this] {
         QMenu menu(this);
         menu.addAction(m_openAct);
@@ -328,6 +350,34 @@ void MainWindow::wireSignals() {
         menu.addAction(m_quitAct);
         menu.exec(QCursor::pos());
     });
+}
+
+void MainWindow::openFind() {
+    if (!hasActiveDoc())
+        return;
+    m_findBar->activate();
+    // Re-run the current query so the count reflects the active document.
+    if (!m_findBar->query().isEmpty()) {
+        m_searchIndex = 0;
+        m_viewport->search(m_findBar->query());
+        m_viewport->showSearchResult(0);
+        updateFindCount();
+    }
+}
+
+void MainWindow::stepFind(int delta) {
+    const int count = m_viewport->searchResultCount();
+    if (count <= 0)
+        return;
+    m_searchIndex += delta;
+    m_viewport->showSearchResult(m_searchIndex);
+    updateFindCount();
+}
+
+void MainWindow::updateFindCount() {
+    const int count = m_viewport->searchResultCount();
+    const int current = count > 0 ? (((m_searchIndex % count) + count) % count) + 1 : 0;
+    m_findBar->setResult(current, count);
 }
 
 void MainWindow::nextPage() {
@@ -394,6 +444,8 @@ void MainWindow::activateSession(int id) {
 
     m_activeId = id;
     m_doc = target->doc;
+    m_findBar->hide(); // search is per-document; setDocument clears the query
+    m_searchIndex = 0;
     m_viewport->setDocument(m_doc);
     m_viewport->goToPage(target->lastPage);
     m_thumbnails->setDocument(m_doc->pdf());
