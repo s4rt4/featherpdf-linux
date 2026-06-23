@@ -39,9 +39,14 @@
 #include <QEasingCurve>
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFormLayout>
 #include <QInputDialog>
+#include <QLocale>
+#include <QPdfDocument>
 #include <QHBoxLayout>
 #include <QKeySequence>
 #include <QLabel>
@@ -221,7 +226,7 @@ void MainWindow::buildMenus() {
     document->addAction(m_deletePageAct);
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
-    connect(props, &QAction::triggered, this, [this] { notImplemented(tr("Document properties")); });
+    connect(props, &QAction::triggered, this, &MainWindow::showProperties);
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
     for (const QString& name : {tr("Export"), tr("Create"), tr("Edit"), tr("Comment"),
@@ -949,6 +954,62 @@ void MainWindow::updateZoomIndicator() {
     const QString text = tr("%1%").arg(qRound(m_viewport->zoomFactor() * 100.0));
     m_commandBar->setZoomText(text);
     m_pill->setZoomText(text);
+}
+
+void MainWindow::showProperties() {
+    if (!hasActiveDoc())
+        return;
+    QPdfDocument* pdf = m_doc->pdf();
+
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Document properties"));
+    auto* form = new QFormLayout(&dialog);
+    form->setRowWrapPolicy(QFormLayout::DontWrapRows);
+
+    auto addRow = [&](const QString& label, const QString& value, bool mono = false) {
+        if (value.trimmed().isEmpty())
+            return;
+        auto* v = new QLabel(value, &dialog);
+        v->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        if (mono) {
+            QFont f = v->font();
+            f.setFamily(QStringLiteral("monospace"));
+            v->setFont(f);
+        }
+        form->addRow(new QLabel(label, &dialog), v);
+    };
+    auto meta = [&](QPdfDocument::MetaDataField f) { return pdf->metaData(f).toString(); };
+
+    addRow(tr("Title"), meta(QPdfDocument::MetaDataField::Title));
+    addRow(tr("Author"), meta(QPdfDocument::MetaDataField::Author));
+    addRow(tr("Subject"), meta(QPdfDocument::MetaDataField::Subject));
+    addRow(tr("Keywords"), meta(QPdfDocument::MetaDataField::Keywords));
+    addRow(tr("Creator"), meta(QPdfDocument::MetaDataField::Creator));
+    addRow(tr("Producer"), meta(QPdfDocument::MetaDataField::Producer));
+
+    const QString created =
+        pdf->metaData(QPdfDocument::MetaDataField::CreationDate).toDateTime().toString(Qt::TextDate);
+    addRow(tr("Created"), created);
+
+    const int original = m_doc->originalPageCount();
+    QString pages = QString::number(m_doc->pageCount());
+    if (m_doc->pageCount() != original)
+        pages += tr(" (was %1)").arg(original);
+    addRow(tr("Pages"), pages, /*mono=*/true);
+
+    const QSizeF sz = pdf->pagePointSize(m_doc->originalPageAt(m_viewport->currentPage()));
+    addRow(tr("Page size"), tr("%1 × %2 pt").arg(qRound(sz.width())).arg(qRound(sz.height())), true);
+
+    const QFileInfo fi(m_doc->filePath());
+    addRow(tr("File size"), QLocale().formattedDataSize(fi.size()), true);
+    addRow(tr("Location"), fi.absoluteFilePath(), true);
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    form->addRow(buttons);
+
+    dialog.exec();
 }
 
 void MainWindow::notImplemented(const QString& feature) {

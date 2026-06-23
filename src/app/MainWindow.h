@@ -121,6 +121,8 @@ private:
     void rebuildRecentMenu();
     QStringList recentFiles() const;
 
+    void showProperties(); // Document ▸ Properties — metadata dialog
+
     // Honest placeholder for features that arrive in later milestones.
     void notImplemented(const QString& feature);
 
