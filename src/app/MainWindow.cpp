@@ -41,6 +41,7 @@
 #include <QPropertyAnimation>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QInputDialog>
 #include <QHBoxLayout>
 #include <QKeySequence>
 #include <QLabel>
@@ -467,6 +468,17 @@ void MainWindow::wireSignals() {
             m_continuousAct->setChecked(true);
     });
     connect(m_commandBar, &CommandBar::shareRequested, this, [this] { notImplemented(tr("Share")); });
+    connect(m_commandBar, &CommandBar::counterClicked, this, [this] {
+        if (!hasActiveDoc())
+            return;
+        const int n = m_doc->pageCount();
+        bool ok = false;
+        const int page = QInputDialog::getInt(this, tr("Go to page"),
+                                              tr("Page (1–%1):").arg(n),
+                                              m_viewport->currentPage() + 1, 1, n, 1, &ok);
+        if (ok)
+            m_viewport->goToPage(page - 1);
+    });
 
     // Floating pill.
     connect(m_pill, &FloatingPill::zoomInRequested, m_viewport, &Viewport::zoomIn);

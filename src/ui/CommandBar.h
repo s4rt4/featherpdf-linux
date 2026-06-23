@@ -52,6 +52,10 @@ signals:
     void zoomInRequested();
     void moreRequested();
     void shareRequested();
+    void counterClicked(); // the page counter was clicked (go to page)
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
     QToolButton* addButton(const QString& iconName, const QString& tip);

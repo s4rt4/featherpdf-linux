@@ -18,6 +18,7 @@
 
 #include "ui/Theme.h"
 
+#include <QEvent>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -60,6 +61,9 @@ CommandBar::CommandBar(QWidget* parent) : QWidget(parent) {
     m_counter->setObjectName("Counter");
     m_counter->setAlignment(Qt::AlignCenter);
     m_counter->setMinimumWidth(52);
+    m_counter->setCursor(Qt::PointingHandCursor);
+    m_counter->setToolTip(tr("Go to page"));
+    m_counter->installEventFilter(this); // click to jump to a page
     row->addWidget(m_counter);
 
     auto* next = addButton("chevron-down", tr("Next page"));
@@ -132,6 +136,13 @@ void CommandBar::refreshIcons() {
         m_share->setIcon(Theme::instance().icon("share", QColor(Qt::white)));
         m_share->setIconSize(QSize(15, 15));
     }
+}
+
+bool CommandBar::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == m_counter && event->type() == QEvent::MouseButtonRelease &&
+        m_counter->isEnabled())
+        emit counterClicked();
+    return QWidget::eventFilter(watched, event);
 }
 
 void CommandBar::setPageText(const QString& text) {

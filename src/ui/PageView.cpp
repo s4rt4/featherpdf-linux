@@ -432,6 +432,43 @@ void PageView::keyPressEvent(QKeyEvent* event) {
         setHudVisible(!m_hud);
         return;
     }
+
+    QScrollBar* v = verticalScrollBar();
+    switch (event->key()) {
+    case Qt::Key_PageDown:
+        v->triggerAction(QAbstractSlider::SliderPageStepAdd);
+        return;
+    case Qt::Key_PageUp:
+        v->triggerAction(QAbstractSlider::SliderPageStepSub);
+        return;
+    case Qt::Key_Space:
+        v->triggerAction((event->modifiers() & Qt::ShiftModifier)
+                             ? QAbstractSlider::SliderPageStepSub
+                             : QAbstractSlider::SliderPageStepAdd);
+        return;
+    case Qt::Key_Down:
+        v->triggerAction(QAbstractSlider::SliderSingleStepAdd);
+        return;
+    case Qt::Key_Up:
+        v->triggerAction(QAbstractSlider::SliderSingleStepSub);
+        return;
+    case Qt::Key_Home:
+        if (event->modifiers() & Qt::ControlModifier) {
+            v->setValue(v->minimum());
+            return;
+        }
+        goToPage(0);
+        return;
+    case Qt::Key_End:
+        if (event->modifiers() & Qt::ControlModifier) {
+            v->setValue(v->maximum());
+            return;
+        }
+        goToPage(pageCount() - 1);
+        return;
+    default:
+        break;
+    }
     QAbstractScrollArea::keyPressEvent(event);
 }
 
