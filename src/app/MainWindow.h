@@ -16,7 +16,9 @@
 
 #pragma once
 
+#include <QHash>
 #include <QMainWindow>
+#include <QPair>
 #include <QStringList>
 #include <QVector>
 
@@ -33,6 +35,7 @@ class ToolsPane;
 class FloatingPill;
 class Toast;
 class QAction;
+class QAbstractAnimation;
 class QLabel;
 class QMenu;
 class QStackedWidget;
@@ -87,6 +90,12 @@ private:
     void showHome();
     void showDocument();
 
+    // Immersive reading: hide all chrome, leaving the page alone with its pill
+    // (ui-guidelines §1 — the signature moment). F11 toggles, Esc exits.
+    void setImmersive(bool on);
+    void animateChrome(bool collapse);                 // slide the chrome in/out
+    QVector<QPair<QWidget*, bool>> chromeItems() const; // {widget, vertical}
+
     void updateWindowTitle();
     void updateChromeState();
     void updatePageIndicator();
@@ -133,7 +142,13 @@ private:
     QAction* m_fitWidthAct = nullptr;
     QAction* m_fitPageAct = nullptr;
     QAction* m_toggleThemeAct = nullptr;
+    QAction* m_immersiveAct = nullptr;
     QAction* m_aboutAct = nullptr;
+
+    bool m_immersive = false;
+    bool m_panelWasVisible = false;
+    QAbstractAnimation* m_chromeAnim = nullptr;
+    QHash<QWidget*, int> m_chromeExtent;
 
     QMenu* m_recentMenu = nullptr;
 

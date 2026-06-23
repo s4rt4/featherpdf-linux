@@ -32,6 +32,9 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QEasingCurve>
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QHBoxLayout>
@@ -95,6 +98,21 @@ void MainWindow::buildActions() {
     m_toggleThemeAct = new QAction(tr("Toggle &Light / Dark"), this);
     connect(m_toggleThemeAct, &QAction::triggered, this, [] { Theme::instance().toggleMode(); });
 
+    m_immersiveAct = new QAction(tr("&Immersive Reading"), this);
+    m_immersiveAct->setCheckable(true);
+    m_immersiveAct->setShortcut(Qt::Key_F11);
+    connect(m_immersiveAct, &QAction::toggled, this, &MainWindow::setImmersive);
+    // Esc leaves immersive reading. The action stays enabled so the shortcut works
+    // even with the menu bar hidden.
+    addAction(m_immersiveAct);
+    auto* escape = new QAction(this);
+    escape->setShortcut(Qt::Key_Escape);
+    connect(escape, &QAction::triggered, this, [this] {
+        if (m_immersive)
+            m_immersiveAct->setChecked(false);
+    });
+    addAction(escape);
+
     m_aboutAct = new QAction(tr("&About Feather PDF"), this);
     connect(m_aboutAct, &QAction::triggered, this, [this] {
         QMessageBox about(this);
@@ -137,6 +155,8 @@ void MainWindow::buildMenus() {
     view->addSeparator();
     view->addAction(m_fitWidthAct);
     view->addAction(m_fitPageAct);
+    view->addSeparator();
+    view->addAction(m_immersiveAct);
     view->addSeparator();
     view->addAction(m_toggleThemeAct);
 
@@ -229,6 +249,8 @@ void MainWindow::buildShell() {
 }
 
 void MainWindow::showHome() {
+    if (m_immersive)
+        m_immersiveAct->setChecked(false); // leave immersive before showing Home
     m_home->refresh();
     m_findBar->hide();
     m_centerStack->setCurrentWidget(m_home);
@@ -249,6 +271,95 @@ void MainWindow::showDocument() {
     m_commandBar->setVisible(true);
     m_pill->setVisible(true);
     // activateSession() owns which document tab is active.
+}
+
+void MainWindow::setImmersive(bool on) {
+    if (on && !hasActiveDoc()) {
+        m_immersiveAct->setChecked(false);
+        return;
+    }
+    if (on == m_immersive)
+        return;
+    m_immersive = on;
+
+    if (on) {
+        // Everything recedes; only the page and its floating pill remain.
+        m_panelWasVisible = m_panelHost->isVisible();
+        m_findBar->hide();
+        m_toast->show(tr("Press Esc or F11 to leave immersive reading"));
+    }
+    animateChrome(/*collapse=*/on);
+}
+
+QVector<QPair<QWidget*, bool>> MainWindow::chromeItems() const {
+    // {widget, vertical} — vertical collapses height, horizontal collapses width.
+    QVector<QPair<QWidget*, bool>> items{
+        {menuBar(), true}, {m_tabStrip, true}, {m_commandBar, true},
+        {m_rail, false}, {m_toolsPane, false}};
+    if (m_panelWasVisible)
+        items.push_back({m_panelHost, false});
+    return items;
+}
+
+void MainWindow::animateChrome(bool collapse) {
+    if (m_chromeAnim) {
+        m_chromeAnim->stop();
+        m_chromeAnim->deleteLater();
+        m_chromeAnim = nullptr;
+    }
+
+    const auto items = chromeItems();
+    auto* group = new QParallelAnimationGroup(this);
+    for (const auto& [w, vertical] : items) {
+        int extent;
+        if (collapse) {
+            extent = vertical ? w->height() : w->width();
+            m_chromeExtent[w] = extent;
+        } else {
+            extent = m_chromeExtent.value(
+                w, vertical ? w->sizeHint().height() : w->sizeHint().width());
+        }
+        // Relax the minimum so the fixed-size bars/panes can actually shrink.
+        if (vertical)
+            w->setMinimumHeight(0);
+        else
+            w->setMinimumWidth(0);
+        if (!collapse) {
+            if (vertical)
+                w->setMaximumHeight(0);
+            else
+                w->setMaximumWidth(0);
+            w->show();
+        }
+        auto* anim = new QPropertyAnimation(w, vertical ? "maximumHeight" : "maximumWidth", group);
+        anim->setDuration(220);
+        anim->setEasingCurve(QEasingCurve::InOutCubic);
+        anim->setStartValue(collapse ? extent : 0);
+        anim->setEndValue(collapse ? 0 : extent);
+        group->addAnimation(anim);
+    }
+
+    connect(group, &QParallelAnimationGroup::finished, this, [this, collapse] {
+        for (const auto& [w, vertical] : chromeItems()) {
+            if (collapse) {
+                w->hide();
+            } else {
+                const int ext = m_chromeExtent.value(w, 0);
+                if (w == menuBar()) {
+                    w->setMinimumHeight(0);
+                    w->setMaximumHeight(QWIDGETSIZE_MAX);
+                } else if (vertical) {
+                    w->setFixedHeight(ext);
+                } else {
+                    w->setFixedWidth(ext);
+                }
+            }
+        }
+        m_chromeAnim = nullptr;
+    });
+
+    m_chromeAnim = group;
+    group->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 void MainWindow::wireSignals() {
@@ -535,6 +646,7 @@ void MainWindow::updateChromeState() {
     m_zoomActualAct->setEnabled(loaded);
     m_fitWidthAct->setEnabled(loaded);
     m_fitPageAct->setEnabled(loaded);
+    m_immersiveAct->setEnabled(loaded);
 
     m_commandBar->setDocumentLoaded(loaded);
 
