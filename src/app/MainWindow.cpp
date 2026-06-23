@@ -537,7 +537,16 @@ void MainWindow::wireSignals() {
 
     // Tools pane.
     connect(m_toolsPane, &ToolsPane::toolActivated, this, [this](const QString& id) {
-        notImplemented(id.left(1).toUpper() + id.mid(1));
+        // Wire the tools whose backends already exist; the rest await their
+        // milestones (Comment→M3, Redact→M2, Sign→M6, Edit→M8, Create→M7).
+        if (id == QLatin1String("export")) {
+            saveActiveAs();
+        } else if (id == QLatin1String("organize")) {
+            if (hasActiveDoc())
+                m_rail->setCurrentPanel(NavigationRail::Panel::Thumbnails);
+        } else {
+            notImplemented(id.left(1).toUpper() + id.mid(1));
+        }
     });
     connect(m_toolsPane, &ToolsPane::customizeRequested, this, [this] { notImplemented(tr("Customize tools")); });
 

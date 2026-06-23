@@ -57,6 +57,7 @@ QToolButton* NavigationRail::addButton(Panel panel, const QString& iconName, con
     b->setAutoRaise(true);
     m_group->addButton(b);
     m_iconButtons.append({b, iconName});
+    m_buttons.insert(panel, b);
 
     // Clicking the active panel again collapses it (mockup behaviour). Because the
     // group is exclusive we manage the toggle-off by hand.
@@ -74,6 +75,18 @@ QToolButton* NavigationRail::addButton(Panel panel, const QString& iconName, con
         emit panelChanged(m_current);
     });
     return b;
+}
+
+void NavigationRail::setCurrentPanel(Panel panel) {
+    if (panel == m_current)
+        return;
+    QToolButton* b = m_buttons.value(panel, nullptr);
+    if (!b)
+        return;
+    b->setChecked(true);
+    m_current = panel;
+    refreshIcons();
+    emit panelChanged(m_current);
 }
 
 void NavigationRail::refreshIcons() {

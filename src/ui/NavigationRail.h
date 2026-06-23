@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <QHash>
 #include <QVector>
 #include <QWidget>
 
@@ -36,6 +37,7 @@ public:
     explicit NavigationRail(QWidget* parent = nullptr);
 
     Panel current() const { return m_current; }
+    void setCurrentPanel(Panel panel); // open a panel programmatically
 
 signals:
     void panelChanged(Panel panel); // Panel::None when collapsed
@@ -47,4 +49,5 @@ private:
     QButtonGroup* m_group = nullptr;
     Panel m_current = Panel::None;
     QVector<QPair<QToolButton*, QString>> m_iconButtons;
+    QHash<Panel, QToolButton*> m_buttons;
 };
