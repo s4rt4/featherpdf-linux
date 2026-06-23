@@ -25,6 +25,7 @@
 #include "ui/HomeView.h"
 #include "ui/NavigationRail.h"
 #include "ui/OutlinePanel.h"
+#include "ui/PrintDialog.h"
 #include "ui/TabStrip.h"
 #include "ui/Theme.h"
 #include "ui/ThumbnailPanel.h"
@@ -44,9 +45,14 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
+#include <QFrame>
+#include <QGraphicsDropShadowEffect>
 #include <QInputDialog>
 #include <QLocale>
+#include <QPainter>
 #include <QPdfDocument>
+#include <QPdfDocumentRenderOptions>
+#include <QPrinter>
 #include <QHBoxLayout>
 #include <QKeySequence>
 #include <QLabel>
@@ -91,6 +97,10 @@ void MainWindow::buildActions() {
     m_saveAsAct = new QAction(tr("Save &As…"), this);
     m_saveAsAct->setShortcut(QKeySequence::SaveAs);
     connect(m_saveAsAct, &QAction::triggered, this, [this] { saveActiveAs(); });
+
+    m_printAct = new QAction(tr("&Print…"), this);
+    m_printAct->setShortcut(QKeySequence::Print);
+    connect(m_printAct, &QAction::triggered, this, &MainWindow::printActive);
 
     // One undo history per document, tracked by a group so Undo/Redo always act
     // on the active tab (ui-guidelines §10).
@@ -170,17 +180,7 @@ void MainWindow::buildActions() {
     addAction(escape);
 
     m_aboutAct = new QAction(tr("&About Feather PDF"), this);
-    connect(m_aboutAct, &QAction::triggered, this, [this] {
-        QMessageBox about(this);
-        about.setWindowTitle(tr("About Feather PDF"));
-        about.setIconPixmap(Theme::instance().brandLogo(72));
-        about.setText(tr("<h3>Feather PDF %1</h3>"
-                         "<p>Light on the system, full-featured on PDF.</p>"
-                         "<p>A native, open-source PDF tool for Linux.</p>"
-                         "<p>Licensed under the GNU General Public License v3.</p>")
-                          .arg(QStringLiteral(FEATHERPDF_VERSION)));
-        about.exec();
-    });
+    connect(m_aboutAct, &QAction::triggered, this, &MainWindow::showAbout);
 }
 
 void MainWindow::buildMenus() {
@@ -190,6 +190,8 @@ void MainWindow::buildMenus() {
     file->addSeparator();
     file->addAction(m_saveAct);
     file->addAction(m_saveAsAct);
+    file->addSeparator();
+    file->addAction(m_printAct);
     file->addSeparator();
     file->addAction(m_closeAct);
     file->addSeparator();
@@ -438,9 +440,8 @@ void MainWindow::wireSignals() {
     connect(m_commandBar, &CommandBar::prevPageRequested, this, &MainWindow::previousPage);
     connect(m_commandBar, &CommandBar::saveRequested, this, [this] { saveActive(); });
     connect(m_commandBar, &CommandBar::exportRequested, this, [this] { saveActiveAs(); });
-    connect(m_commandBar, &CommandBar::printRequested, this, [this] { notImplemented(tr("Print")); });
+    connect(m_commandBar, &CommandBar::printRequested, this, &MainWindow::printActive);
     connect(m_commandBar, &CommandBar::emailRequested, this, [this] { notImplemented(tr("Email")); });
-    connect(m_commandBar, &CommandBar::findRequested, this, &MainWindow::openFind);
     connect(m_commandBar, &CommandBar::moreRequested, this, [this] {
         QMenu menu(this);
         menu.addAction(m_rotateLeftAct);
@@ -650,6 +651,91 @@ bool MainWindow::saveActive() {
         s->undo->setClean();
     m_toast->show(tr("Saved"));
     return true;
+}
+
+void MainWindow::printActive() {
+    if (!hasActiveDoc())
+        return;
+
+    // Custom dialog: opens instantly, discovers printers off-thread, shows a
+    // preview, and supports odd/even subsets — none of which the native dialog
+    // does without freezing the UI on open.
+    PrintDialog dialog(m_doc->pdf(), m_doc->pageOrder(), m_doc->rotations(), m_doc->fileName(),
+                       m_viewport->currentPage(), this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    const QList<int> pages = dialog.selectedSlots();
+    if (pages.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QPrinter printer(QPrinter::HighResolution);
+    const QString printerName = dialog.selectedPrinter();
+    if (printerName.isEmpty()) {
+        printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setOutputFileName(dialog.outputFile());
+    } else {
+        printer.setPrinterName(printerName); // loads the PPD (brief, expected)
+    }
+    printer.setCopyCount(dialog.copies());
+    printer.setDocName(m_doc->fileName());
+
+    printDocument(printer, pages, dialog.grayscale());
+    QApplication::restoreOverrideCursor();
+    m_toast->show(printerName.isEmpty()
+                      ? tr("Saved to %1").arg(QFileInfo(dialog.outputFile()).fileName())
+                      : tr("Sent to %1").arg(printerName));
+}
+
+void MainWindow::printDocument(QPrinter& printer, const QList<int>& pages, bool grayscale) {
+    QPdfDocument* pdf = m_doc->pdf();
+    QPainter painter;
+    if (!painter.begin(&printer))
+        return;
+
+    // Cap the render resolution so high-DPI printers don't make gigantic images;
+    // the painter scales each page to fill the sheet.
+    const int dpi = std::min(300, printer.resolution());
+
+    bool firstPage = true;
+    for (int slot : pages) {
+        const int orig = m_doc->originalPageAt(slot);
+        if (orig < 0)
+            continue;
+        if (!firstPage)
+            printer.newPage();
+        firstPage = false;
+
+        const int rotation = m_doc->rotation(slot);
+        QPdfDocumentRenderOptions opts;
+        switch (rotation) {
+        case 90: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise90); break;
+        case 180: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise180); break;
+        case 270: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise270); break;
+        default: break;
+        }
+
+        QSizeF pt = pdf->pagePointSize(orig); // unrotated, in points
+        if (rotation == 90 || rotation == 270)
+            pt.transpose();
+        const QSize imageSize(qRound(pt.width() / 72.0 * dpi), qRound(pt.height() / 72.0 * dpi));
+        QImage image = pdf->render(orig, imageSize, opts);
+        if (image.isNull())
+            continue;
+        if (grayscale)
+            image = image.convertToFormat(QImage::Format_Grayscale8);
+
+        // Fit the page onto the printable area, preserving aspect and centering.
+        const QRect sheet = printer.pageLayout().paintRectPixels(printer.resolution());
+        const QSize drawn = image.size().scaled(sheet.size(), Qt::KeepAspectRatio);
+        const QRect target(sheet.x() + (sheet.width() - drawn.width()) / 2,
+                           sheet.y() + (sheet.height() - drawn.height()) / 2, drawn.width(),
+                           drawn.height());
+        painter.drawImage(target, image);
+    }
+
+    painter.end();
 }
 
 void MainWindow::openFind() {
@@ -922,6 +1008,7 @@ void MainWindow::updateChromeState() {
 
     m_saveAct->setEnabled(loaded);
     m_saveAsAct->setEnabled(loaded);
+    m_printAct->setEnabled(loaded);
     m_rotateLeftAct->setEnabled(loaded);
     m_rotateRightAct->setEnabled(loaded);
     m_deletePageAct->setEnabled(loaded);
@@ -963,6 +1050,88 @@ void MainWindow::updateZoomIndicator() {
     const QString text = tr("%1%").arg(qRound(m_viewport->zoomFactor() * 100.0));
     m_commandBar->setZoomText(text);
     m_pill->setZoomText(text);
+}
+
+void MainWindow::showAbout() {
+    const auto& pal = Theme::instance().palette();
+
+    // Frameless so there is no title-bar "Feather PDF" duplicating the name
+    // inside — a clean floating card with a shadow instead.
+    QDialog dlg(this);
+    dlg.setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    dlg.setAttribute(Qt::WA_TranslucentBackground);
+
+    auto* outer = new QVBoxLayout(&dlg);
+    outer->setContentsMargins(18, 18, 18, 18); // room for the shadow
+
+    auto* card = new QFrame(&dlg);
+    card->setObjectName("AboutCard");
+    card->setStyleSheet(QStringLiteral("#AboutCard { background:%1; border:1px solid %2;"
+                                       " border-radius:16px; }")
+                            .arg(pal.surface.name(), pal.hairline.name(QColor::HexArgb)));
+    auto* shadow = new QGraphicsDropShadowEffect(card);
+    shadow->setBlurRadius(44);
+    shadow->setOffset(0, 8);
+    shadow->setColor(QColor(0, 0, 0, 90));
+    card->setGraphicsEffect(shadow);
+    outer->addWidget(card);
+
+    auto* v = new QVBoxLayout(card);
+    v->setContentsMargins(40, 32, 40, 22);
+    v->setSpacing(0);
+    auto centered = [&](QWidget* w) { v->addWidget(w, 0, Qt::AlignHCenter); };
+
+    auto* logo = new QLabel(card);
+    logo->setPixmap(Theme::instance().brandLogo(96));
+    centered(logo);
+    v->addSpacing(16);
+
+    auto* title = new QLabel(tr("Feather PDF"), &dlg);
+    title->setStyleSheet(
+        QStringLiteral("color:%1; font-size:24px; font-weight:700;").arg(pal.text.name()));
+    centered(title);
+    v->addSpacing(2);
+
+    auto* ver = new QLabel(tr("Version %1").arg(QStringLiteral(FEATHERPDF_VERSION)), &dlg);
+    ver->setStyleSheet(QStringLiteral("color:%1; font-family:'Source Code Pro',monospace;"
+                                      " font-size:12px;")
+                           .arg(pal.dim.name()));
+    centered(ver);
+    v->addSpacing(12);
+
+    auto* tagline = new QLabel(tr("Light on the system, full-featured on PDF."), &dlg);
+    tagline->setStyleSheet(QStringLiteral("color:%1; font-size:13px;").arg(pal.text.name()));
+    centered(tagline);
+    v->addSpacing(4);
+
+    auto* desc = new QLabel(
+        tr("A native, open-source PDF tool for Linux, licensed under the GPLv3."), &dlg);
+    desc->setWordWrap(true);
+    desc->setAlignment(Qt::AlignHCenter);
+    desc->setFixedWidth(300);
+    desc->setStyleSheet(QStringLiteral("color:%1; font-size:12px;").arg(pal.dim.name()));
+    centered(desc);
+    v->addSpacing(18);
+
+    auto* links = new QLabel(&dlg);
+    links->setTextFormat(Qt::RichText);
+    links->setOpenExternalLinks(true);
+    const QString a = QStringLiteral("color:%1; text-decoration:none; font-weight:600;")
+                          .arg(pal.accent.name());
+    links->setText(
+        tr("<a style='%1' href='https://github.com/s4rt4/featherpdf-linux'>GitHub</a>"
+           "&nbsp;&nbsp;·&nbsp;&nbsp;"
+           "<a style='%1' href='https://www.gnu.org/licenses/gpl-3.0.html'>License</a>")
+            .arg(a));
+    centered(links);
+    v->addSpacing(20);
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    v->addWidget(buttons);
+
+    dlg.exec();
 }
 
 void MainWindow::showProperties() {

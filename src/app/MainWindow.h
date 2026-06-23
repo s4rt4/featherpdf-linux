@@ -38,6 +38,7 @@ class QAction;
 class QAbstractAnimation;
 class QLabel;
 class QMenu;
+class QPrinter;
 class QStackedWidget;
 class QUndoGroup;
 class QUndoStack;
@@ -81,6 +82,8 @@ private:
     void deleteActivePage();
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
+    void printActive();       // custom print dialog (async printers + preview)
+    void printDocument(QPrinter& printer, const QList<int>& pages, bool grayscale);
 
     // Find: open the find bar, drive matches, and report the running count.
     void openFind();
@@ -122,6 +125,7 @@ private:
     QStringList recentFiles() const;
 
     void showProperties(); // Document ▸ Properties — metadata dialog
+    void showAbout();      // Help ▸ About — branded dialog with links
 
     // Honest placeholder for features that arrive in later milestones.
     void notImplemented(const QString& feature);
@@ -154,6 +158,7 @@ private:
     QAction* m_openAct = nullptr;
     QAction* m_saveAct = nullptr;
     QAction* m_saveAsAct = nullptr;
+    QAction* m_printAct = nullptr;
     QAction* m_closeAct = nullptr;
     QAction* m_quitAct = nullptr;
     QAction* m_undoAct = nullptr;

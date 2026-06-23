@@ -45,7 +45,6 @@ signals:
     void exportRequested();
     void printRequested();
     void emailRequested();
-    void findRequested();
     void prevPageRequested();
     void nextPageRequested();
     void zoomOutRequested();

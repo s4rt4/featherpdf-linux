@@ -59,11 +59,13 @@ FindBar::FindBar(QWidget* parent) : QWidget(parent) {
     connect(next, &QToolButton::clicked, this, &FindBar::findNext);
     row->addWidget(next);
 
-    row->addStretch(1);
-
+    row->addSpacing(8);
     auto* close = addButton("x", tr("Close find"));
     connect(close, &QToolButton::clicked, this, &FindBar::closed);
     row->addWidget(close);
+
+    // Keep the whole group compact on the left.
+    row->addStretch(1);
 
     refreshIcons();
     connect(&Theme::instance(), &Theme::changed, this, &FindBar::refreshIcons);

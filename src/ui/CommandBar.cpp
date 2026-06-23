@@ -48,11 +48,7 @@ CommandBar::CommandBar(QWidget* parent) : QWidget(parent) {
 
     row->addWidget(addSeparator());
 
-    // 2. Find & navigate.
-    auto* find = addButton("search", tr("Find"));
-    connect(find, &QToolButton::clicked, this, &CommandBar::findRequested);
-    row->addWidget(find);
-
+    // 2. Navigate. (In-document search lives in the tab strip's search button.)
     auto* prev = addButton("chevron-up", tr("Previous page"));
     connect(prev, &QToolButton::clicked, this, &CommandBar::prevPageRequested);
     row->addWidget(prev);
@@ -69,7 +65,7 @@ CommandBar::CommandBar(QWidget* parent) : QWidget(parent) {
     auto* next = addButton("chevron-down", tr("Next page"));
     connect(next, &QToolButton::clicked, this, &CommandBar::nextPageRequested);
     row->addWidget(next);
-    m_docScoped += {find, prev, next};
+    m_docScoped += {prev, next};
 
     row->addWidget(addSeparator());
 

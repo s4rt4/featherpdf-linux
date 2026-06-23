@@ -28,6 +28,8 @@ qt_add_executable(feather-pdf
     ui/CommandBar.h
     ui/FindBar.cpp
     ui/FindBar.h
+    ui/PrintDialog.cpp
+    ui/PrintDialog.h
     ui/NavigationRail.cpp
     ui/NavigationRail.h
     ui/ToolsPane.cpp
@@ -55,6 +57,7 @@ target_link_libraries(feather-pdf PRIVATE
     Qt6::Pdf
     Qt6::PdfWidgets
     Qt6::Svg
+    Qt6::PrintSupport
     Qt6::Concurrent
     PkgConfig::QPDF
 )
