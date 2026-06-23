@@ -25,6 +25,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # when their modules land.
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Pdf PdfWidgets Svg Concurrent)
 
+# Tests are built by default; turn off with -DBUILD_TESTING=OFF.
+option(BUILD_TESTING "Build the test suite" ON)
+
 # QPDF (lossless structure writer) ships no CMake config, so use pkg-config.
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(QPDF REQUIRED IMPORTED_TARGET libqpdf)
@@ -36,3 +39,9 @@ qt_standard_project_setup()
 set(CMAKE_AUTORCC ON)
 
 add_subdirectory(src)
+
+if(BUILD_TESTING)
+    find_package(Qt6 6.5 REQUIRED COMPONENTS Test)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
