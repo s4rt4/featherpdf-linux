@@ -18,8 +18,9 @@
 
 #include <QWidget>
 
+#include "ui/PageView.h"
+
 class FeatherDocument;
-class PageView;
 
 // The document viewport: where the page floats on the canvas.
 //
@@ -44,7 +45,11 @@ public:
     void zoomActualSize(); // 100%
     void fitToWidth();
     void fitWholePage();
+    void setZoomFactor(double factor); // for presets
     double zoomFactor() const;
+
+    void setLayoutMode(PageView::LayoutMode mode);
+    PageView::LayoutMode layoutMode() const;
 
     int currentPage() const;
     int pageCount() const;
@@ -63,6 +68,7 @@ signals:
     void currentPageChanged(int page); // 0-based
     void pageCountChanged(int count);
     void searchResultsChanged(int count);
+    void layoutModeChanged(PageView::LayoutMode mode);
 
 private:
     FeatherDocument* m_doc = nullptr;

@@ -141,6 +141,9 @@ private:
     QAction* m_zoomActualAct = nullptr;
     QAction* m_fitWidthAct = nullptr;
     QAction* m_fitPageAct = nullptr;
+    QAction* m_singlePageAct = nullptr;
+    QAction* m_continuousAct = nullptr;
+    QAction* m_twoUpAct = nullptr;
     QAction* m_toggleThemeAct = nullptr;
     QAction* m_immersiveAct = nullptr;
     QAction* m_aboutAct = nullptr;

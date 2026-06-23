@@ -32,6 +32,8 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)
             [this](int page) { emit currentPageChanged(page); });
     connect(m_view, &PageView::searchResultsChanged, this,
             [this](int count) { emit searchResultsChanged(count); });
+    connect(m_view, &PageView::layoutModeChanged, this,
+            [this](PageView::LayoutMode m) { emit layoutModeChanged(m); });
 }
 
 Viewport::~Viewport() = default;
@@ -76,6 +78,18 @@ void Viewport::fitToWidth() {
 
 void Viewport::fitWholePage() {
     m_view->fitWholePage();
+}
+
+void Viewport::setZoomFactor(double factor) {
+    m_view->setZoom(factor);
+}
+
+void Viewport::setLayoutMode(PageView::LayoutMode mode) {
+    m_view->setLayoutMode(mode);
+}
+
+PageView::LayoutMode Viewport::layoutMode() const {
+    return m_view->layoutMode();
 }
 
 int Viewport::currentPage() const {

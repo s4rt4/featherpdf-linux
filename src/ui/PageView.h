@@ -43,6 +43,9 @@ class PageView : public QAbstractScrollArea {
     Q_OBJECT
 
 public:
+    // How pages are arranged in the viewport.
+    enum class LayoutMode { SinglePage, Continuous, TwoUp };
+
     explicit PageView(QWidget* parent = nullptr);
     ~PageView() override;
 
@@ -51,6 +54,9 @@ public:
     int pageCount() const { return m_pageSizes.size(); }
     int currentPage() const { return m_currentPage; }
     void goToPage(int page); // 0-based, scroll to its top
+
+    LayoutMode layoutMode() const { return m_mode; }
+    void setLayoutMode(LayoutMode mode);
 
     double zoom() const { return m_zoom; }
     void setZoom(double zoom);          // preserves the reading position
@@ -73,6 +79,7 @@ signals:
     void currentPageChanged(int page);
     void zoomChanged(double zoom);
     void searchResultsChanged(int count);
+    void layoutModeChanged(LayoutMode mode);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -82,12 +89,16 @@ protected:
     void keyPressEvent(QKeyEvent* event) override;
 
 private:
-    // Layout (all in logical px unless noted).
+    // Layout (all in logical px unless noted). Pages are grouped into rows — one
+    // page per row for single/continuous, two per row for facing.
     double pageWidthPx(int page) const { return m_pageSizes[page].width() * m_zoom; }
     double pageHeightPx(int page) const { return m_pageSizes[page].height() * m_zoom; }
+    void buildRows();
+    double rowHeightPx(int row) const;
+    double rowContentWidthPx(int row) const; // sum of page widths + inner gap
     double contentWidthPx() const;
-    void relayout();              // recompute m_pageTop + scrollbar ranges
-    int pageAtContentY(double y) const; // binary search
+    void relayout();              // rebuild rows + cumulative tops + scrollbars
+    int rowAtContentY(double y) const;  // binary search on m_rowTop
     QRect pageRect(int page) const;     // page rect in viewport coordinates
     void updateCurrentPage();
 
@@ -102,10 +113,14 @@ private:
     int m_currentResult = -1;
 
     QList<QSizeF> m_pageSizes;    // points, per page
-    QList<double> m_pageTop;      // cumulative top offset (size N), logical px
+    QList<QList<int>> m_rows;     // page indices grouped into rows
+    QList<int> m_pageRow;         // page → row index
+    QList<double> m_rowTop;       // cumulative row top offset, logical px
     double m_maxPageWPoints = 1.0;
+    double m_maxRowWPoints = 1.0; // widest row (two pages, for fit-width)
     double m_zoom = 1.0;
     int m_currentPage = 0;
+    LayoutMode m_mode = LayoutMode::Continuous;
 
     QHash<int, QPixmap> m_cache;  // page → rendered pixmap at the current zoom
     QList<int> m_lru;             // most-recent at back

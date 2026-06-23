@@ -30,8 +30,9 @@
 
 namespace {
 constexpr int kMargin = 18;       // top/bottom/side margin around the page column
-constexpr int kSpacing = 14;      // gap between pages
-constexpr int kMaxCache = 40;     // rendered pages kept in memory
+constexpr int kSpacing = 14;      // gap between rows
+constexpr int kPairGap = 4;       // gap between the two pages of a facing row
+constexpr int kMaxCache = 48;     // rendered pages kept in memory
 constexpr double kZoomStep = 1.2;
 constexpr double kMinZoom = 0.1;
 constexpr double kMaxZoom = 8.0;
@@ -107,19 +108,68 @@ void PageView::setDocument(QPdfDocument* doc) {
     viewport()->update();
 }
 
+void PageView::buildRows() {
+    m_rows.clear();
+    const int n = pageCount();
+    m_pageRow.assign(n, -1);
+    if (n == 0) {
+        m_maxRowWPoints = 1.0;
+        return;
+    }
+
+    if (m_mode == LayoutMode::TwoUp) {
+        for (int i = 0; i < n; i += 2) {
+            QList<int> row{i};
+            if (i + 1 < n)
+                row.append(i + 1);
+            m_rows.append(row);
+        }
+    } else if (m_mode == LayoutMode::SinglePage) {
+        m_rows.append(QList<int>{std::clamp(m_currentPage, 0, n - 1)});
+    } else { // Continuous
+        for (int i = 0; i < n; ++i)
+            m_rows.append(QList<int>{i});
+    }
+
+    m_maxRowWPoints = 1.0;
+    for (int r = 0; r < m_rows.size(); ++r) {
+        double w = 0;
+        for (int p : m_rows[r]) {
+            m_pageRow[p] = r;
+            w += m_pageSizes[p].width();
+        }
+        m_maxRowWPoints = std::max(m_maxRowWPoints, w);
+    }
+}
+
+double PageView::rowHeightPx(int row) const {
+    double h = 0;
+    for (int p : m_rows[row])
+        h = std::max(h, pageHeightPx(p));
+    return h;
+}
+
+double PageView::rowContentWidthPx(int row) const {
+    double w = 0;
+    for (int p : m_rows[row])
+        w += pageWidthPx(p);
+    return w + (m_rows[row].size() - 1) * kPairGap;
+}
+
 double PageView::contentWidthPx() const {
-    return m_maxPageWPoints * m_zoom + 2 * kMargin;
+    return m_maxRowWPoints * m_zoom + (kPairGap + 2 * kMargin);
 }
 
 void PageView::relayout() {
-    const int n = pageCount();
-    m_pageTop.resize(n);
+    buildRows();
+    const int rows = m_rows.size();
+    m_rowTop.resize(rows);
     double y = kMargin;
-    for (int i = 0; i < n; ++i) {
-        m_pageTop[i] = y;
-        y += pageHeightPx(i) + kSpacing;
+    for (int r = 0; r < rows; ++r) {
+        m_rowTop[r] = y;
+        y += rowHeightPx(r) + kSpacing;
     }
-    const double contentH = (n > 0) ? (m_pageTop[n - 1] + pageHeightPx(n - 1) + kMargin) : 0.0;
+    const double contentH = (rows > 0) ? (m_rowTop[rows - 1] + rowHeightPx(rows - 1) + kMargin) : 0.0;
     const double contentW = contentWidthPx();
 
     const int vpH = viewport()->height();
@@ -130,15 +180,14 @@ void PageView::relayout() {
     horizontalScrollBar()->setPageStep(vpW);
 }
 
-int PageView::pageAtContentY(double y) const {
-    const int n = pageCount();
+int PageView::rowAtContentY(double y) const {
+    const int n = m_rows.size();
     if (n == 0)
         return 0;
-    // Largest i with m_pageTop[i] <= y.
     int lo = 0, hi = n - 1, ans = 0;
     while (lo <= hi) {
         const int mid = (lo + hi) / 2;
-        if (m_pageTop[mid] <= y) {
+        if (m_rowTop[mid] <= y) {
             ans = mid;
             lo = mid + 1;
         } else {
@@ -149,21 +198,30 @@ int PageView::pageAtContentY(double y) const {
 }
 
 QRect PageView::pageRect(int page) const {
+    if (page < 0 || page >= m_pageRow.size())
+        return {};
+    const int r = m_pageRow[page];
+    if (r < 0)
+        return {};
     const double offY = verticalScrollBar()->value();
     const double offX = horizontalScrollBar()->value();
-    const double pageW = pageWidthPx(page);
-    const double pageH = pageHeightPx(page);
     const double centerSpace = std::max(contentWidthPx(), double(viewport()->width()));
-    const double x = (centerSpace - pageW) / 2.0 - offX;
-    const double y = m_pageTop[page] - offY;
-    return QRect(qRound(x), qRound(y), qRound(pageW), qRound(pageH));
+    double x = (centerSpace - rowContentWidthPx(r)) / 2.0 - offX;
+    for (int p : m_rows[r]) {
+        const double pw = pageWidthPx(p);
+        if (p == page)
+            return QRect(qRound(x), qRound(m_rowTop[r] - offY), qRound(pw), qRound(pageHeightPx(p)));
+        x += pw + kPairGap;
+    }
+    return {};
 }
 
 void PageView::updateCurrentPage() {
-    if (pageCount() == 0)
+    if (m_rows.isEmpty())
         return;
     const double focusY = verticalScrollBar()->value() + viewport()->height() * 0.4;
-    const int p = pageAtContentY(focusY);
+    const int r = rowAtContentY(focusY);
+    const int p = m_rows[r].isEmpty() ? 0 : m_rows[r].first();
     if (p != m_currentPage) {
         m_currentPage = p;
         emit currentPageChanged(p);
@@ -194,42 +252,30 @@ void PageView::paintEvent(QPaintEvent*) {
     QPainter p(viewport());
     p.fillRect(viewport()->rect(), pal.sunken);
 
-    if (!m_doc || pageCount() == 0)
+    if (!m_doc || m_rows.isEmpty())
         return;
 
     const double offY = verticalScrollBar()->value();
+    const double offX = horizontalScrollBar()->value();
     const int vpH = viewport()->height();
-    int first = pageAtContentY(offY);
-    while (first > 0 && m_pageTop[first] > offY) // step back to catch a partial page
-        --first;
+    const double centerSpace = std::max(contentWidthPx(), double(viewport()->width()));
 
-    const QColor pageColor(255, 255, 255);
-    for (int i = first; i < pageCount(); ++i) {
-        const QRect r = pageRect(i);
-        if (r.top() > vpH)
-            break; // past the bottom of the viewport
-        if (r.bottom() < 0)
-            continue;
-
+    auto drawPage = [&](const QRect& r, int page) {
         // The page's soft shadow — the only prominent shadow (ui-guidelines §4).
         p.setPen(Qt::NoPen);
         for (int s = 6; s >= 1; --s) {
             p.setBrush(QColor(0, 0, 0, 6));
             p.drawRoundedRect(r.adjusted(-s, -s + 2, s, s + 2), 3, 3);
         }
-
-        // Page background, then the rendered pixmap (or a blank page until ready).
-        p.fillRect(r, pageColor);
-        if (auto it = m_cache.constFind(i); it != m_cache.constEnd()) {
+        p.fillRect(r, QColor(255, 255, 255));
+        if (auto it = m_cache.constFind(page); it != m_cache.constEnd()) {
             p.drawPixmap(r, *it);
-            m_lru.removeAll(i);
-            m_lru.append(i);
+            m_lru.removeAll(page);
+            m_lru.append(page);
         } else {
-            request(i);
+            request(page);
         }
-
-        // Search highlights on this page (drawn here — there is no QPdfView).
-        const QList<QPdfLink> results = m_search->resultsOnPage(i);
+        const QList<QPdfLink> results = m_search->resultsOnPage(page);
         if (!results.isEmpty()) {
             QColor hi = pal.accent;
             hi.setAlpha(70);
@@ -240,18 +286,35 @@ void PageView::paintEvent(QPaintEvent*) {
                     p.drawRect(QRectF(r.x() + rp.x() * m_zoom, r.y() + rp.y() * m_zoom,
                                       rp.width() * m_zoom, rp.height() * m_zoom));
         }
-
-        // Hairline page border.
         p.setBrush(Qt::NoBrush);
         p.setPen(pal.hairline);
         p.drawRect(r);
+    };
+
+    int first = rowAtContentY(offY);
+    while (first > 0 && m_rowTop[first] > offY)
+        --first;
+
+    for (int r = first; r < m_rows.size(); ++r) {
+        const double rowYtop = m_rowTop[r] - offY;
+        if (rowYtop > vpH)
+            break;
+        if (rowYtop + rowHeightPx(r) < 0)
+            continue;
+        double x = (centerSpace - rowContentWidthPx(r)) / 2.0 - offX;
+        for (int page : m_rows[r]) {
+            const QRect rect(qRound(x), qRound(rowYtop), qRound(pageWidthPx(page)),
+                             qRound(pageHeightPx(page)));
+            drawPage(rect, page);
+            x += pageWidthPx(page) + kPairGap;
+        }
     }
 
     // The active match, emphasised.
     if (m_currentResult >= 0) {
         const QPdfLink link = m_search->resultAtIndex(m_currentResult);
-        if (link.page() >= first - 1) {
-            const QRect r = pageRect(link.page());
+        const QRect r = pageRect(link.page());
+        if (!r.isNull()) {
             QColor hi = pal.accent;
             hi.setAlpha(150);
             p.setBrush(hi);
@@ -317,7 +380,27 @@ void PageView::goToPage(int page) {
     if (pageCount() == 0)
         return;
     page = std::clamp(page, 0, pageCount() - 1);
-    verticalScrollBar()->setValue(qRound(m_pageTop[page] - kMargin));
+    if (m_mode == LayoutMode::SinglePage) {
+        m_currentPage = page;
+        relayout();
+        verticalScrollBar()->setValue(0);
+        emit currentPageChanged(page);
+        viewport()->update();
+        return;
+    }
+    const int r = m_pageRow[page];
+    verticalScrollBar()->setValue(qRound(m_rowTop[r] - kMargin));
+}
+
+void PageView::setLayoutMode(LayoutMode mode) {
+    if (mode == m_mode)
+        return;
+    const int keep = m_currentPage;
+    m_mode = mode;
+    relayout();
+    goToPage(keep);
+    emit layoutModeChanged(mode);
+    viewport()->update();
 }
 
 void PageView::setZoom(double zoom) {
@@ -325,11 +408,10 @@ void PageView::setZoom(double zoom) {
     if (qFuzzyCompare(zoom, m_zoom))
         return;
 
-    // Preserve the reading position: keep whatever is at the viewport top there.
+    // Preserve the reading position: keep whatever row sits at the viewport top.
     const double topY = verticalScrollBar()->value();
-    const int anchor = pageAtContentY(topY);
-    const double frac =
-        pageHeightPx(anchor) > 0 ? (topY - m_pageTop[anchor]) / pageHeightPx(anchor) : 0.0;
+    const int r = rowAtContentY(topY);
+    const double frac = rowHeightPx(r) > 0 ? (topY - m_rowTop[r]) / rowHeightPx(r) : 0.0;
 
     m_zoom = zoom;
     m_cache.clear(); // pixmaps are the wrong size now; stale renders self-drop
@@ -337,8 +419,8 @@ void PageView::setZoom(double zoom) {
     m_pending.clear();
     relayout();
 
-    if (anchor < pageCount())
-        verticalScrollBar()->setValue(qRound(m_pageTop[anchor] + frac * pageHeightPx(anchor)));
+    if (r < m_rowTop.size())
+        verticalScrollBar()->setValue(qRound(m_rowTop[r] + frac * rowHeightPx(r)));
 
     emit zoomChanged(m_zoom);
     updateCurrentPage();
@@ -360,7 +442,7 @@ void PageView::zoomActualSize() {
 void PageView::fitToWidth() {
     if (pageCount() == 0)
         return;
-    setZoom((viewport()->width() - 2.0 * kMargin) / m_maxPageWPoints);
+    setZoom((viewport()->width() - 2.0 * kMargin) / m_maxRowWPoints);
 }
 
 void PageView::fitWholePage() {
@@ -391,7 +473,13 @@ void PageView::showSearchResult(int index) {
     m_currentResult = ((index % count) + count) % count;
     const QPdfLink link = m_search->resultAtIndex(m_currentResult);
     if (link.page() >= 0) {
-        const double y = m_pageTop[link.page()] + link.location().y() * m_zoom - 40;
+        if (m_mode == LayoutMode::SinglePage) {
+            m_currentPage = link.page();
+            relayout();
+            emit currentPageChanged(m_currentPage);
+        }
+        const int r = (link.page() < m_pageRow.size()) ? m_pageRow[link.page()] : 0;
+        const double y = m_rowTop[std::max(0, r)] + link.location().y() * m_zoom - 40;
         verticalScrollBar()->setValue(qRound(std::max(0.0, y)));
     }
     viewport()->update();

@@ -31,6 +31,7 @@
 #include "ui/Viewport.h"
 
 #include <QAction>
+#include <QActionGroup>
 #include <QApplication>
 #include <QEasingCurve>
 #include <QParallelAnimationGroup>
@@ -95,6 +96,23 @@ void MainWindow::buildActions() {
     m_fitPageAct = new QAction(tr("Fit &Page"), this);
     m_fitPageAct->setShortcut(Qt::CTRL | Qt::Key_2);
 
+    // Page layout — a radio group (default Continuous).
+    auto* layoutGroup = new QActionGroup(this);
+    m_singlePageAct = new QAction(tr("&Single Page"), this);
+    m_continuousAct = new QAction(tr("&Continuous"), this);
+    m_twoUpAct = new QAction(tr("&Two Pages"), this);
+    for (QAction* a : {m_singlePageAct, m_continuousAct, m_twoUpAct}) {
+        a->setCheckable(true);
+        layoutGroup->addAction(a);
+    }
+    m_continuousAct->setChecked(true);
+    connect(m_singlePageAct, &QAction::triggered, this,
+            [this] { m_viewport->setLayoutMode(PageView::LayoutMode::SinglePage); });
+    connect(m_continuousAct, &QAction::triggered, this,
+            [this] { m_viewport->setLayoutMode(PageView::LayoutMode::Continuous); });
+    connect(m_twoUpAct, &QAction::triggered, this,
+            [this] { m_viewport->setLayoutMode(PageView::LayoutMode::TwoUp); });
+
     m_toggleThemeAct = new QAction(tr("Toggle &Light / Dark"), this);
     connect(m_toggleThemeAct, &QAction::triggered, this, [] { Theme::instance().toggleMode(); });
 
@@ -155,6 +173,11 @@ void MainWindow::buildMenus() {
     view->addSeparator();
     view->addAction(m_fitWidthAct);
     view->addAction(m_fitPageAct);
+    view->addSeparator();
+    QMenu* layoutMenu = view->addMenu(tr("Page &Layout"));
+    layoutMenu->addAction(m_singlePageAct);
+    layoutMenu->addAction(m_continuousAct);
+    layoutMenu->addAction(m_twoUpAct);
     view->addSeparator();
     view->addAction(m_immersiveAct);
     view->addSeparator();
@@ -382,7 +405,33 @@ void MainWindow::wireSignals() {
     connect(m_commandBar, &CommandBar::printRequested, this, [this] { notImplemented(tr("Print")); });
     connect(m_commandBar, &CommandBar::emailRequested, this, [this] { notImplemented(tr("Email")); });
     connect(m_commandBar, &CommandBar::findRequested, this, &MainWindow::openFind);
-    connect(m_commandBar, &CommandBar::moreRequested, this, [this] { notImplemented(tr("More options")); });
+    connect(m_commandBar, &CommandBar::moreRequested, this, [this] {
+        QMenu menu(this);
+        menu.addAction(m_singlePageAct);
+        menu.addAction(m_continuousAct);
+        menu.addAction(m_twoUpAct);
+        menu.addSeparator();
+        menu.addAction(m_zoomActualAct);
+        menu.addAction(m_fitWidthAct);
+        menu.addAction(m_fitPageAct);
+        menu.addSeparator();
+        for (int pct : {50, 75, 125, 150, 200}) {
+            QAction* a = menu.addAction(tr("Zoom to %1%").arg(pct));
+            connect(a, &QAction::triggered, this,
+                    [this, pct] { m_viewport->setZoomFactor(pct / 100.0); });
+        }
+        menu.exec(QCursor::pos());
+    });
+
+    // Keep the layout radio in sync if the mode changes by any path.
+    connect(m_viewport, &Viewport::layoutModeChanged, this, [this](PageView::LayoutMode m) {
+        if (m == PageView::LayoutMode::SinglePage)
+            m_singlePageAct->setChecked(true);
+        else if (m == PageView::LayoutMode::TwoUp)
+            m_twoUpAct->setChecked(true);
+        else
+            m_continuousAct->setChecked(true);
+    });
     connect(m_commandBar, &CommandBar::shareRequested, this, [this] { notImplemented(tr("Share")); });
 
     // Floating pill.
@@ -646,6 +695,9 @@ void MainWindow::updateChromeState() {
     m_zoomActualAct->setEnabled(loaded);
     m_fitWidthAct->setEnabled(loaded);
     m_fitPageAct->setEnabled(loaded);
+    m_singlePageAct->setEnabled(loaded);
+    m_continuousAct->setEnabled(loaded);
+    m_twoUpAct->setEnabled(loaded);
     m_immersiveAct->setEnabled(loaded);
 
     m_commandBar->setDocumentLoaded(loaded);
