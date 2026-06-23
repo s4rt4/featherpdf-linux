@@ -251,8 +251,14 @@ QString Theme::styleSheet() const {
                "#RailPanelHead { color:%3; font-size:11px; font-weight:700; letter-spacing:.5px; }"
                "#RailPanelPlaceholder { color:%3; font-size:13px; }"
                "#ThumbnailList { background:transparent; }"
-               "#ThumbnailList::item:hover { background:%4; }")
-               .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.canvas));
+               "#ThumbnailList::item:hover { background:%4; }"
+               "#OutlineEmpty { color:%3; font-size:13px; }"
+               "#OutlineTree { background:transparent; outline:0; }"
+               "#OutlineTree::item { padding:5px 4px; border-radius:6px; color:%6; }"
+               "#OutlineTree::item:hover { background:%4; }"
+               "#OutlineTree::item:selected { background:%7; color:%8; }")
+               .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.canvas))
+               .arg(css(p.text), css(p.accentTint), css(p.accent));
 
     // Home start screen — canvas backdrop, big suggested action, recent cards.
     qss += QStringLiteral(

@@ -22,6 +22,7 @@
 #include "ui/FloatingPill.h"
 #include "ui/HomeView.h"
 #include "ui/NavigationRail.h"
+#include "ui/OutlinePanel.h"
 #include "ui/TabStrip.h"
 #include "ui/Theme.h"
 #include "ui/ThumbnailPanel.h"
@@ -199,13 +200,15 @@ void MainWindow::buildShell() {
     panelCol->addWidget(m_panelHead);
     m_panelStack = new QStackedWidget(m_panelHost);
     m_thumbnails = new ThumbnailPanel(m_panelHost);
+    m_outline = new OutlinePanel(m_panelHost);
     m_panelPlaceholder = new QLabel(m_panelHost);
     m_panelPlaceholder->setObjectName("RailPanelPlaceholder");
     m_panelPlaceholder->setAlignment(Qt::AlignCenter);
     m_panelPlaceholder->setWordWrap(true);
     m_panelPlaceholder->setContentsMargins(16, 16, 16, 16);
     m_panelStack->addWidget(m_thumbnails);       // index 0
-    m_panelStack->addWidget(m_panelPlaceholder); // index 1
+    m_panelStack->addWidget(m_outline);          // index 1
+    m_panelStack->addWidget(m_panelPlaceholder); // index 2
     panelCol->addWidget(m_panelStack, 1);
     m_panelHost->setVisible(false);
 
@@ -294,9 +297,11 @@ void MainWindow::wireSignals() {
         if (p == NavigationRail::Panel::Thumbnails) {
             m_panelHead->setText(tr("THUMBNAILS"));
             m_panelStack->setCurrentWidget(m_thumbnails);
+        } else if (p == NavigationRail::Panel::Outline) {
+            m_panelHead->setText(tr("OUTLINE"));
+            m_panelStack->setCurrentWidget(m_outline);
         } else {
             static const QHash<NavigationRail::Panel, QString> names{
-                {NavigationRail::Panel::Outline, tr("OUTLINE")},
                 {NavigationRail::Panel::Annotations, tr("ANNOTATIONS")},
                 {NavigationRail::Panel::Attachments, tr("ATTACHMENTS")},
                 {NavigationRail::Panel::Layers, tr("LAYERS")}};
@@ -310,6 +315,9 @@ void MainWindow::wireSignals() {
     // Thumbnails ↔ viewport: click navigates; the current page stays highlighted.
     connect(m_thumbnails, &ThumbnailPanel::pageActivated, m_viewport, &Viewport::goToPage);
     connect(m_viewport, &Viewport::currentPageChanged, m_thumbnails, &ThumbnailPanel::setCurrentPage);
+
+    // Outline → viewport navigation.
+    connect(m_outline, &OutlinePanel::pageActivated, m_viewport, &Viewport::goToPage);
 
     // Tools pane.
     connect(m_toolsPane, &ToolsPane::toolActivated, this, [this](const QString& id) {
@@ -450,6 +458,7 @@ void MainWindow::activateSession(int id) {
     m_viewport->goToPage(target->lastPage);
     m_thumbnails->setDocument(m_doc->pdf());
     m_thumbnails->setCurrentPage(target->lastPage);
+    m_outline->setDocument(m_doc->pdf());
 
     m_tabStrip->setActiveDocument(id);
     updateWindowTitle();
@@ -477,6 +486,7 @@ void MainWindow::closeSession(int id) {
         m_doc = nullptr;
         m_viewport->clear();
         m_thumbnails->clear();
+        m_outline->clear();
     }
     if (doc)
         doc->deleteLater();

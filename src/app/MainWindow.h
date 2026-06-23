@@ -24,6 +24,7 @@ class FeatherDocument;
 class Viewport;
 class HomeView;
 class ThumbnailPanel;
+class OutlinePanel;
 class TabStrip;
 class CommandBar;
 class FindBar;
@@ -113,6 +114,7 @@ private:
     QLabel* m_panelHead = nullptr;
     QLabel* m_panelPlaceholder = nullptr;
     ThumbnailPanel* m_thumbnails = nullptr;
+    OutlinePanel* m_outline = nullptr;
     CommandBar* m_commandBar = nullptr;
     FindBar* m_findBar = nullptr;
     int m_searchIndex = 0;
