@@ -16,7 +16,9 @@
 
 #include "app/MainWindow.h"
 
+#include "backends/PdfEditor.h"
 #include "core/FeatherDocument.h"
+#include "core/PageCommands.h"
 #include "ui/CommandBar.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
@@ -47,6 +49,8 @@
 #include <QSettings>
 #include <QStackedWidget>
 #include <QStandardPaths>
+#include <QUndoGroup>
+#include <QUndoStack>
 #include <QVBoxLayout>
 
 namespace {
@@ -72,6 +76,29 @@ void MainWindow::buildActions() {
     m_openAct = new QAction(tr("&Open…"), this);
     m_openAct->setShortcut(QKeySequence::Open);
     connect(m_openAct, &QAction::triggered, this, &MainWindow::openFileDialog);
+
+    m_saveAct = new QAction(tr("&Save"), this);
+    m_saveAct->setShortcut(QKeySequence::Save);
+    connect(m_saveAct, &QAction::triggered, this, [this] { saveActive(); });
+
+    m_saveAsAct = new QAction(tr("Save &As…"), this);
+    m_saveAsAct->setShortcut(QKeySequence::SaveAs);
+    connect(m_saveAsAct, &QAction::triggered, this, [this] { saveActiveAs(); });
+
+    // One undo history per document, tracked by a group so Undo/Redo always act
+    // on the active tab (ui-guidelines §10).
+    m_undoGroup = new QUndoGroup(this);
+    m_undoAct = m_undoGroup->createUndoAction(this, tr("&Undo"));
+    m_undoAct->setShortcut(QKeySequence::Undo);
+    m_redoAct = m_undoGroup->createRedoAction(this, tr("&Redo"));
+    m_redoAct->setShortcut(QKeySequence::Redo);
+
+    m_rotateLeftAct = new QAction(tr("Rotate &Left"), this);
+    m_rotateLeftAct->setShortcut(Qt::CTRL | Qt::Key_BracketLeft);
+    connect(m_rotateLeftAct, &QAction::triggered, this, [this] { rotateActivePage(-90); });
+    m_rotateRightAct = new QAction(tr("Rotate &Right"), this);
+    m_rotateRightAct->setShortcut(Qt::CTRL | Qt::Key_BracketRight);
+    connect(m_rotateRightAct, &QAction::triggered, this, [this] { rotateActivePage(90); });
 
     m_closeAct = new QAction(tr("&Close"), this);
     m_closeAct->setShortcut(QKeySequence::Close);
@@ -150,17 +177,16 @@ void MainWindow::buildMenus() {
     file->addAction(m_openAct);
     m_recentMenu = file->addMenu(tr("Open &Recent"));
     file->addSeparator();
+    file->addAction(m_saveAct);
+    file->addAction(m_saveAsAct);
+    file->addSeparator();
     file->addAction(m_closeAct);
     file->addSeparator();
     file->addAction(m_quitAct);
 
     QMenu* edit = menuBar()->addMenu(tr("&Edit"));
-    QAction* undo = edit->addAction(tr("&Undo"));
-    QAction* redo = edit->addAction(tr("&Redo"));
-    undo->setShortcut(QKeySequence::Undo);
-    redo->setShortcut(QKeySequence::Redo);
-    undo->setEnabled(false); // a unified undo stack arrives with editing milestones
-    redo->setEnabled(false);
+    edit->addAction(m_undoAct);
+    edit->addAction(m_redoAct);
     edit->addSeparator();
     QAction* find = edit->addAction(tr("&Find…"));
     find->setShortcut(QKeySequence::Find);
@@ -184,13 +210,11 @@ void MainWindow::buildMenus() {
     view->addAction(m_toggleThemeAct);
 
     QMenu* document = menuBar()->addMenu(tr("&Document"));
-    for (const auto& [label, feature] :
-         {std::pair{tr("Rotate View"), tr("Rotate view")},
-          std::pair{tr("Properties…"), tr("Document properties")}}) {
-        QAction* a = document->addAction(label);
-        const QString f = feature;
-        connect(a, &QAction::triggered, this, [this, f] { notImplemented(f); });
-    }
+    document->addAction(m_rotateLeftAct);
+    document->addAction(m_rotateRightAct);
+    document->addSeparator();
+    QAction* props = document->addAction(tr("Properties…"));
+    connect(props, &QAction::triggered, this, [this] { notImplemented(tr("Document properties")); });
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
     for (const QString& name : {tr("Export"), tr("Create"), tr("Edit"), tr("Comment"),
@@ -400,13 +424,16 @@ void MainWindow::wireSignals() {
     connect(m_commandBar, &CommandBar::zoomOutRequested, m_viewport, &Viewport::zoomOut);
     connect(m_commandBar, &CommandBar::nextPageRequested, this, &MainWindow::nextPage);
     connect(m_commandBar, &CommandBar::prevPageRequested, this, &MainWindow::previousPage);
-    connect(m_commandBar, &CommandBar::saveRequested, this, [this] { notImplemented(tr("Save")); });
-    connect(m_commandBar, &CommandBar::exportRequested, this, [this] { notImplemented(tr("Export")); });
+    connect(m_commandBar, &CommandBar::saveRequested, this, [this] { saveActive(); });
+    connect(m_commandBar, &CommandBar::exportRequested, this, [this] { saveActiveAs(); });
     connect(m_commandBar, &CommandBar::printRequested, this, [this] { notImplemented(tr("Print")); });
     connect(m_commandBar, &CommandBar::emailRequested, this, [this] { notImplemented(tr("Email")); });
     connect(m_commandBar, &CommandBar::findRequested, this, &MainWindow::openFind);
     connect(m_commandBar, &CommandBar::moreRequested, this, [this] {
         QMenu menu(this);
+        menu.addAction(m_rotateLeftAct);
+        menu.addAction(m_rotateRightAct);
+        menu.addSeparator();
         menu.addAction(m_singlePageAct);
         menu.addAction(m_continuousAct);
         menu.addAction(m_twoUpAct);
@@ -520,6 +547,61 @@ void MainWindow::wireSignals() {
     });
 }
 
+void MainWindow::rotateActivePage(int deltaDegrees) {
+    Session* s = session(m_activeId);
+    if (!s || !hasActiveDoc() || !s->undo)
+        return;
+    s->undo->push(new RotatePageCommand(s->doc, m_viewport->currentPage(), deltaDegrees));
+}
+
+bool MainWindow::saveActiveAs() {
+    if (!hasActiveDoc())
+        return false;
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-edited.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Export PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return false;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = PdfEditor::saveRotated(m_doc->filePath(), out, m_doc->rotations(), &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't export"), error);
+        return false;
+    }
+    m_toast->show(tr("Exported to %1").arg(QFileInfo(out).fileName()));
+    return true;
+}
+
+bool MainWindow::saveActive() {
+    if (!hasActiveDoc())
+        return false;
+    Session* s = session(m_activeId);
+    if (s && s->undo && s->undo->isClean())
+        return true; // nothing to write
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok =
+        PdfEditor::saveRotated(m_doc->filePath(), m_doc->filePath(), m_doc->rotations(), &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't save"), error);
+        return false;
+    }
+    m_doc->markSaved();
+    if (s && s->undo)
+        s->undo->setClean();
+    m_toast->show(tr("Saved"));
+    return true;
+}
+
 void MainWindow::openFind() {
     if (!hasActiveDoc())
         return;
@@ -583,11 +665,17 @@ bool MainWindow::openPath(const QString& path) {
     addRecentFile(absolute);
     rebuildRecentMenu();
 
-    // A new session gets its own tab; opening focuses it.
+    // A new session gets its own tab and its own undo history.
     Session s;
     s.doc = doc;
     s.path = absolute;
     s.id = m_tabStrip->addDocument(doc->title());
+    s.undo = new QUndoStack(this);
+    m_undoGroup->addStack(s.undo);
+    // The unsaved-changes dot follows this document's clean state.
+    const int sid = s.id;
+    connect(s.undo, &QUndoStack::cleanChanged, this,
+            [this, sid](bool clean) { m_tabStrip->setDocumentDirty(sid, !clean); });
     m_sessions.append(s);
     activateSession(s.id);
     return true;
@@ -612,6 +700,8 @@ void MainWindow::activateSession(int id) {
 
     m_activeId = id;
     m_doc = target->doc;
+    if (target->undo)
+        m_undoGroup->setActiveStack(target->undo);
     m_findBar->hide(); // search is per-document; setDocument clears the query
     m_searchIndex = 0;
     m_viewport->setDocument(m_doc);
@@ -637,8 +727,13 @@ void MainWindow::closeSession(int id) {
         return;
 
     FeatherDocument* doc = m_sessions[idx].doc;
+    QUndoStack* stack = m_sessions[idx].undo;
     m_sessions.remove(idx);
     m_tabStrip->removeDocument(id);
+    if (stack) {
+        m_undoGroup->removeStack(stack);
+        stack->deleteLater();
+    }
 
     const bool wasActive = (id == m_activeId);
     if (wasActive) {
@@ -689,6 +784,10 @@ void MainWindow::updateWindowTitle() {
 void MainWindow::updateChromeState() {
     const bool loaded = hasActiveDoc();
 
+    m_saveAct->setEnabled(loaded);
+    m_saveAsAct->setEnabled(loaded);
+    m_rotateLeftAct->setEnabled(loaded);
+    m_rotateRightAct->setEnabled(loaded);
     m_closeAct->setEnabled(loaded);
     m_zoomInAct->setEnabled(loaded);
     m_zoomOutAct->setEnabled(loaded);

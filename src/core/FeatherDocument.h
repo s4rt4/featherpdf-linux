@@ -18,6 +18,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QVector>
 
 class QPdfDocument;
 
@@ -60,11 +61,29 @@ public:
     // Human-readable message for a load failure, ready for a dialog/toast.
     static QString describe(LoadResult result);
 
+    // ── Page edits (M1) ──────────────────────────────────────────────────────
+    // The façade owns the editable page arrangement. For now that is a rotation
+    // per page (degrees clockwise, 0/90/180/270); deletes and reordering join it
+    // later. Edits are applied at render time and made lossless on save (QPDF).
+
+    int rotation(int page) const; // 0, 90, 180, or 270
+    void rotatePage(int page, int deltaDegrees); // delta is added, normalised
+    const QVector<int>& rotations() const { return m_rotations; }
+
+    bool isModified() const { return m_modified; }
+    void markSaved(); // clears the modified flag (after a successful save)
+
 signals:
     void loaded();
     void closed();
+    void pageEdited(int page);       // a single page's edit changed
+    void modifiedChanged(bool modified);
 
 private:
+    void setModified(bool modified);
+
     QPdfDocument* m_pdf;
     QString m_filePath;
+    QVector<int> m_rotations; // size == pageCount once loaded
+    bool m_modified = false;
 };

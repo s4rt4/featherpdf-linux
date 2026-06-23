@@ -21,6 +21,7 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QPdfDocument>
+#include <QPdfDocumentRenderOptions>
 #include <QPdfLink>
 #include <QPdfPageRenderer>
 #include <QPdfSearchModel>
@@ -47,8 +48,10 @@ PageView::PageView(QWidget* parent) : QAbstractScrollArea(parent) {
     m_renderer = new QPdfPageRenderer(this);
     m_renderer->setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
     connect(m_renderer, &QPdfPageRenderer::pageRendered, this,
-            [this](int page, QSize size, const QImage& image, QPdfDocumentRenderOptions, quint64) {
-                if (image.isNull() || size != pixelSize(page)) // drop stale (pre-zoom) results
+            [this](int page, QSize, const QImage& image, QPdfDocumentRenderOptions, quint64 id) {
+                // Drop results from a superseded generation (zoom or rotation changed).
+                const quint64 g = m_reqGen.take(id);
+                if (image.isNull() || g != m_gen)
                     return;
                 m_pending.remove(page);
                 QPixmap pm = QPixmap::fromImage(image);
@@ -79,6 +82,8 @@ void PageView::setDocument(QPdfDocument* doc) {
     m_cache.clear();
     m_lru.clear();
     m_pending.clear();
+    m_reqGen.clear();
+    ++m_gen;
     m_currentPage = 0;
     m_currentResult = -1;
     m_renderedCount = 0;
@@ -100,6 +105,7 @@ void PageView::setDocument(QPdfDocument* doc) {
             m_maxPageWPoints = std::max(m_maxPageWPoints, s.width());
         }
     }
+    m_rotations.assign(m_pageSizes.size(), 0);
 
     relayout();
     verticalScrollBar()->setValue(0);
@@ -136,7 +142,9 @@ void PageView::buildRows() {
         double w = 0;
         for (int p : m_rows[r]) {
             m_pageRow[p] = r;
-            w += m_pageSizes[p].width();
+            const int rot = rotationOf(p);
+            const QSizeF& s = m_pageSizes[p];
+            w += (rot == 90 || rot == 270) ? s.height() : s.width(); // effective width
         }
         m_maxRowWPoints = std::max(m_maxRowWPoints, w);
     }
@@ -237,7 +245,15 @@ void PageView::request(int page) {
     if (!m_doc || m_pending.contains(page) || m_cache.contains(page))
         return;
     m_pending.insert(page);
-    m_renderer->requestPage(page, pixelSize(page));
+    QPdfDocumentRenderOptions opts;
+    switch (rotationOf(page)) {
+    case 90: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise90); break;
+    case 180: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise180); break;
+    case 270: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise270); break;
+    default: break;
+    }
+    const quint64 id = m_renderer->requestPage(page, pixelSize(page), opts);
+    m_reqGen.insert(id, m_gen);
 }
 
 void PageView::dropStaleCache() {
@@ -245,6 +261,34 @@ void PageView::dropStaleCache() {
         const int victim = m_lru.takeFirst();
         m_cache.remove(victim);
     }
+}
+
+void PageView::invalidateRenders() {
+    // Everything in flight or cached is now wrong (different zoom or rotation).
+    ++m_gen;
+    m_cache.clear();
+    m_lru.clear();
+    m_pending.clear();
+    m_reqGen.clear();
+}
+
+void PageView::setRotations(const QVector<int>& rotations) {
+    m_rotations = rotations;
+    m_rotations.resize(pageCount()); // stay in step with the page count
+    invalidateRenders();
+    relayout();
+    viewport()->update();
+}
+
+void PageView::setRotation(int page, int degrees) {
+    if (page < 0 || page >= pageCount())
+        return;
+    if (m_rotations.size() < pageCount())
+        m_rotations.resize(pageCount());
+    m_rotations[page] = ((degrees % 360) + 360) % 360;
+    invalidateRenders();
+    relayout();
+    viewport()->update();
 }
 
 void PageView::paintEvent(QPaintEvent*) {
@@ -414,9 +458,7 @@ void PageView::setZoom(double zoom) {
     const double frac = rowHeightPx(r) > 0 ? (topY - m_rowTop[r]) / rowHeightPx(r) : 0.0;
 
     m_zoom = zoom;
-    m_cache.clear(); // pixmaps are the wrong size now; stale renders self-drop
-    m_lru.clear();
-    m_pending.clear();
+    invalidateRenders(); // pixmaps are the wrong size now
     relayout();
 
     if (r < m_rowTop.size())

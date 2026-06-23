@@ -7,6 +7,9 @@ qt_add_executable(feather-pdf
     app/MainWindow.h
     core/FeatherDocument.cpp
     core/FeatherDocument.h
+    core/PageCommands.h
+    backends/PdfEditor.cpp
+    backends/PdfEditor.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -53,6 +56,7 @@ target_link_libraries(feather-pdf PRIVATE
     Qt6::PdfWidgets
     Qt6::Svg
     Qt6::Concurrent
+    PkgConfig::QPDF
 )
 
 install(TARGETS feather-pdf RUNTIME DESTINATION bin)

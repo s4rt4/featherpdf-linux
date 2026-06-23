@@ -39,8 +39,16 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)
 Viewport::~Viewport() = default;
 
 void Viewport::setDocument(FeatherDocument* doc) {
+    if (m_doc)
+        disconnect(m_doc, &FeatherDocument::pageEdited, this, nullptr);
     m_doc = doc;
     m_view->setDocument(doc ? doc->pdf() : nullptr);
+    if (doc) {
+        m_view->setRotations(doc->rotations());
+        // Follow façade edits (rotation today; deletes/reorder later).
+        connect(doc, &FeatherDocument::pageEdited, this,
+                [this, doc](int page) { m_view->setRotation(page, doc->rotation(page)); });
+    }
     emit pageCountChanged(pageCount());
     emit currentPageChanged(currentPage());
     emit zoomChanged(zoomFactor());

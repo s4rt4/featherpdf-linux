@@ -51,6 +51,10 @@ public:
 
     void setDocument(QPdfDocument* doc);
 
+    // Per-page rotation (degrees clockwise) from the façade's edit model.
+    void setRotations(const QVector<int>& rotations);
+    void setRotation(int page, int degrees);
+
     int pageCount() const { return m_pageSizes.size(); }
     int currentPage() const { return m_currentPage; }
     void goToPage(int page); // 0-based, scroll to its top
@@ -90,9 +94,21 @@ protected:
 
 private:
     // Layout (all in logical px unless noted). Pages are grouped into rows — one
-    // page per row for single/continuous, two per row for facing.
-    double pageWidthPx(int page) const { return m_pageSizes[page].width() * m_zoom; }
-    double pageHeightPx(int page) const { return m_pageSizes[page].height() * m_zoom; }
+    // page per row for single/continuous, two per row for facing. Sizes are the
+    // *effective* size, with width/height swapped for 90°/270° rotation.
+    int rotationOf(int page) const {
+        return (page >= 0 && page < m_rotations.size()) ? m_rotations[page] : 0;
+    }
+    double pageWidthPx(int page) const {
+        const int r = rotationOf(page);
+        const QSizeF& s = m_pageSizes[page];
+        return ((r == 90 || r == 270) ? s.height() : s.width()) * m_zoom;
+    }
+    double pageHeightPx(int page) const {
+        const int r = rotationOf(page);
+        const QSizeF& s = m_pageSizes[page];
+        return ((r == 90 || r == 270) ? s.width() : s.height()) * m_zoom;
+    }
     void buildRows();
     double rowHeightPx(int row) const;
     double rowContentWidthPx(int row) const; // sum of page widths + inner gap
@@ -105,6 +121,7 @@ private:
     // Rendering.
     void request(int page);
     void dropStaleCache();        // keep the cache near the viewport, bounded
+    void invalidateRenders();     // drop cache + in-flight on zoom/rotation change
     QSize pixelSize(int page) const;
 
     QPdfDocument* m_doc = nullptr;
@@ -112,7 +129,8 @@ private:
     QPdfSearchModel* m_search = nullptr;
     int m_currentResult = -1;
 
-    QList<QSizeF> m_pageSizes;    // points, per page
+    QList<QSizeF> m_pageSizes;    // points, per page (unrotated)
+    QVector<int> m_rotations;     // degrees clockwise, per page
     QList<QList<int>> m_rows;     // page indices grouped into rows
     QList<int> m_pageRow;         // page → row index
     QList<double> m_rowTop;       // cumulative row top offset, logical px
@@ -125,6 +143,8 @@ private:
     QHash<int, QPixmap> m_cache;  // page → rendered pixmap at the current zoom
     QList<int> m_lru;             // most-recent at back
     QSet<int> m_pending;          // in-flight render requests
+    quint64 m_gen = 0;            // render generation; bumped on zoom/rotation
+    QHash<quint64, quint64> m_reqGen; // request id → generation it was made in
 
     bool m_hud = false;
     int m_renderedCount = 0;      // HUD: total renders delivered

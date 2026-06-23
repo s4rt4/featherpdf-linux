@@ -39,6 +39,8 @@ class QAbstractAnimation;
 class QLabel;
 class QMenu;
 class QStackedWidget;
+class QUndoGroup;
+class QUndoStack;
 
 // The application shell (ui-guidelines §5): a tabbed Acrobat-style workspace —
 // menu bar, tab strip, command toolbar, then the body (left navigation rail ·
@@ -67,6 +69,11 @@ private:
     void nextPage();
     void previousPage();
 
+    // Page edits (M1).
+    void rotateActivePage(int deltaDegrees);
+    bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
+    bool saveActive();        // write edits back to the current file (QPDF)
+
     // Find: open the find bar, drive matches, and report the running count.
     void openFind();
     void stepFind(int delta);
@@ -79,6 +86,7 @@ private:
         FeatherDocument* doc = nullptr;
         QString path;
         int lastPage = 0;
+        QUndoStack* undo = nullptr; // this document's edit history
     };
     Session* session(int id);
     void activateSession(int id);
@@ -134,8 +142,15 @@ private:
 
     // Actions (centralized; menus and shortcuts use these).
     QAction* m_openAct = nullptr;
+    QAction* m_saveAct = nullptr;
+    QAction* m_saveAsAct = nullptr;
     QAction* m_closeAct = nullptr;
     QAction* m_quitAct = nullptr;
+    QAction* m_undoAct = nullptr;
+    QAction* m_redoAct = nullptr;
+    QAction* m_rotateLeftAct = nullptr;
+    QAction* m_rotateRightAct = nullptr;
+    QUndoGroup* m_undoGroup = nullptr;
     QAction* m_zoomInAct = nullptr;
     QAction* m_zoomOutAct = nullptr;
     QAction* m_zoomActualAct = nullptr;

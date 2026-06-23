@@ -53,6 +53,8 @@ FeatherDocument::LoadResult FeatherDocument::load(const QString& path) {
 
     if (result == LoadResult::Ok) {
         m_filePath = path;
+        m_rotations.assign(m_pdf->pageCount(), 0);
+        setModified(false);
         emit loaded();
     } else {
         m_filePath.clear();
@@ -60,11 +62,41 @@ FeatherDocument::LoadResult FeatherDocument::load(const QString& path) {
     return result;
 }
 
+int FeatherDocument::rotation(int page) const {
+    return (page >= 0 && page < m_rotations.size()) ? m_rotations[page] : 0;
+}
+
+void FeatherDocument::rotatePage(int page, int deltaDegrees) {
+    if (page < 0 || page >= m_rotations.size())
+        return;
+    int next = (m_rotations[page] + deltaDegrees) % 360;
+    if (next < 0)
+        next += 360;
+    if (next == m_rotations[page])
+        return;
+    m_rotations[page] = next;
+    setModified(true);
+    emit pageEdited(page);
+}
+
+void FeatherDocument::markSaved() {
+    setModified(false);
+}
+
+void FeatherDocument::setModified(bool modified) {
+    if (m_modified == modified)
+        return;
+    m_modified = modified;
+    emit modifiedChanged(m_modified);
+}
+
 void FeatherDocument::close() {
     if (!isLoaded())
         return;
     m_pdf->close();
     m_filePath.clear();
+    m_rotations.clear();
+    setModified(false);
     emit closed();
 }
 
