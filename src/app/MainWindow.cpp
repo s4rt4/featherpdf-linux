@@ -509,6 +509,11 @@ void MainWindow::wireSignals() {
     // Thumbnails ↔ viewport: click navigates; the current page stays highlighted.
     connect(m_thumbnails, &ThumbnailPanel::pageActivated, m_viewport, &Viewport::goToPage);
     connect(m_viewport, &Viewport::currentPageChanged, m_thumbnails, &ThumbnailPanel::setCurrentPage);
+    connect(m_thumbnails, &ThumbnailPanel::pageMoved, this, [this](int from, int to) {
+        Session* s = session(m_activeId);
+        if (s && s->undo && hasActiveDoc())
+            s->undo->push(new MovePageCommand(s->doc, from, to));
+    });
 
     // Outline → viewport navigation.
     connect(m_outline, &OutlinePanel::pageActivated, m_viewport, &Viewport::goToPage);

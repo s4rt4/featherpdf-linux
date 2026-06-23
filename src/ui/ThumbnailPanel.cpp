@@ -20,6 +20,7 @@
 
 #include <QAbstractListModel>
 #include <QApplication>
+#include <QDropEvent>
 #include <QHash>
 #include <QListView>
 #include <QPainter>
@@ -114,6 +115,13 @@ public:
             return {};
         }
         return {};
+    }
+
+    Qt::ItemFlags flags(const QModelIndex& index) const override {
+        Qt::ItemFlags f = QAbstractListModel::flags(index) | Qt::ItemIsDropEnabled;
+        if (index.isValid())
+            f |= Qt::ItemIsDragEnabled;
+        return f;
     }
 
 private slots:
@@ -221,6 +229,38 @@ private:
     int m_current = -1;
 };
 
+// A list view that lets pages be dragged to reorder. The move is not performed
+// in the model — it is announced (moveRequested) so the façade can do it as an
+// undoable command and propagate the new arrangement back.
+class ThumbnailListView : public QListView {
+    Q_OBJECT
+
+public:
+    using QListView::QListView;
+
+signals:
+    void moveRequested(int from, int to);
+
+protected:
+    void startDrag(Qt::DropActions actions) override {
+        m_dragRow = currentIndex().row();
+        QListView::startDrag(actions);
+    }
+    void dropEvent(QDropEvent* event) override {
+        int to = indexAt(event->position().toPoint()).row();
+        if (to < 0)
+            to = model()->rowCount() - 1; // dropped past the last row → move to end
+        const int from = m_dragRow;
+        m_dragRow = -1;
+        event->acceptProposedAction();
+        if (from >= 0 && to >= 0 && from != to)
+            emit moveRequested(from, to);
+    }
+
+private:
+    int m_dragRow = -1;
+};
+
 // ── Panel ────────────────────────────────────────────────────────────────────
 ThumbnailPanel::ThumbnailPanel(QWidget* parent) : QWidget(parent) {
     setObjectName("ThumbnailPanel");
@@ -229,22 +269,30 @@ ThumbnailPanel::ThumbnailPanel(QWidget* parent) : QWidget(parent) {
     col->setContentsMargins(0, 0, 0, 0);
     col->setSpacing(0);
 
-    m_view = new QListView(this);
+    auto* view = new ThumbnailListView(this);
+    m_view = view;
     m_model = new ThumbnailModel(this);
     m_delegate = new ThumbnailDelegate(this);
     m_view->setModel(m_model);
     m_view->setItemDelegate(m_delegate);
     m_view->setObjectName("ThumbnailList");
     m_view->setUniformItemSizes(false);
-    m_view->setSelectionMode(QAbstractItemView::NoSelection);
+    m_view->setSelectionMode(QAbstractItemView::SingleSelection); // needed for drag
     m_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_view->setFrameShape(QFrame::NoFrame);
     m_view->setMouseTracking(true);
+    // Drag a thumbnail to reorder the pages.
+    m_view->setDragDropMode(QAbstractItemView::InternalMove);
+    m_view->setDragEnabled(true);
+    m_view->setAcceptDrops(true);
+    m_view->setDropIndicatorShown(true);
+    m_view->setDefaultDropAction(Qt::MoveAction);
     col->addWidget(m_view);
 
     connect(m_view, &QListView::clicked, this,
             [this](const QModelIndex& i) { emit pageActivated(i.row()); });
+    connect(view, &ThumbnailListView::moveRequested, this, &ThumbnailPanel::pageMoved);
     connect(&Theme::instance(), &Theme::changed, this, [this] { m_view->viewport()->update(); });
 }
 

@@ -45,7 +45,8 @@ public:
     void setCurrentPage(int page); // highlight + scroll into view
 
 signals:
-    void pageActivated(int page); // 0-based
+    void pageActivated(int page);      // 0-based
+    void pageMoved(int from, int to);  // drag-reorder request
 
 private:
     QListView* m_view = nullptr;
