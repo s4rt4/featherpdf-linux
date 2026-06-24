@@ -18,6 +18,7 @@
 
 #include "backends/PdfEditor.h"
 #include "backends/Annotator.h"
+#include "backends/Comparer.h"
 #include "backends/Converter.h"
 #include "backends/FormFiller.h"
 #include "backends/Ocr.h"
@@ -270,6 +271,10 @@ void MainWindow::buildMenus() {
     document->addSeparator();
     QAction* ocr = document->addAction(tr("&Recognize Text (OCR)…"));
     connect(ocr, &QAction::triggered, this, &MainWindow::recognizeText);
+    QAction* optimize = document->addAction(tr("&Optimize…"));
+    connect(optimize, &QAction::triggered, this, &MainWindow::optimizeDocument);
+    QAction* compare = document->addAction(tr("Co&mpare with…"));
+    connect(compare, &QAction::triggered, this, &MainWindow::compareDocuments);
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
     for (const QString& name : {tr("Export"), tr("Create"), tr("Edit"), tr("Comment"),
@@ -718,6 +723,10 @@ void MainWindow::wireSignals() {
             signDocument();
         } else if (id == QLatin1String("create")) {
             createPdf();
+        } else if (id == QLatin1String("optimize")) {
+            optimizeDocument();
+        } else if (id == QLatin1String("compare")) {
+            compareDocuments();
         } else {
             notImplemented(id.left(1).toUpper() + id.mid(1));
         }
@@ -1066,6 +1075,77 @@ void MainWindow::createPdf() {
     watcher->setFuture(QtConcurrent::run([input, out] {
         QString error;
         return Converter::officeToPdf(input, out, &error);
+    }));
+}
+
+void MainWindow::optimizeDocument() {
+    if (!hasActiveDoc())
+        return;
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-optimized.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save optimized PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    qint64 before = 0, after = 0;
+    QString error;
+    const bool ok = PdfEditor::optimize(m_doc->filePath(), out, &before, &after, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't optimize"), error);
+        return;
+    }
+    const double pct = before > 0 ? 100.0 * (before - after) / before : 0.0;
+    m_toast->show(tr("Optimized: %1 → %2 (%3% smaller)")
+                      .arg(locale().formattedDataSize(before),
+                           locale().formattedDataSize(after))
+                      .arg(pct, 0, 'f', 1));
+    openPath(out);
+}
+
+void MainWindow::compareDocuments() {
+    if (!hasActiveDoc())
+        return;
+    const QString other = QFileDialog::getOpenFileName(
+        this, tr("Compare current document with…"), QFileInfo(m_doc->filePath()).absolutePath(),
+        tr("PDF documents (*.pdf)"));
+    if (other.isEmpty())
+        return;
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-comparison.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save comparison PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    // The current document is the newer one; the picked file is the baseline.
+    const QString baseline = other;
+    const QString current = m_doc->filePath();
+    m_toast->show(tr("Comparing…"));
+    auto* watcher = new QFutureWatcher<bool>(this);
+    auto* changed = new int(0);
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [this, watcher, out, changed] {
+        const bool ok = watcher->result();
+        const int n = *changed;
+        watcher->deleteLater();
+        delete changed;
+        if (!ok) {
+            QMessageBox::warning(this, tr("Couldn't compare"), tr("The comparison failed."));
+            return;
+        }
+        m_toast->show(n == 0 ? tr("No visual differences found")
+                             : tr("%n page(s) changed", "", n));
+        openPath(out);
+    });
+    watcher->setFuture(QtConcurrent::run([baseline, current, out, changed] {
+        QString error;
+        return Comparer::compare(baseline, current, out, changed, &error);
     }));
 }
 

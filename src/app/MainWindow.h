@@ -94,6 +94,8 @@ private:
     void setHighlightMode(bool on); // enter/leave the annotation-authoring mode
     void applyAnnotations();        // write highlight + note annotations, save, open result
     void createPdf();         // make a PDF from images (native) or an office doc (LibreOffice)
+    void optimizeDocument();  // rewrite more compactly (QPDF)
+    void compareDocuments();  // visual diff against another PDF
     void combineDocuments();  // merge several PDFs into one (QPDF)
     void signDocument();      // digitally sign with a certificate (Poppler/NSS)
     void viewSignatures();    // show/verify the document's existing signatures

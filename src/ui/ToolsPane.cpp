@@ -138,6 +138,8 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
         {"edit", QT_TR_NOOP("Edit"), "edit", false},
         {"comment", QT_TR_NOOP("Comment"), "comment", false},
         {"combine", QT_TR_NOOP("Combine"), "combine", true},
+        {"compare", QT_TR_NOOP("Compare"), "compare", false},
+        {"optimize", QT_TR_NOOP("Optimize"), "optimize", false},
         {"organize", QT_TR_NOOP("Organize"), "organize", true},
         {"redact", QT_TR_NOOP("Redact"), "redact", false},
         {"sign", QT_TR_NOOP("Sign"), "sign", false},

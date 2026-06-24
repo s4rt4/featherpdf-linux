@@ -334,6 +334,45 @@ bool PdfEditor::removeProtection(const QString& inputPath, const QString& output
     return true;
 }
 
+bool PdfEditor::optimize(const QString& inputPath, const QString& outputPath, qint64* beforeBytes,
+                         qint64* afterBytes, QString* error) {
+    if (beforeBytes)
+        *beforeBytes = QFileInfo(inputPath).size();
+
+    const bool inPlace =
+        QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
+    const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
+
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData());
+        QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
+        writer.setObjectStreamMode(qpdf_o_generate); // pack indirect objects together
+        writer.setCompressStreams(true);             // compress uncompressed streams
+        writer.setRecompressFlate(true);             // recompress flate at the best level
+        writer.write();
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        if (inPlace)
+            QFile::remove(target);
+        return false;
+    }
+
+    if (inPlace) {
+        QFile::remove(outputPath);
+        if (!QFile::rename(target, outputPath)) {
+            if (error)
+                *error = QStringLiteral("The optimized file couldn't replace the original.");
+            QFile::remove(target);
+            return false;
+        }
+    }
+    if (afterBytes)
+        *afterBytes = QFileInfo(outputPath).size();
+    return true;
+}
+
 bool PdfEditor::isPasswordProtected(const QString& path) {
     try {
         QPDF qpdf;

@@ -62,6 +62,13 @@ public:
     static bool protect(const QString& inputPath, const QString& outputPath,
                         const QString& openPassword, const Permissions& perms, QString* error);
 
+    // Rewrite `inputPath` to `outputPath` more compactly: pack objects into
+    // object streams, (re)compress streams. Lossless — content is unchanged.
+    // *beforeBytes/*afterBytes (optional) report the file sizes. Temp file +
+    // atomic rename. Returns true on success; on failure fills *error.
+    static bool optimize(const QString& inputPath, const QString& outputPath, qint64* beforeBytes,
+                         qint64* afterBytes, QString* error);
+
     // True if `path` is an encrypted PDF that needs a user password to open.
     // (QtPdf reports AES-256 files as an "unsupported scheme" until the right
     // password is set, so the viewer asks QPDF whether to prompt for one.)

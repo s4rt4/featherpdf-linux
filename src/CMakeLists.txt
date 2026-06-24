@@ -20,6 +20,8 @@ qt_add_executable(feather-pdf
     backends/Converter.h
     backends/Ocr.cpp
     backends/Ocr.h
+    backends/Comparer.cpp
+    backends/Comparer.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp

@@ -7,6 +7,8 @@
   <file alias="chevron-right.svg">icons/chevron-right.svg</file>
   <file alias="chevron-up.svg">icons/chevron-up.svg</file>
   <file alias="combine.svg">icons/combine.svg</file>
+  <file alias="compare.svg">icons/compare.svg</file>
+  <file alias="optimize.svg">icons/optimize.svg</file>
   <file alias="comment.svg">icons/comment.svg</file>
   <file alias="create.svg">icons/create.svg</file>
   <file alias="dots-horizontal.svg">icons/dots-horizontal.svg</file>
