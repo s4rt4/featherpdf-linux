@@ -19,6 +19,7 @@
 #include "ui/Theme.h"
 
 #include <QKeyEvent>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPdfDocument>
 #include <QPdfDocumentRenderOptions>
@@ -42,6 +43,7 @@ constexpr double kMaxZoom = 8.0;
 PageView::PageView(QWidget* parent) : QAbstractScrollArea(parent) {
     setFrameShape(QFrame::NoFrame);
     viewport()->setMouseTracking(true);
+    viewport()->installEventFilter(this); // redaction drag (QAbstractScrollArea routes here)
     verticalScrollBar()->setSingleStep(48);
     horizontalScrollBar()->setSingleStep(48);
 
@@ -88,6 +90,13 @@ void PageView::setDocument(QPdfDocument* doc) {
     m_currentPage = 0;
     m_currentResult = -1;
     m_renderedCount = 0;
+    // Redaction marks are tied to this document's slots — reset for the new one.
+    m_dragging = false;
+    m_dragSlot = -1;
+    if (!m_redactions.isEmpty()) {
+        m_redactions.clear();
+        emit redactionsChanged(0);
+    }
 
     m_renderer->setDocument(doc);
     m_search->setSearchString(QString());
@@ -230,6 +239,91 @@ QRect PageView::pageRect(int page) const {
     return {};
 }
 
+QPointF PageView::normInSlot(int slot, const QPoint& vpPt) const {
+    const QRect r = pageRect(slot);
+    if (r.width() <= 0 || r.height() <= 0)
+        return {};
+    return QPointF(std::clamp(double(vpPt.x() - r.x()) / r.width(), 0.0, 1.0),
+                   std::clamp(double(vpPt.y() - r.y()) / r.height(), 0.0, 1.0));
+}
+
+void PageView::setRedactionMode(bool on) {
+    if (m_redactMode == on)
+        return;
+    m_redactMode = on;
+    m_dragging = false;
+    m_dragSlot = -1;
+    viewport()->setCursor(on ? Qt::CrossCursor : Qt::ArrowCursor);
+    viewport()->update();
+}
+
+int PageView::redactionCount() const {
+    int n = 0;
+    for (const auto& rects : m_redactions)
+        n += rects.size();
+    return n;
+}
+
+void PageView::clearRedactions() {
+    if (m_redactions.isEmpty())
+        return;
+    m_redactions.clear();
+    m_dragging = false;
+    m_dragSlot = -1;
+    emit redactionsChanged(0);
+    viewport()->update();
+}
+
+bool PageView::eventFilter(QObject* obj, QEvent* event) {
+    if (obj != viewport() || !m_redactMode)
+        return QAbstractScrollArea::eventFilter(obj, event);
+
+    switch (event->type()) {
+    case QEvent::MouseButtonPress: {
+        auto* me = static_cast<QMouseEvent*>(event);
+        if (me->button() != Qt::LeftButton)
+            break;
+        // Find the page under the cursor.
+        for (int slot = 0; slot < pageCount(); ++slot) {
+            if (pageRect(slot).contains(me->pos())) {
+                m_dragging = true;
+                m_dragSlot = slot;
+                m_dragStart = normInSlot(slot, me->pos());
+                m_dragNorm = QRectF(m_dragStart, QSizeF(0, 0));
+                viewport()->update();
+                return true;
+            }
+        }
+        break;
+    }
+    case QEvent::MouseMove: {
+        if (!m_dragging)
+            break;
+        auto* me = static_cast<QMouseEvent*>(event);
+        const QPointF cur = normInSlot(m_dragSlot, me->pos());
+        m_dragNorm = QRectF(m_dragStart, cur).normalized();
+        viewport()->update();
+        return true;
+    }
+    case QEvent::MouseButtonRelease: {
+        if (!m_dragging)
+            break;
+        m_dragging = false;
+        // Ignore accidental tiny marks (a click without a real drag).
+        if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004) {
+            m_redactions[m_dragSlot].append(m_dragNorm);
+            emit redactionsChanged(redactionCount());
+        }
+        m_dragSlot = -1;
+        viewport()->update();
+        return true;
+    }
+    default:
+        break;
+    }
+    return QAbstractScrollArea::eventFilter(obj, event);
+}
+
 void PageView::updateCurrentPage() {
     if (m_rows.isEmpty())
         return;
@@ -349,6 +443,21 @@ void PageView::paintEvent(QPaintEvent*) {
                     p.drawRect(QRectF(r.x() + rp.x() * m_zoom, r.y() + rp.y() * m_zoom,
                                       rp.width() * m_zoom, rp.height() * m_zoom));
         }
+        // Redaction marks — what will be removed. Drawn semi-opaque red while
+        // editing so the user can see what's underneath; the live drag is outlined.
+        const auto drawMark = [&](const QRectF& nrm, bool active) {
+            const QRectF box(r.x() + nrm.x() * r.width(), r.y() + nrm.y() * r.height(),
+                             nrm.width() * r.width(), nrm.height() * r.height());
+            p.setBrush(QColor(200, 30, 30, active ? 70 : 120));
+            p.setPen(active ? QPen(QColor(200, 30, 30), 1, Qt::DashLine) : QPen(Qt::NoPen));
+            p.drawRect(box);
+        };
+        if (auto it = m_redactions.constFind(slot); it != m_redactions.constEnd())
+            for (const QRectF& nrm : *it)
+                drawMark(nrm, false);
+        if (m_dragging && slot == m_dragSlot && m_dragNorm.isValid())
+            drawMark(m_dragNorm, true);
+
         p.setBrush(Qt::NoBrush);
         p.setPen(pal.hairline);
         p.drawRect(r);

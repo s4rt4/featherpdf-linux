@@ -33,6 +33,7 @@
 #include "ui/PasswordDialog.h"
 #include "ui/PrintDialog.h"
 #include "ui/ProtectDialog.h"
+#include "ui/RedactionBar.h"
 #include "ui/TabStrip.h"
 #include "ui/Theme.h"
 #include "ui/ThumbnailPanel.h"
@@ -55,6 +56,8 @@
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
 #include <QLocale>
+#include <QBuffer>
+#include <QImage>
 #include <QPainter>
 #include <QPdfDocument>
 #include <QPdfDocumentRenderOptions>
@@ -268,9 +271,12 @@ void MainWindow::buildShell() {
     m_commandBar = new CommandBar(shell);
     m_findBar = new FindBar(shell);
     m_findBar->hide();
+    m_redactionBar = new RedactionBar(shell);
+    m_redactionBar->hide();
     outer->addWidget(m_tabStrip);
     outer->addWidget(m_commandBar);
     outer->addWidget(m_findBar);
+    outer->addWidget(m_redactionBar);
 
     auto* body = new QWidget(shell);
     auto* bodyRow = new QHBoxLayout(body);
@@ -324,6 +330,8 @@ void MainWindow::buildShell() {
 }
 
 void MainWindow::showHome() {
+    if (m_viewport->redactionMode())
+        setRedactionMode(false);
     if (m_immersive)
         m_immersiveAct->setChecked(false); // leave immersive before showing Home
     m_home->refresh();
@@ -553,6 +561,13 @@ void MainWindow::wireSignals() {
     // Outline → viewport navigation.
     connect(m_outline, &OutlinePanel::pageActivated, m_viewport, &Viewport::goToPage);
 
+    // Redaction bar ↔ viewport.
+    connect(m_viewport, &Viewport::redactionsChanged, this,
+            [this](int count) { m_redactionBar->setCount(count); });
+    connect(m_redactionBar, &RedactionBar::applyRequested, this, &MainWindow::applyRedactions);
+    connect(m_redactionBar, &RedactionBar::clearRequested, m_viewport, &Viewport::clearRedactions);
+    connect(m_redactionBar, &RedactionBar::doneRequested, this, [this] { setRedactionMode(false); });
+
     // Annotations list → viewport. Poppler reports the original page index; map
     // it to the current display slot so edits (reorder/delete) are honoured.
     connect(m_annotations, &AnnotationsPanel::annotationActivated, this, [this](int originalPage) {
@@ -574,6 +589,9 @@ void MainWindow::wireSignals() {
                 m_rail->setCurrentPanel(NavigationRail::Panel::Thumbnails);
         } else if (id == QLatin1String("combine")) {
             combineDocuments();
+        } else if (id == QLatin1String("redact")) {
+            if (hasActiveDoc())
+                setRedactionMode(!m_viewport->redactionMode());
         } else {
             notImplemented(id.left(1).toUpper() + id.mid(1));
         }
@@ -656,6 +674,96 @@ bool MainWindow::saveActiveAs() {
     }
     m_toast->show(tr("Exported to %1").arg(QFileInfo(out).fileName()));
     return true;
+}
+
+void MainWindow::setRedactionMode(bool on) {
+    if (on && !hasActiveDoc())
+        return;
+    m_viewport->setRedactionMode(on);
+    m_redactionBar->setVisible(on);
+    if (on) {
+        m_findBar->hide();
+        m_redactionBar->setCount(m_viewport->redactionCount());
+    } else {
+        m_viewport->clearRedactions(); // leaving the mode discards unapplied marks
+    }
+}
+
+void MainWindow::applyRedactions() {
+    if (!hasActiveDoc())
+        return;
+    const QHash<int, QList<QRectF>> marks = m_viewport->redactionMarks();
+    if (marks.isEmpty())
+        return;
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-redacted.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save redacted PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QPdfDocument* pdf = m_doc->pdf();
+    QHash<int, PdfEditor::RedactedImage> redacted;
+    constexpr double kDpi = 200.0;
+    const double scale = kDpi / 72.0;
+
+    for (auto it = marks.constBegin(); it != marks.constEnd(); ++it) {
+        const int slot = it.key();
+        const int orig = m_doc->originalPageAt(slot);
+        if (orig < 0)
+            continue;
+        const int rot = m_doc->rotation(slot);
+        QSizeF pt = pdf->pagePointSize(orig);
+        if (rot == 90 || rot == 270)
+            pt.transpose(); // effective (displayed) size — what the marks are relative to
+        if (pt.width() <= 0 || pt.height() <= 0)
+            continue;
+
+        const QSize px(qRound(pt.width() * scale), qRound(pt.height() * scale));
+        QPdfDocumentRenderOptions opts;
+        switch (rot) {
+        case 90: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise90); break;
+        case 180: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise180); break;
+        case 270: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise270); break;
+        default: break;
+        }
+
+        QImage flat(px, QImage::Format_RGB888);
+        flat.fill(Qt::white);
+        QPainter pnt(&flat);
+        const QImage rendered = pdf->render(orig, px, opts);
+        if (!rendered.isNull())
+            pnt.drawImage(0, 0, rendered);
+        pnt.setPen(Qt::NoPen);
+        for (const QRectF& nrm : it.value())
+            pnt.fillRect(QRectF(nrm.x() * px.width(), nrm.y() * px.height(),
+                                nrm.width() * px.width(), nrm.height() * px.height()),
+                         Qt::black);
+        pnt.end();
+
+        QByteArray jpeg;
+        QBuffer buffer(&jpeg);
+        buffer.open(QIODevice::WriteOnly);
+        flat.save(&buffer, "JPEG", 92);
+        redacted.insert(slot, PdfEditor::RedactedImage{jpeg, px.width(), px.height(), pt.width(),
+                                                       pt.height()});
+    }
+
+    QString error;
+    const bool ok = PdfEditor::saveRedacted(m_doc->filePath(), out, m_doc->pageOrder(),
+                                            m_doc->rotations(), redacted, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't redact"), error);
+        return;
+    }
+    m_toast->show(tr("Saved redacted copy to %1").arg(QFileInfo(out).fileName()));
+    setRedactionMode(false);
+    openPath(out); // open the flattened result
 }
 
 void MainWindow::combineDocuments() {

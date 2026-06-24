@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <QByteArray>
+#include <QHash>
 #include <QString>
 #include <QStringList>
 #include <QVector>
@@ -70,4 +72,24 @@ public:
     // may equal `inputPath`. Returns true on success; fills *error otherwise.
     static bool removeProtection(const QString& inputPath, const QString& outputPath,
                                  const QString& password, QString* error);
+
+    // A page that has been flattened to a redacted image. `jpeg` is JPEG-encoded
+    // RGB (the page rendered with its redaction boxes painted opaque), `px*` its
+    // pixel size, `pt*` the page box in points it should fill.
+    struct RedactedImage {
+        QByteArray jpeg;
+        int pxWidth = 0;
+        int pxHeight = 0;
+        double ptWidth = 0;
+        double ptHeight = 0;
+    };
+
+    // Save the arrangement (`order`/`rotations`, as saveArrangement) but replace
+    // the display slots present in `redactedBySlot` with image-only pages built
+    // from the supplied flattened renders — so the redacted content is physically
+    // gone, not merely covered. Non-redacted pages are copied losslessly. Temp
+    // file + atomic rename. Returns true on success; fills *error otherwise.
+    static bool saveRedacted(const QString& inputPath, const QString& outputPath,
+                             const QVector<int>& order, const QVector<int>& rotations,
+                             const QHash<int, RedactedImage>& redactedBySlot, QString* error);
 };

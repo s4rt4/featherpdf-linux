@@ -80,11 +80,22 @@ public:
     void setHudVisible(bool on);
     bool hudVisible() const { return m_hud; }
 
+    // Redaction: drag rectangles over content to mark it for removal. Marks are
+    // stored as fractions of each DISPLAYED page (so rotation needs no special
+    // case — the apply step renders the page as shown and paints the fractions).
+    void setRedactionMode(bool on);
+    bool redactionMode() const { return m_redactMode; }
+    // slot → normalized rects (each in [0,1] of the displayed page).
+    QHash<int, QList<QRectF>> redactionMarks() const { return m_redactions; }
+    int redactionCount() const; // total rectangles across all pages
+    void clearRedactions();
+
 signals:
     void currentPageChanged(int page);
     void zoomChanged(double zoom);
     void searchResultsChanged(int count);
     void layoutModeChanged(LayoutMode mode);
+    void redactionsChanged(int count);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -92,6 +103,7 @@ protected:
     void scrollContentsBy(int dx, int dy) override;
     void wheelEvent(QWheelEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
+    bool eventFilter(QObject* obj, QEvent* event) override; // viewport mouse in redact mode
 
 private:
     // Layout (all in logical px unless noted). Pages are grouped into rows — one
@@ -163,4 +175,13 @@ private:
 
     bool m_hud = false;
     int m_renderedCount = 0;      // HUD: total renders delivered
+
+    // Redaction state.
+    QPointF normInSlot(int slot, const QPoint& vpPt) const; // viewport px → [0,1]×[0,1]
+    bool m_redactMode = false;
+    QHash<int, QList<QRectF>> m_redactions; // slot → normalized rects
+    bool m_dragging = false;
+    int m_dragSlot = -1;
+    QPointF m_dragStart;          // normalized start point
+    QRectF m_dragNorm;            // current drag rect, normalized
 };

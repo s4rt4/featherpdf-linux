@@ -34,9 +34,17 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)
             [this](int count) { emit searchResultsChanged(count); });
     connect(m_view, &PageView::layoutModeChanged, this,
             [this](PageView::LayoutMode m) { emit layoutModeChanged(m); });
+    connect(m_view, &PageView::redactionsChanged, this,
+            [this](int count) { emit redactionsChanged(count); });
 }
 
 Viewport::~Viewport() = default;
+
+void Viewport::setRedactionMode(bool on) { m_view->setRedactionMode(on); }
+bool Viewport::redactionMode() const { return m_view->redactionMode(); }
+QHash<int, QList<QRectF>> Viewport::redactionMarks() const { return m_view->redactionMarks(); }
+int Viewport::redactionCount() const { return m_view->redactionCount(); }
+void Viewport::clearRedactions() { m_view->clearRedactions(); }
 
 void Viewport::setDocument(FeatherDocument* doc) {
     if (m_doc)

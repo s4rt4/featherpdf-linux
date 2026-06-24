@@ -63,12 +63,20 @@ public:
     void showSearchResult(int index); // wraps; navigates to and highlights it
     int searchResultCount() const;
 
+    // Redaction (forwarded to PageView). Marks are slot → normalized rects.
+    void setRedactionMode(bool on);
+    bool redactionMode() const;
+    QHash<int, QList<QRectF>> redactionMarks() const;
+    int redactionCount() const;
+    void clearRedactions();
+
 signals:
     void zoomChanged(double factor);
     void currentPageChanged(int page); // 0-based
     void pageCountChanged(int count);
     void searchResultsChanged(int count);
     void layoutModeChanged(PageView::LayoutMode mode);
+    void redactionsChanged(int count);
 
 private:
     FeatherDocument* m_doc = nullptr;

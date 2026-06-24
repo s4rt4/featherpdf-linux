@@ -26,6 +26,7 @@
 
 #include <qpdf/QPDF.hh>
 #include <qpdf/QPDFExc.hh>
+#include <qpdf/QPDFObjectHandle.hh>
 #include <qpdf/QPDFPageDocumentHelper.hh>
 #include <qpdf/QPDFPageObjectHelper.hh>
 #include <qpdf/QPDFWriter.hh>
@@ -194,6 +195,105 @@ bool PdfEditor::protect(const QString& inputPath, const QString& outputPath,
         if (!QFile::rename(target, outputPath)) {
             if (error)
                 *error = QStringLiteral("The protected file couldn't replace the original.");
+            QFile::remove(target);
+            return false;
+        }
+    }
+    return true;
+}
+
+namespace {
+// Build a new image-only page: an /Image XObject (the flattened JPEG) drawn to
+// fill a MediaBox of the page's point size. Returned as an indirect page object.
+QPDFObjectHandle makeImagePage(QPDF& pdf, const PdfEditor::RedactedImage& ri) {
+    QPDFObjectHandle image = QPDFObjectHandle::newStream(&pdf);
+    QPDFObjectHandle d = image.getDict();
+    d.replaceKey("/Type", QPDFObjectHandle::newName("/XObject"));
+    d.replaceKey("/Subtype", QPDFObjectHandle::newName("/Image"));
+    d.replaceKey("/Width", QPDFObjectHandle::newInteger(ri.pxWidth));
+    d.replaceKey("/Height", QPDFObjectHandle::newInteger(ri.pxHeight));
+    d.replaceKey("/ColorSpace", QPDFObjectHandle::newName("/DeviceRGB"));
+    d.replaceKey("/BitsPerComponent", QPDFObjectHandle::newInteger(8));
+    image.replaceStreamData(std::string(ri.jpeg.constData(), ri.jpeg.size()),
+                            QPDFObjectHandle::newName("/DCTDecode"), QPDFObjectHandle::newNull());
+
+    QPDFObjectHandle xobjs = QPDFObjectHandle::newDictionary();
+    xobjs.replaceKey("/Im0", image);
+    QPDFObjectHandle resources = QPDFObjectHandle::newDictionary();
+    resources.replaceKey("/XObject", xobjs);
+
+    const auto num = [](double v) { return QByteArray::number(v, 'f', 3).toStdString(); };
+    const std::string content =
+        "q\n" + num(ri.ptWidth) + " 0 0 " + num(ri.ptHeight) + " 0 0 cm\n/Im0 Do\nQ\n";
+    QPDFObjectHandle contents = QPDFObjectHandle::newStream(&pdf, content);
+
+    QPDFObjectHandle mediabox = QPDFObjectHandle::newArray();
+    mediabox.appendItem(QPDFObjectHandle::newInteger(0));
+    mediabox.appendItem(QPDFObjectHandle::newInteger(0));
+    mediabox.appendItem(QPDFObjectHandle::newReal(num(ri.ptWidth)));
+    mediabox.appendItem(QPDFObjectHandle::newReal(num(ri.ptHeight)));
+
+    QPDFObjectHandle page = QPDFObjectHandle::newDictionary();
+    page.replaceKey("/Type", QPDFObjectHandle::newName("/Page"));
+    page.replaceKey("/MediaBox", mediabox);
+    page.replaceKey("/Resources", resources);
+    page.replaceKey("/Contents", contents);
+    return pdf.makeIndirectObject(page);
+}
+} // namespace
+
+bool PdfEditor::saveRedacted(const QString& inputPath, const QString& outputPath,
+                             const QVector<int>& order, const QVector<int>& rotations,
+                             const QHash<int, RedactedImage>& redactedBySlot, QString* error) {
+    const bool inPlace =
+        QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
+    const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
+
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData());
+
+        QPDFPageDocumentHelper dh(qpdf);
+        dh.pushInheritedAttributesToPage();
+        std::vector<QPDFPageObjectHelper> original = dh.getAllPages();
+        for (auto& page : original)
+            dh.removePage(page);
+
+        const int n = static_cast<int>(original.size());
+        for (int slot = 0; slot < order.size(); ++slot) {
+            if (auto it = redactedBySlot.constFind(slot); it != redactedBySlot.constEnd()) {
+                // Replace this slot with a flattened image-only page (rotation is
+                // already baked into the render, so the new page needs no /Rotate).
+                QPDFPageObjectHelper ph(makeImagePage(qpdf, it.value()));
+                dh.addPage(ph, /*first=*/false);
+                continue;
+            }
+            const int orig = order[slot];
+            if (orig < 0 || orig >= n)
+                continue;
+            QPDFPageObjectHelper page = original[orig];
+            int rot = (slot < rotations.size()) ? rotations[slot] : 0;
+            rot = ((rot % 360) + 360) % 360;
+            if (rot != 0)
+                page.rotatePage(rot, /*relative=*/true);
+            dh.addPage(page, /*first=*/false);
+        }
+
+        QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
+        writer.write();
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        if (inPlace)
+            QFile::remove(target);
+        return false;
+    }
+
+    if (inPlace) {
+        QFile::remove(outputPath);
+        if (!QFile::rename(target, outputPath)) {
+            if (error)
+                *error = QStringLiteral("The redacted file couldn't replace the original.");
             QFile::remove(target);
             return false;
         }

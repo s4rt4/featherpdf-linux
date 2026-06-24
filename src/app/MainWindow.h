@@ -33,6 +33,7 @@ class LayersPanel;
 class TabStrip;
 class CommandBar;
 class FindBar;
+class RedactionBar;
 class NavigationRail;
 class ToolsPane;
 class FloatingPill;
@@ -85,6 +86,8 @@ private:
     void deleteActivePage();
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
+    void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
+    void applyRedactions();         // flatten marked pages, save, open the result
     void combineDocuments();  // merge several PDFs into one (QPDF)
     void protectDocument();   // write a password-encrypted copy (QPDF, AES-256)
     void removeProtection();  // write a decrypted (password-free) copy (QPDF)
@@ -156,6 +159,7 @@ private:
     LayersPanel* m_layers = nullptr;
     CommandBar* m_commandBar = nullptr;
     FindBar* m_findBar = nullptr;
+    RedactionBar* m_redactionBar = nullptr;
     int m_searchIndex = 0;
     NavigationRail* m_rail = nullptr;
     ToolsPane* m_toolsPane = nullptr;

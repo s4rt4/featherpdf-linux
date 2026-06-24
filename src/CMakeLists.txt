@@ -34,6 +34,8 @@ qt_add_executable(feather-pdf
     ui/CommandBar.h
     ui/FindBar.cpp
     ui/FindBar.h
+    ui/RedactionBar.cpp
+    ui/RedactionBar.h
     ui/PrintDialog.cpp
     ui/PrintDialog.h
     ui/CombineDialog.cpp
