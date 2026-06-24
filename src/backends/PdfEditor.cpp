@@ -18,6 +18,7 @@
 
 #include <QFile>
 #include <QFileInfo>
+#include <QRandomGenerator>
 
 #include <exception>
 #include <memory>
@@ -139,10 +140,12 @@ bool PdfEditor::combine(const QStringList& inputPaths, const QString& outputPath
 }
 
 bool PdfEditor::protect(const QString& inputPath, const QString& outputPath,
-                        const QString& password, QString* error) {
-    if (password.isEmpty()) {
+                        const QString& openPassword, const Permissions& perms, QString* error) {
+    const bool restricted =
+        !(perms.allowPrinting && perms.allowCopying && perms.allowEditing);
+    if (openPassword.isEmpty() && !restricted) {
         if (error)
-            *error = QStringLiteral("A password is required.");
+            *error = QStringLiteral("Set a password or restrict at least one permission.");
         return false;
     }
 
@@ -150,20 +153,33 @@ bool PdfEditor::protect(const QString& inputPath, const QString& outputPath,
         QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
     const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
 
+    // The owner password enforces the restrictions. When nothing is restricted
+    // we mirror the open password (simple "password to open"); when something is
+    // restricted we use a random owner password so the limits actually bite even
+    // for someone who knows the open password. (Removing protection later only
+    // needs the open password, which is what the app remembers.)
+    QByteArray owner;
+    if (restricted) {
+        for (int i = 0; i < 32; ++i)
+            owner.append(char('!' + (QRandomGenerator::global()->bounded(93))));
+    } else {
+        owner = openPassword.toUtf8();
+    }
+
     try {
         QPDF qpdf;
         qpdf.processFile(inputPath.toLocal8Bit().constData());
 
         QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
-        // Same password to open and to own: this protects access; granular
-        // permission restrictions (which need a separate owner password) come
-        // in a later increment. R6 = AES-256, the only scheme PDF 2.0 defines.
-        const QByteArray pass = password.toUtf8();
-        writer.setR6EncryptionParameters(pass.constData(), pass.constData(),
-                                         /*allow_accessibility=*/true, /*allow_extract=*/true,
-                                         /*allow_assemble=*/true, /*allow_annotate_and_form=*/true,
-                                         /*allow_form_filling=*/true, /*allow_modify_other=*/true,
-                                         qpdf_r3p_full, /*encrypt_metadata_aes=*/true);
+        // R6 = AES-256, the only scheme PDF 2.0 defines. Accessibility extraction
+        // stays allowed regardless, per accessibility guidance.
+        const QByteArray user = openPassword.toUtf8();
+        writer.setR6EncryptionParameters(
+            user.constData(), owner.constData(),
+            /*allow_accessibility=*/true, /*allow_extract=*/perms.allowCopying,
+            /*allow_assemble=*/perms.allowEditing, /*allow_annotate_and_form=*/perms.allowEditing,
+            /*allow_form_filling=*/perms.allowEditing, /*allow_modify_other=*/perms.allowEditing,
+            perms.allowPrinting ? qpdf_r3p_full : qpdf_r3p_none, /*encrypt_metadata_aes=*/true);
         writer.write();
     } catch (const std::exception& e) {
         if (error)

@@ -58,8 +58,8 @@ ProtectDialog::ProtectDialog(const QString& docName, QWidget* parent) : QDialog(
     root->setSpacing(14);
 
     auto* hint = new QLabel(
-        tr("Anyone opening “%1” will need this password. Encryption is AES-256 — keep the "
-           "password safe, as it cannot be recovered.")
+        tr("Protect “%1” with AES-256 encryption. Set a password to open it, restrict what "
+           "recipients may do, or both. Keep the password safe — it cannot be recovered.")
             .arg(docName),
         this);
     hint->setObjectName(QStringLiteral("Hint"));
@@ -71,15 +71,28 @@ ProtectDialog::ProtectDialog(const QString& docName, QWidget* parent) : QDialog(
     form->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     m_password = new QLineEdit(this);
     m_password->setEchoMode(QLineEdit::Password);
+    m_password->setPlaceholderText(tr("Leave empty for no open password"));
     m_confirm = new QLineEdit(this);
     m_confirm->setEchoMode(QLineEdit::Password);
-    m_password->setMinimumWidth(240);
-    form->addRow(tr("Password"), m_password);
+    m_password->setMinimumWidth(260);
+    form->addRow(tr("Open password"), m_password);
     form->addRow(tr("Confirm"), m_confirm);
     root->addLayout(form);
 
     auto* show = new QCheckBox(tr("Show password"), this);
     root->addWidget(show);
+
+    // Permissions.
+    auto* permHead = new QLabel(tr("ALLOW RECIPIENTS TO"), this);
+    permHead->setObjectName(QStringLiteral("SectionHead"));
+    root->addWidget(permHead);
+    m_allowPrint = new QCheckBox(tr("Print the document"), this);
+    m_allowCopy = new QCheckBox(tr("Copy text and graphics"), this);
+    m_allowEdit = new QCheckBox(tr("Edit, annotate, and fill forms"), this);
+    for (QCheckBox* c : {m_allowPrint, m_allowCopy, m_allowEdit}) {
+        c->setChecked(true);
+        root->addWidget(c);
+    }
 
     m_status = new QLabel(this);
     m_status->setObjectName(QStringLiteral("Status"));
@@ -102,30 +115,45 @@ ProtectDialog::ProtectDialog(const QString& docName, QWidget* parent) : QDialog(
     });
     connect(m_password, &QLineEdit::textChanged, this, &ProtectDialog::validate);
     connect(m_confirm, &QLineEdit::textChanged, this, &ProtectDialog::validate);
+    for (QCheckBox* c : {m_allowPrint, m_allowCopy, m_allowEdit})
+        connect(c, &QCheckBox::toggled, this, &ProtectDialog::validate);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     validate();
-    resize(420, 0);
+    resize(440, 0);
 }
 
 void ProtectDialog::validate() {
     const QString pw = m_password->text();
     const QString cf = m_confirm->text();
-    bool ok = false;
-    if (pw.isEmpty()) {
-        m_status->clear();
-    } else if (cf.isEmpty()) {
-        m_status->setText(tr("Re-enter the password to confirm."));
-    } else if (pw != cf) {
-        m_status->setText(tr("The passwords don’t match."));
-    } else {
-        m_status->setText(tr("Passwords match."));
-        ok = true;
-    }
-    m_protect->setEnabled(ok);
+    const bool restricted = !(allowPrinting() && allowCopying() && allowEditing());
+
+    QString msg;
+    if (!pw.isEmpty() && cf.isEmpty())
+        msg = tr("Re-enter the password to confirm.");
+    else if (!pw.isEmpty() && pw != cf)
+        msg = tr("The passwords don’t match.");
+    else if (pw.isEmpty() && !restricted)
+        msg = tr("Set an open password or restrict at least one permission.");
+
+    const bool passwordsOk = pw.isEmpty() || pw == cf;
+    m_status->setText(msg);
+    m_protect->setEnabled(passwordsOk && (!pw.isEmpty() || restricted));
 }
 
 QString ProtectDialog::password() const {
     return m_password->text();
+}
+
+bool ProtectDialog::allowPrinting() const {
+    return m_allowPrint->isChecked();
+}
+
+bool ProtectDialog::allowCopying() const {
+    return m_allowCopy->isChecked();
+}
+
+bool ProtectDialog::allowEditing() const {
+    return m_allowEdit->isChecked();
 }

@@ -696,8 +696,8 @@ void MainWindow::protectDocument() {
     if (dialog.exec() != QDialog::Accepted)
         return;
     const QString password = dialog.password();
-    if (password.isEmpty())
-        return;
+    const PdfEditor::Permissions perms{dialog.allowPrinting(), dialog.allowCopying(),
+                                       dialog.allowEditing()};
 
     const QFileInfo info(m_doc->filePath());
     const QString suggested =
@@ -715,7 +715,7 @@ void MainWindow::protectDocument() {
     bool ok = PdfEditor::saveArrangement(m_doc->filePath(), out, m_doc->pageOrder(),
                                          m_doc->rotations(), &error);
     if (ok)
-        ok = PdfEditor::protect(out, out, password, &error);
+        ok = PdfEditor::protect(out, out, password, perms, &error);
     QApplication::restoreOverrideCursor();
 
     if (!ok) {

@@ -21,24 +21,32 @@
 
 class QLineEdit;
 class QLabel;
+class QCheckBox;
 class QPushButton;
 
-// Collects a password to encrypt a document with (AES-256). Requires the
-// password and its confirmation to match before the action is enabled. The
-// dialog only gathers the password — the caller performs the encryption.
+// Collects how to encrypt a document (AES-256): an optional open password and
+// per-recipient permissions (printing / copying / editing). At least a password
+// or one restriction is required. The dialog only gathers the choice — the
+// caller performs the encryption.
 class ProtectDialog : public QDialog {
     Q_OBJECT
 
 public:
     explicit ProtectDialog(const QString& docName, QWidget* parent = nullptr);
 
-    QString password() const;
+    QString password() const; // open password (may be empty)
+    bool allowPrinting() const;
+    bool allowCopying() const;
+    bool allowEditing() const;
 
 private:
     void validate();
 
     QLineEdit* m_password = nullptr;
     QLineEdit* m_confirm = nullptr;
+    QCheckBox* m_allowPrint = nullptr;
+    QCheckBox* m_allowCopy = nullptr;
+    QCheckBox* m_allowEdit = nullptr;
     QLabel* m_status = nullptr;
     QPushButton* m_protect = nullptr;
 };

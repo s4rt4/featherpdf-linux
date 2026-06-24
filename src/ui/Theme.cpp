@@ -148,9 +148,12 @@ QString Theme::styleSheet() const {
                // Dialogs are surface cards — set deterministically so dark mode
                // doesn't fall back to a mismatched default window colour.
                "QDialog { background:%3; }"
+               // Small uppercase section header used inside dialogs.
+               "QLabel#SectionHead { color:%5; font-size:11px; font-weight:700;"
+               " letter-spacing:.6px; }"
                "QToolTip { background:%3; color:%2; border:1px solid %4;"
                " border-radius:6px; padding:4px 7px; }")
-               .arg(css(p.canvas), css(p.text), css(p.surface), css(p.hairline));
+               .arg(css(p.canvas), css(p.text), css(p.surface), css(p.hairline), css(p.dim));
 
     // Menu bar — flat surface, hairline underline, soft hover (mockup .menu).
     qss += QStringLiteral(

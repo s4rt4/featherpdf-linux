@@ -42,13 +42,23 @@ public:
     // true on success; on failure fills *error with a friendly message.
     static bool combine(const QStringList& inputPaths, const QString& outputPath, QString* error);
 
-    // Write `inputPath` to `outputPath` encrypted with `password` (AES-256, the
-    // PDF 2.0 R6 scheme), required to open the document. Lossless — the page
-    // content is copied, only an encryption layer is added. Temp file + atomic
-    // rename, so `outputPath` may equal `inputPath`. Returns true on success;
-    // on failure fills *error with a friendly message.
+    // What a recipient who opens the document (with the open password, or no
+    // password) is allowed to do. Restricting any of these is only enforced via
+    // a separate owner password, which protect() generates automatically.
+    struct Permissions {
+        bool allowPrinting = true;
+        bool allowCopying = true; // extract text/graphics
+        bool allowEditing = true; // modify, assemble, annotate, fill forms
+    };
+
+    // Write `inputPath` to `outputPath` encrypted with AES-256 (the PDF 2.0 R6
+    // scheme). `openPassword` (may be empty) is required to open the document;
+    // `perms` restrict what the opener may do. Lossless — the page content is
+    // copied, only an encryption layer is added. Temp file + atomic rename, so
+    // `outputPath` may equal `inputPath`. Returns true on success; on failure
+    // fills *error with a friendly message.
     static bool protect(const QString& inputPath, const QString& outputPath,
-                        const QString& password, QString* error);
+                        const QString& openPassword, const Permissions& perms, QString* error);
 
     // True if `path` is an encrypted PDF that needs a user password to open.
     // (QtPdf reports AES-256 files as an "unsupported scheme" until the right
