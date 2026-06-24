@@ -38,6 +38,10 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)
             [this](int count) { emit redactionsChanged(count); });
     connect(m_view, &PageView::highlightsChanged, this,
             [this](int count) { emit highlightsChanged(count); });
+    connect(m_view, &PageView::notesChanged, this,
+            [this](int count) { emit notesChanged(count); });
+    connect(m_view, &PageView::noteRequested, this,
+            [this](int slot, QPointF pos) { emit noteRequested(slot, pos); });
 }
 
 Viewport::~Viewport() = default;
@@ -50,9 +54,17 @@ void Viewport::clearRedactions() { m_view->clearRedactions(); }
 
 void Viewport::setHighlightMode(bool on) { m_view->setHighlightMode(on); }
 bool Viewport::highlightMode() const { return m_view->highlightMode(); }
+void Viewport::setAnnotationTool(PageView::AnnotTool tool) { m_view->setAnnotationTool(tool); }
 QHash<int, QList<QRectF>> Viewport::highlightMarks() const { return m_view->highlightMarks(); }
+QHash<int, QList<QPair<QPointF, QString>>> Viewport::noteMarks() const {
+    return m_view->noteMarks();
+}
 int Viewport::highlightCount() const { return m_view->highlightCount(); }
-void Viewport::clearHighlights() { m_view->clearHighlights(); }
+int Viewport::noteCount() const { return m_view->noteCount(); }
+void Viewport::addNote(int slot, const QPointF& pos, const QString& text) {
+    m_view->addNote(slot, pos, text);
+}
+void Viewport::clearAnnotations() { m_view->clearAnnotations(); }
 
 void Viewport::setDocument(FeatherDocument* doc) {
     if (m_doc)

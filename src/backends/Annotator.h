@@ -33,9 +33,17 @@ public:
         QColor color;    // the highlight colour
     };
 
-    // Add `highlights` to `inputPath` and write the result to `outputPath`.
-    // Temp file + atomic rename, so `outputPath` may equal `inputPath`. Returns
-    // true on success; on failure fills *error with a friendly message.
-    static bool saveHighlights(const QString& inputPath, const QString& outputPath,
-                               const QList<Highlight>& highlights, QString* error);
+    struct Note {
+        int page = 0;       // original 0-based page index
+        QPointF pos;        // normalized [0,1] top-left anchor of the note icon
+        QString text;       // the note's contents
+        QColor color;       // the note icon colour
+    };
+
+    // Add `highlights` and `notes` to `inputPath` and write the result to
+    // `outputPath`. Temp file + atomic rename, so `outputPath` may equal
+    // `inputPath`. Returns true on success; on failure fills *error.
+    static bool saveAnnotations(const QString& inputPath, const QString& outputPath,
+                                const QList<Highlight>& highlights, const QList<Note>& notes,
+                                QString* error);
 };

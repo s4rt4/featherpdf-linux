@@ -16,32 +16,22 @@
 
 #pragma once
 
-#include <QWidget>
+#include <QDialog>
+#include <QString>
 
-class QLabel;
+class QPlainTextEdit;
 class QPushButton;
 
-// The annotation action strip, shown beneath the command bar while highlight
-// mode is active: a hint, a live mark count, and Save / Clear / Done. The marks
-// are drawn by the page view; this bar only drives the actions.
-class AnnotationBar : public QWidget {
+// A small themed editor for a sticky note's text.
+class NoteDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit AnnotationBar(QWidget* parent = nullptr);
+    explicit NoteDialog(QWidget* parent = nullptr);
 
-    void setCount(int count); // updates the label and enables/disables Save
-
-signals:
-    void saveRequested();
-    void clearRequested();
-    void doneRequested();
-    void toolChanged(int tool); // 0 = Highlight, 1 = Note
+    QString text() const;
 
 private:
-    QLabel* m_label = nullptr;
-    QPushButton* m_highlightTool = nullptr;
-    QPushButton* m_noteTool = nullptr;
-    QPushButton* m_save = nullptr;
-    QPushButton* m_clear = nullptr;
+    QPlainTextEdit* m_edit = nullptr;
+    QPushButton* m_add = nullptr;
 };

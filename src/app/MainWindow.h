@@ -89,8 +89,8 @@ private:
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
     void applyRedactions();         // flatten marked pages, save, open the result
-    void setHighlightMode(bool on); // enter/leave the highlight-authoring mode
-    void applyHighlights();         // write highlight annotations, save, open result
+    void setHighlightMode(bool on); // enter/leave the annotation-authoring mode
+    void applyAnnotations();        // write highlight + note annotations, save, open result
     void combineDocuments();  // merge several PDFs into one (QPDF)
     void protectDocument();   // write a password-encrypted copy (QPDF, AES-256)
     void removeProtection();  // write a decrypted (password-free) copy (QPDF)

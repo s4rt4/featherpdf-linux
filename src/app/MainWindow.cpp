@@ -31,6 +31,7 @@
 #include "ui/HomeView.h"
 #include "ui/LayersPanel.h"
 #include "ui/NavigationRail.h"
+#include "ui/NoteDialog.h"
 #include "ui/OutlinePanel.h"
 #include "ui/PasswordDialog.h"
 #include "ui/PrintDialog.h"
@@ -575,13 +576,27 @@ void MainWindow::wireSignals() {
     connect(m_redactionBar, &RedactionBar::clearRequested, m_viewport, &Viewport::clearRedactions);
     connect(m_redactionBar, &RedactionBar::doneRequested, this, [this] { setRedactionMode(false); });
 
-    // Annotation (highlight) bar ↔ viewport.
-    connect(m_viewport, &Viewport::highlightsChanged, this,
-            [this](int count) { m_annotationBar->setCount(count); });
-    connect(m_annotationBar, &AnnotationBar::saveRequested, this, &MainWindow::applyHighlights);
-    connect(m_annotationBar, &AnnotationBar::clearRequested, m_viewport, &Viewport::clearHighlights);
+    // Annotation bar ↔ viewport. The bar's count is highlights + notes.
+    const auto refreshAnnotCount = [this] {
+        m_annotationBar->setCount(m_viewport->highlightCount() + m_viewport->noteCount());
+    };
+    connect(m_viewport, &Viewport::highlightsChanged, this, refreshAnnotCount);
+    connect(m_viewport, &Viewport::notesChanged, this, refreshAnnotCount);
+    connect(m_annotationBar, &AnnotationBar::saveRequested, this, &MainWindow::applyAnnotations);
+    connect(m_annotationBar, &AnnotationBar::clearRequested, m_viewport,
+            &Viewport::clearAnnotations);
     connect(m_annotationBar, &AnnotationBar::doneRequested, this,
             [this] { setHighlightMode(false); });
+    connect(m_annotationBar, &AnnotationBar::toolChanged, this, [this](int tool) {
+        m_viewport->setAnnotationTool(tool == 1 ? PageView::AnnotTool::Note
+                                                : PageView::AnnotTool::Highlight);
+    });
+    // Note tool clicked → collect text, then add the note at that point.
+    connect(m_viewport, &Viewport::noteRequested, this, [this](int slot, QPointF pos) {
+        NoteDialog dialog(this);
+        if (dialog.exec() == QDialog::Accepted)
+            m_viewport->addNote(slot, pos, dialog.text());
+    });
 
     // Annotations list → viewport. Poppler reports the original page index; map
     // it to the current display slot so edits (reorder/delete) are honoured.
@@ -718,47 +733,57 @@ void MainWindow::setHighlightMode(bool on) {
     m_annotationBar->setVisible(on);
     if (on) {
         m_findBar->hide();
-        m_annotationBar->setCount(m_viewport->highlightCount());
+        m_annotationBar->setCount(m_viewport->highlightCount() + m_viewport->noteCount());
     } else {
-        m_viewport->clearHighlights();
+        m_viewport->clearAnnotations();
     }
 }
 
-void MainWindow::applyHighlights() {
+void MainWindow::applyAnnotations() {
     if (!hasActiveDoc())
         return;
-    const QHash<int, QList<QRectF>> marks = m_viewport->highlightMarks();
-    if (marks.isEmpty())
+    const QHash<int, QList<QRectF>> hiMarks = m_viewport->highlightMarks();
+    const QHash<int, QList<QPair<QPointF, QString>>> noteMarks = m_viewport->noteMarks();
+    if (hiMarks.isEmpty() && noteMarks.isEmpty())
         return;
 
-    // Map a rect from displayed (rotated) page space back to the unrotated page
-    // space Poppler annotations use.
-    const auto toPageSpace = [](const QRectF& d, int rot) {
-        const auto pt = [rot](const QPointF& p) -> QPointF {
-            switch (((rot % 360) + 360) % 360) {
-            case 90: return {p.y(), 1.0 - p.x()};
-            case 180: return {1.0 - p.x(), 1.0 - p.y()};
-            case 270: return {1.0 - p.y(), p.x()};
-            default: return p;
-            }
-        };
-        const QPointF a = pt(d.topLeft());
-        const QPointF b = pt(d.bottomRight());
+    // Map a normalized point from displayed (rotated) page space back to the
+    // unrotated page space the annotation backend uses.
+    const auto mapPoint = [](const QPointF& p, int rot) -> QPointF {
+        switch (((rot % 360) + 360) % 360) {
+        case 90: return {p.y(), 1.0 - p.x()};
+        case 180: return {1.0 - p.x(), 1.0 - p.y()};
+        case 270: return {1.0 - p.y(), p.x()};
+        default: return p;
+        }
+    };
+    const auto toPageRect = [&](const QRectF& d, int rot) {
+        const QPointF a = mapPoint(d.topLeft(), rot);
+        const QPointF b = mapPoint(d.bottomRight(), rot);
         return QRectF(QPointF(std::min(a.x(), b.x()), std::min(a.y(), b.y())),
                      QPointF(std::max(a.x(), b.x()), std::max(a.y(), b.y())));
     };
 
     QList<Annotator::Highlight> highlights;
-    const QColor color(255, 214, 0); // the bar's yellow swatch
-    for (auto it = marks.constBegin(); it != marks.constEnd(); ++it) {
+    const QColor color(255, 214, 0); // the bar's yellow
+    for (auto it = hiMarks.constBegin(); it != hiMarks.constEnd(); ++it) {
         const int orig = m_doc->originalPageAt(it.key());
         if (orig < 0)
             continue;
         const int rot = m_doc->rotation(it.key());
         for (const QRectF& nrm : it.value())
-            highlights.append(Annotator::Highlight{orig, toPageSpace(nrm, rot), color});
+            highlights.append(Annotator::Highlight{orig, toPageRect(nrm, rot), color});
     }
-    if (highlights.isEmpty())
+    QList<Annotator::Note> notes;
+    for (auto it = noteMarks.constBegin(); it != noteMarks.constEnd(); ++it) {
+        const int orig = m_doc->originalPageAt(it.key());
+        if (orig < 0)
+            continue;
+        const int rot = m_doc->rotation(it.key());
+        for (const auto& nm : it.value())
+            notes.append(Annotator::Note{orig, mapPoint(nm.first, rot), nm.second, color});
+    }
+    if (highlights.isEmpty() && notes.isEmpty())
         return;
 
     const QFileInfo info(m_doc->filePath());
@@ -771,7 +796,7 @@ void MainWindow::applyHighlights() {
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
-    const bool ok = Annotator::saveHighlights(m_doc->filePath(), out, highlights, &error);
+    const bool ok = Annotator::saveAnnotations(m_doc->filePath(), out, highlights, notes, &error);
     QApplication::restoreOverrideCursor();
 
     if (!ok) {

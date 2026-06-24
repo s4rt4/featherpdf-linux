@@ -70,12 +70,16 @@ public:
     int redactionCount() const;
     void clearRedactions();
 
-    // Highlight authoring (forwarded to PageView).
+    // Annotation authoring (forwarded to PageView).
     void setHighlightMode(bool on);
     bool highlightMode() const;
+    void setAnnotationTool(PageView::AnnotTool tool);
     QHash<int, QList<QRectF>> highlightMarks() const;
+    QHash<int, QList<QPair<QPointF, QString>>> noteMarks() const;
     int highlightCount() const;
-    void clearHighlights();
+    int noteCount() const;
+    void addNote(int slot, const QPointF& pos, const QString& text);
+    void clearAnnotations();
 
 signals:
     void zoomChanged(double factor);
@@ -85,6 +89,8 @@ signals:
     void layoutModeChanged(PageView::LayoutMode mode);
     void redactionsChanged(int count);
     void highlightsChanged(int count);
+    void notesChanged(int count);
+    void noteRequested(int slot, QPointF normPos);
 
 private:
     FeatherDocument* m_doc = nullptr;

@@ -45,9 +45,21 @@ QPDFObjectHandle numberArray(std::initializer_list<double> vals) {
 }
 } // namespace
 
-bool Annotator::saveHighlights(const QString& inputPath, const QString& outputPath,
-                               const QList<Highlight>& highlights, QString* error) {
-    if (highlights.isEmpty()) {
+namespace {
+// Append an annotation to a page's /Annots, creating the array if absent.
+void appendAnnot(QPDFObjectHandle& page, QPDFObjectHandle annot, QPDF& qpdf) {
+    QPDFObjectHandle annots = page.getKey("/Annots");
+    if (!annots.isArray())
+        annots = QPDFObjectHandle::newArray();
+    annots.appendItem(qpdf.makeIndirectObject(annot));
+    page.replaceKey("/Annots", annots);
+}
+} // namespace
+
+bool Annotator::saveAnnotations(const QString& inputPath, const QString& outputPath,
+                                const QList<Highlight>& highlights, const QList<Note>& notes,
+                                QString* error) {
+    if (highlights.isEmpty() && notes.isEmpty()) {
         if (error)
             *error = QStringLiteral("Nothing to save.");
         return false;
@@ -123,11 +135,58 @@ bool Annotator::saveHighlights(const QString& inputPath, const QString& outputPa
             annot.replaceKey("/F", QPDFObjectHandle::newInteger(4)); // Print
             annot.replaceKey("/AP", ap);
 
-            QPDFObjectHandle annots = page.getKey("/Annots");
-            if (!annots.isArray())
-                annots = QPDFObjectHandle::newArray();
-            annots.appendItem(qpdf.makeIndirectObject(annot));
-            page.replaceKey("/Annots", annots);
+            appendAnnot(page, annot, qpdf);
+        }
+
+        for (const Note& note : notes) {
+            if (note.page < 0 || note.page >= n)
+                continue;
+            QPDFObjectHandle page = pages[note.page].getObjectHandle();
+            QPDFObjectHandle mb = page.getKey("/MediaBox");
+            const double llx = mb.getArrayItem(0).getNumericValue();
+            const double lly = mb.getArrayItem(1).getNumericValue();
+            const double urx = mb.getArrayItem(2).getNumericValue();
+            const double ury = mb.getArrayItem(3).getNumericValue();
+            const double w = urx - llx;
+            const double h = ury - lly;
+
+            constexpr double s = 20.0; // icon size in points
+            const double x = llx + note.pos.x() * w;
+            const double yTop = ury - note.pos.y() * h;
+            const double y = yTop - s; // icon grows downward from the anchor
+
+            const double r = note.color.redF();
+            const double g = note.color.greenF();
+            const double b = note.color.blueF();
+
+            // Appearance: a little note card with three "text" lines.
+            QPDFObjectHandle form = QPDFObjectHandle::newStream(&qpdf);
+            QPDFObjectHandle fd = form.getDict();
+            fd.replaceKey("/Type", QPDFObjectHandle::newName("/XObject"));
+            fd.replaceKey("/Subtype", QPDFObjectHandle::newName("/Form"));
+            fd.replaceKey("/BBox", numberArray({x, y, x + s, y + s}));
+            const std::string content =
+                num(r) + " " + num(g) + " " + num(b) + " rg " + num(x) + " " + num(y) + " " +
+                num(s) + " " + num(s) + " re f " + "0.25 0.25 0.25 RG 1.4 w " + num(x + 4) + " " +
+                num(y + 14) + " m " + num(x + 16) + " " + num(y + 14) + " l S " + num(x + 4) + " " +
+                num(y + 10) + " m " + num(x + 16) + " " + num(y + 10) + " l S " + num(x + 4) + " " +
+                num(y + 6) + " m " + num(x + 12) + " " + num(y + 6) + " l S";
+            form.replaceStreamData(content, QPDFObjectHandle::newNull(),
+                                   QPDFObjectHandle::newNull());
+            QPDFObjectHandle ap = QPDFObjectHandle::newDictionary();
+            ap.replaceKey("/N", form);
+
+            QPDFObjectHandle annot = QPDFObjectHandle::newDictionary();
+            annot.replaceKey("/Type", QPDFObjectHandle::newName("/Annot"));
+            annot.replaceKey("/Subtype", QPDFObjectHandle::newName("/Text"));
+            annot.replaceKey("/Rect", numberArray({x, y, x + s, y + s}));
+            annot.replaceKey("/Name", QPDFObjectHandle::newName("/Comment"));
+            annot.replaceKey("/Contents", QPDFObjectHandle::newUnicodeString(note.text.toStdString()));
+            annot.replaceKey("/C", numberArray({r, g, b}));
+            annot.replaceKey("/F", QPDFObjectHandle::newInteger(4));
+            annot.replaceKey("/AP", ap);
+
+            appendAnnot(page, annot, qpdf);
         }
 
         QPDFWriter writer(qpdf, target.toLocal8Bit().constData());

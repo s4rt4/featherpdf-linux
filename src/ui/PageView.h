@@ -90,14 +90,21 @@ public:
     int redactionCount() const; // total rectangles across all pages
     void clearRedactions();
 
-    // Highlight authoring — same drag mechanics as redaction, additive (saved as
-    // PDF highlight annotations rather than flattening). Marks are normalized
-    // rects of the displayed page.
-    void setHighlightMode(bool on);
+    // Annotation authoring — additive marks saved as real PDF annotations. The
+    // Highlight tool drags rects; the Note tool clicks to drop a note (the click
+    // emits noteRequested so the app can collect text, then calls addNote).
+    // Marks are normalized to the displayed page.
+    enum class AnnotTool { Highlight, Note };
+    void setHighlightMode(bool on);  // really "annotation mode"; name kept for callers
     bool highlightMode() const { return m_highlightMode; }
+    void setAnnotationTool(AnnotTool tool);
+    AnnotTool annotationTool() const { return m_annotTool; }
     QHash<int, QList<QRectF>> highlightMarks() const { return m_highlights; }
+    QHash<int, QList<QPair<QPointF, QString>>> noteMarks() const { return m_notes; }
     int highlightCount() const;
-    void clearHighlights();
+    int noteCount() const;
+    void addNote(int slot, const QPointF& pos, const QString& text);
+    void clearAnnotations(); // clears highlights and notes
 
 signals:
     void currentPageChanged(int page);
@@ -106,6 +113,8 @@ signals:
     void layoutModeChanged(LayoutMode mode);
     void redactionsChanged(int count);
     void highlightsChanged(int count);
+    void notesChanged(int count);
+    void noteRequested(int slot, QPointF normPos); // Note tool clicked at a point
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -194,6 +203,8 @@ private:
     bool m_highlightMode = false;
     QHash<int, QList<QRectF>> m_redactions; // slot → normalized rects
     QHash<int, QList<QRectF>> m_highlights; // slot → normalized rects
+    QHash<int, QList<QPair<QPointF, QString>>> m_notes; // slot → [(pos, text)]
+    AnnotTool m_annotTool = AnnotTool::Highlight;
     bool m_dragging = false;
     int m_dragSlot = -1;
     QPointF m_dragStart;          // normalized start point

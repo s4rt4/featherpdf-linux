@@ -40,6 +40,8 @@ qt_add_executable(feather-pdf
     ui/RedactionBar.h
     ui/AnnotationBar.cpp
     ui/AnnotationBar.h
+    ui/NoteDialog.cpp
+    ui/NoteDialog.h
     ui/PrintDialog.cpp
     ui/PrintDialog.h
     ui/CombineDialog.cpp

@@ -101,6 +101,10 @@ void PageView::setDocument(QPdfDocument* doc) {
         m_highlights.clear();
         emit highlightsChanged(0);
     }
+    if (!m_notes.isEmpty()) {
+        m_notes.clear();
+        emit notesChanged(0);
+    }
 
     m_renderer->setDocument(doc);
     m_search->setSearchString(QString());
@@ -289,6 +293,25 @@ int PageView::highlightCount() const {
     return n;
 }
 
+int PageView::noteCount() const {
+    int n = 0;
+    for (const auto& list : m_notes)
+        n += list.size();
+    return n;
+}
+
+void PageView::setAnnotationTool(AnnotTool tool) {
+    m_annotTool = tool;
+}
+
+void PageView::addNote(int slot, const QPointF& pos, const QString& text) {
+    if (slot < 0 || slot >= pageCount() || text.isEmpty())
+        return;
+    m_notes[slot].append(qMakePair(pos, text));
+    emit notesChanged(noteCount());
+    viewport()->update();
+}
+
 void PageView::clearRedactions() {
     if (m_redactions.isEmpty())
         return;
@@ -299,13 +322,17 @@ void PageView::clearRedactions() {
     viewport()->update();
 }
 
-void PageView::clearHighlights() {
-    if (m_highlights.isEmpty())
-        return;
+void PageView::clearAnnotations() {
+    const bool hadHi = !m_highlights.isEmpty();
+    const bool hadNotes = !m_notes.isEmpty();
     m_highlights.clear();
+    m_notes.clear();
     m_dragging = false;
     m_dragSlot = -1;
-    emit highlightsChanged(0);
+    if (hadHi)
+        emit highlightsChanged(0);
+    if (hadNotes)
+        emit notesChanged(0);
     viewport()->update();
 }
 
@@ -344,8 +371,11 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
         if (!m_dragging)
             break;
         m_dragging = false;
-        // Ignore accidental tiny marks (a click without a real drag).
-        if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004) {
+        if (m_highlightMode && m_annotTool == AnnotTool::Note) {
+            // A note is a single point — drop it where the press landed.
+            emit noteRequested(m_dragSlot, m_dragStart);
+        } else if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004) {
+            // Ignore accidental tiny marks (a click without a real drag).
             if (m_redactMode) {
                 m_redactions[m_dragSlot].append(m_dragNorm);
                 emit redactionsChanged(redactionCount());
@@ -504,7 +534,19 @@ void PageView::paintEvent(QPaintEvent*) {
         if (auto it = m_highlights.constFind(slot); it != m_highlights.constEnd())
             for (const QRectF& nrm : *it)
                 drawMark(nrm, hiFill, false);
-        if (m_dragging && slot == m_dragSlot && m_dragNorm.isValid())
+        // Note markers — a small yellow card at each anchor point.
+        if (auto it = m_notes.constFind(slot); it != m_notes.constEnd()) {
+            for (const auto& note : *it) {
+                const QRectF box(r.x() + note.first.x() * r.width(),
+                                 r.y() + note.first.y() * r.height(), 16, 16);
+                p.setBrush(QColor(255, 214, 0));
+                p.setPen(QPen(QColor(90, 70, 0), 1));
+                p.drawRoundedRect(box, 3, 3);
+            }
+        }
+        const bool dragRect = m_dragging && slot == m_dragSlot && m_dragNorm.isValid() &&
+                              !(m_highlightMode && m_annotTool == AnnotTool::Note);
+        if (dragRect)
             drawMark(m_dragNorm, m_highlightMode ? QColor(255, 214, 0, 110) : QColor(200, 30, 30, 90),
                      true);
 
