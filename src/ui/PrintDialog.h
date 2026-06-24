@@ -57,6 +57,8 @@ private:
     QPixmap renderSlot(int slot, int maxW, int maxH) const;
     QList<int> parseRange(const QString& text) const;
     void updateOutputRowVisibility();
+    QWidget* buildOptionsPane(const QString& docName); // left column
+    QWidget* buildPreviewPane();                       // right column
 
     QPdfDocument* m_pdf = nullptr;
     QVector<int> m_order;

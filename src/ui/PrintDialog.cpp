@@ -18,6 +18,7 @@
 
 #include "ui/Theme.h"
 
+#include <QApplication>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
@@ -27,22 +28,60 @@
 #include <QFileInfo>
 #include <QFrame>
 #include <QFutureWatcher>
+#include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPainter>
 #include <QPdfDocument>
 #include <QPdfDocumentRenderOptions>
 #include <QPrinterInfo>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSpinBox>
+#include <QStandardPaths>
 #include <QStringList>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 
 namespace {
-constexpr int kPreviewW = 320;
-constexpr int kPreviewH = 430;
+constexpr int kPreviewW = 360;
+constexpr int kPreviewH = 480;
+constexpr int kOptionsW = 318;
+
+// A QSS-safe colour literal, preserving alpha (mirrors Theme's internal css()).
+QString css(const QColor& c) {
+    if (c.alpha() == 255)
+        return c.name(QColor::HexRgb);
+    return QStringLiteral("rgba(%1,%2,%3,%4)")
+        .arg(c.red())
+        .arg(c.green())
+        .arg(c.blue())
+        .arg(QString::number(c.alphaF(), 'f', 3));
+}
+
+// QSS can't tint an SVG (lucide's stroke colour is baked in), so bake a tinted
+// PNG of `name` once to the cache dir and hand back a path usable in url(...).
+// Used for the combo/spin chevrons so they recolour with the theme.
+QString tintedIconPath(const QString& name, const QColor& color) {
+    const QString dir =
+        QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/ctl-icons";
+    QDir().mkpath(dir);
+    const QString path = dir + '/' + name + '-' + color.name(QColor::HexArgb).mid(1) + ".png";
+    if (!QFileInfo::exists(path)) {
+        const qreal dpr = qApp ? qApp->devicePixelRatio() : 1.0;
+        const QPixmap pm = Theme::instance().icon(name, color).pixmap(QSize(28, 28) * dpr);
+        pm.save(path, "PNG");
+    }
+    return path;
+}
+
+// A small uppercase section header, matching the rail/tools-pane heads.
+QLabel* sectionHead(const QString& text, QWidget* parent) {
+    auto* l = new QLabel(text.toUpper(), parent);
+    l->setObjectName(QStringLiteral("SectionHead"));
+    return l;
+}
 } // namespace
 
 PrintDialog::PrintDialog(QPdfDocument* pdf, QVector<int> order, QVector<int> rotations,
@@ -52,149 +91,62 @@ PrintDialog::PrintDialog(QPdfDocument* pdf, QVector<int> order, QVector<int> rot
     setWindowTitle(tr("Print"));
     m_rot.resize(m_pageCount);
 
+    const Theme::Palette& p = Theme::instance().palette();
+    QColor ctlBorder = p.text; // a control outline that's visible but quiet
+    ctlBorder.setAlpha(46);
+
+    // Dialog-scoped sheet: themes the plain form controls (combos, fields,
+    // radios, checkbox, spin) without leaking into the rest of the app, since a
+    // widget's style sheet only cascades to its own children.
+    const QString chevDown = tintedIconPath(QStringLiteral("chevron-down"), p.dim);
+    const QString chevUp = tintedIconPath(QStringLiteral("chevron-up"), p.dim);
+    setStyleSheet(
+        QStringLiteral(
+            "QLabel#SectionHead { color:%2; font-size:11px; font-weight:700; letter-spacing:.6px; }"
+            "QLabel#FieldLabel { color:%3; }"
+            // Combo + line edit + spin share one calm field look.
+            "QComboBox, QLineEdit, QSpinBox { background:%1; border:1px solid %4;"
+            " border-radius:8px; padding:6px 9px; color:%3; selection-background-color:%5;"
+            " selection-color:#FFFFFF; min-height:18px; }"
+            "QComboBox:focus, QLineEdit:focus, QSpinBox:focus { border:1px solid %5; }"
+            "QLineEdit:disabled { color:%2; background:%6; }"
+            "QComboBox::drop-down { border:none; width:26px; }"
+            "QComboBox::down-arrow { image:url(%7); width:13px; height:13px; }"
+            "QComboBox QAbstractItemView { background:%1; border:1px solid %4; border-radius:8px;"
+            " padding:4px; outline:0; selection-background-color:%8; selection-color:%3; }"
+            "QSpinBox::up-button, QSpinBox::down-button { background:transparent; border:none;"
+            " width:20px; }"
+            "QSpinBox::up-arrow { image:url(%9); width:11px; height:11px; }"
+            "QSpinBox::down-arrow { image:url(%7); width:11px; height:11px; }"
+            // Plain round radio; the selected dot is the branding accent.
+            "QRadioButton, QCheckBox { color:%3; spacing:9px; }"
+            "QRadioButton::indicator { width:16px; height:16px; border:1px solid %4;"
+            " border-radius:9px; background:%1; }"
+            "QRadioButton::indicator:checked { border:1px solid %5;"
+            " background: qradialgradient(cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5,"
+            " stop:0 %5, stop:0.5 %5, stop:0.56 %1, stop:1 %1); }"
+            "QCheckBox::indicator { width:16px; height:16px; border:1px solid %4;"
+            " border-radius:5px; background:%1; }"
+            "QCheckBox::indicator:checked { border:1px solid %5; background:%5; }"
+            // Ghost buttons (browse, preview nav).
+            "QPushButton#GhostBtn { background:%1; border:1px solid %4; border-radius:8px;"
+            " color:%3; padding:5px; }"
+            "QPushButton#GhostBtn:hover:enabled { border:1px solid %5; color:%5; }"
+            "QPushButton#GhostBtn:disabled { color:%2; }"
+            // Cancel (the secondary button box action).
+            "QDialogButtonBox QPushButton { background:%1; border:1px solid %4; border-radius:8px;"
+            " color:%3; padding:7px 16px; min-width:64px; }"
+            "QDialogButtonBox QPushButton:hover { border:1px solid %5; }"
+            "QLabel#PreviewCounter { color:%3; font-family:'Source Code Pro',monospace;"
+            " font-size:12px; }")
+            .arg(css(p.surface), css(p.dim), css(p.text), css(ctlBorder), css(p.accent),
+                 css(p.canvas), chevDown, css(p.accentTint), chevUp));
+
     auto* root = new QHBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);
     root->setSpacing(0);
-
-    // ── Preview (left) ───────────────────────────────────────────────────────
-    auto* previewPane = new QFrame(this);
-    previewPane->setStyleSheet(
-        QStringLiteral("background:%1;").arg(Theme::instance().palette().sunken.name()));
-    auto* pv = new QVBoxLayout(previewPane);
-    pv->setContentsMargins(24, 24, 24, 16);
-    pv->setSpacing(12);
-
-    m_preview = new QLabel(previewPane);
-    m_preview->setFixedSize(kPreviewW, kPreviewH);
-    m_preview->setAlignment(Qt::AlignCenter);
-    pv->addWidget(m_preview, 0, Qt::AlignHCenter);
-
-    auto* navRow = new QHBoxLayout;
-    navRow->addStretch(1);
-    m_prevPreview = new QPushButton(QStringLiteral("‹"), previewPane);
-    m_nextPreview = new QPushButton(QStringLiteral("›"), previewPane);
-    m_previewCounter = new QLabel(previewPane);
-    m_previewCounter->setAlignment(Qt::AlignCenter);
-    m_previewCounter->setMinimumWidth(72);
-    for (QPushButton* b : {m_prevPreview, m_nextPreview}) {
-        b->setFixedSize(28, 24);
-        b->setCursor(Qt::PointingHandCursor);
-    }
-    navRow->addWidget(m_prevPreview);
-    navRow->addWidget(m_previewCounter);
-    navRow->addWidget(m_nextPreview);
-    navRow->addStretch(1);
-    pv->addLayout(navRow);
-    root->addWidget(previewPane);
-
-    connect(m_prevPreview, &QPushButton::clicked, this,
-            [this] { showPreviewAt(m_previewPos - 1); });
-    connect(m_nextPreview, &QPushButton::clicked, this,
-            [this] { showPreviewAt(m_previewPos + 1); });
-
-    // ── Options (right) ──────────────────────────────────────────────────────
-    auto* opts = new QVBoxLayout;
-    opts->setContentsMargins(24, 24, 24, 20);
-    opts->setSpacing(10);
-
-    opts->addWidget(new QLabel(tr("Printer"), this));
-    m_printer = new QComboBox(this);
-    m_printer->addItem(tr("Print to File (PDF)"), QString());
-    m_printer->addItem(tr("Searching for printers…"));
-    m_printer->setItemData(1, false, Qt::UserRole - 1); // disable the "searching" item
-    opts->addWidget(m_printer);
-
-    // Output file row (only for Print to File).
-    m_outputRow = new QWidget(this);
-    auto* outRow = new QHBoxLayout(m_outputRow);
-    outRow->setContentsMargins(0, 0, 0, 0);
-    const QString base = QFileInfo(docName).completeBaseName();
-    m_outputFile = new QLineEdit(
-        QDir(QDir::homePath()).filePath((base.isEmpty() ? tr("document") : base) + ".pdf"),
-        m_outputRow);
-    auto* browse = new QPushButton(QStringLiteral("…"), m_outputRow);
-    browse->setFixedWidth(34);
-    outRow->addWidget(m_outputFile);
-    outRow->addWidget(browse);
-    opts->addWidget(m_outputRow);
-    connect(browse, &QPushButton::clicked, this, [this] {
-        const QString f = QFileDialog::getSaveFileName(this, tr("Save PDF as"), m_outputFile->text(),
-                                                       tr("PDF documents (*.pdf)"));
-        if (!f.isEmpty())
-            m_outputFile->setText(f);
-    });
-
-    opts->addSpacing(6);
-    opts->addWidget(new QLabel(tr("Pages"), this));
-    m_rangeAll = new QRadioButton(tr("All %1 pages").arg(m_pageCount), this);
-    m_rangeCurrent = new QRadioButton(tr("Current page"), this);
-    m_rangeCustom = new QRadioButton(tr("Range"), this);
-    m_rangeAll->setChecked(true);
-    auto* rangeGroup = new QButtonGroup(this);
-    for (QRadioButton* r : {m_rangeAll, m_rangeCurrent, m_rangeCustom})
-        rangeGroup->addButton(r);
-    opts->addWidget(m_rangeAll);
-    opts->addWidget(m_rangeCurrent);
-
-    auto* customRow = new QHBoxLayout;
-    customRow->addWidget(m_rangeCustom);
-    m_rangeText = new QLineEdit(this);
-    m_rangeText->setPlaceholderText(tr("e.g. 1-5, 8, 11-13"));
-    m_rangeText->setEnabled(false);
-    customRow->addWidget(m_rangeText, 1);
-    opts->addLayout(customRow);
-
-    // Subset — print all / only odd / only even pages within the range.
-    auto* subsetRow = new QHBoxLayout;
-    subsetRow->addWidget(new QLabel(tr("Subset"), this));
-    m_subset = new QComboBox(this);
-    m_subset->addItem(tr("All pages in range"));
-    m_subset->addItem(tr("Odd pages only"));
-    m_subset->addItem(tr("Even pages only"));
-    subsetRow->addWidget(m_subset, 1);
-    opts->addLayout(subsetRow);
-
-    opts->addSpacing(10);
-    auto* copiesRow = new QHBoxLayout;
-    copiesRow->addWidget(new QLabel(tr("Copies"), this));
-    m_copies = new QSpinBox(this);
-    m_copies->setRange(1, 99);
-    copiesRow->addStretch(1);
-    copiesRow->addWidget(m_copies);
-    opts->addLayout(copiesRow);
-
-    m_grayscale = new QCheckBox(tr("Print in grayscale (black and white)"), this);
-    opts->addWidget(m_grayscale);
-
-    opts->addStretch(1);
-
-    auto* buttons = new QDialogButtonBox(this);
-    auto* printBtn = buttons->addButton(tr("Print"), QDialogButtonBox::AcceptRole);
-    buttons->addButton(QDialogButtonBox::Cancel);
-    printBtn->setObjectName("Share"); // reuse the accent-filled primary style
-    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    opts->addWidget(buttons);
-
-    auto* optsHost = new QWidget(this);
-    optsHost->setLayout(opts);
-    optsHost->setFixedWidth(300);
-    optsHost->setStyleSheet(
-        QStringLiteral("background:%1;").arg(Theme::instance().palette().surface.name()));
-    root->addWidget(optsHost);
-
-    // React to option changes.
-    auto refresh = [this] { rebuildSelection(); };
-    connect(m_rangeAll, &QRadioButton::toggled, this, refresh);
-    connect(m_rangeCurrent, &QRadioButton::toggled, this, refresh);
-    connect(m_rangeCustom, &QRadioButton::toggled, this, [this, refresh](bool on) {
-        m_rangeText->setEnabled(on);
-        refresh();
-    });
-    connect(m_rangeText, &QLineEdit::textChanged, this, refresh);
-    connect(m_subset, &QComboBox::currentIndexChanged, this, refresh);
-    connect(m_printer, &QComboBox::currentIndexChanged, this,
-            [this] { updateOutputRowVisibility(); });
+    root->addWidget(buildOptionsPane(docName)); // options on the left (Acrobat-style)
+    root->addWidget(buildPreviewPane(), 1);      // preview fills the right
 
     // Discover system printers off the UI thread; add them when ready.
     auto* watcher = new QFutureWatcher<QStringList>(this);
@@ -218,7 +170,182 @@ PrintDialog::PrintDialog(QPdfDocument* pdf, QVector<int> order, QVector<int> rot
 
     updateOutputRowVisibility();
     rebuildSelection();
-    resize(660, 520);
+    resize(kOptionsW + kPreviewW + 96, 560);
+}
+
+QWidget* PrintDialog::buildOptionsPane(const QString& docName) {
+    auto* host = new QWidget(this);
+    host->setObjectName(QStringLiteral("PrintOptions"));
+    host->setFixedWidth(kOptionsW);
+    host->setStyleSheet(
+        QStringLiteral("#PrintOptions { background:%1; border-right:1px solid %2; }")
+            .arg(css(Theme::instance().palette().surface),
+                 css(Theme::instance().palette().hairline)));
+
+    auto* opts = new QVBoxLayout(host);
+    opts->setContentsMargins(22, 22, 22, 18);
+    opts->setSpacing(9);
+
+    // ── Destination ─────────────────────────────────────────────────────────
+    opts->addWidget(sectionHead(tr("Destination"), host));
+    m_printer = new QComboBox(host);
+    m_printer->addItem(tr("Print to File (PDF)"), QString());
+    m_printer->addItem(tr("Searching for printers…"));
+    m_printer->setItemData(1, false, Qt::UserRole - 1); // disable the "searching" item
+    opts->addWidget(m_printer);
+
+    // Output file row (only for Print to File).
+    m_outputRow = new QWidget(host);
+    auto* outRow = new QHBoxLayout(m_outputRow);
+    outRow->setContentsMargins(0, 0, 0, 0);
+    outRow->setSpacing(6);
+    const QString base = QFileInfo(docName).completeBaseName();
+    m_outputFile = new QLineEdit(
+        QDir(QDir::homePath()).filePath((base.isEmpty() ? tr("document") : base) + ".pdf"),
+        m_outputRow);
+    auto* browse = new QPushButton(QStringLiteral("…"), m_outputRow);
+    browse->setObjectName(QStringLiteral("GhostBtn"));
+    browse->setFixedWidth(36);
+    browse->setCursor(Qt::PointingHandCursor);
+    outRow->addWidget(m_outputFile);
+    outRow->addWidget(browse);
+    opts->addWidget(m_outputRow);
+    connect(browse, &QPushButton::clicked, this, [this] {
+        const QString f = QFileDialog::getSaveFileName(this, tr("Save PDF as"), m_outputFile->text(),
+                                                       tr("PDF documents (*.pdf)"));
+        if (!f.isEmpty())
+            m_outputFile->setText(f);
+    });
+
+    // ── Pages ───────────────────────────────────────────────────────────────
+    opts->addSpacing(8);
+    opts->addWidget(sectionHead(tr("Pages"), host));
+    m_rangeAll = new QRadioButton(tr("All %1 pages").arg(m_pageCount), host);
+    m_rangeCurrent = new QRadioButton(tr("Current page"), host);
+    m_rangeCustom = new QRadioButton(tr("Range"), host);
+    m_rangeAll->setChecked(true);
+    auto* rangeGroup = new QButtonGroup(this);
+    for (QRadioButton* r : {m_rangeAll, m_rangeCurrent, m_rangeCustom})
+        rangeGroup->addButton(r);
+    opts->addWidget(m_rangeAll);
+    opts->addWidget(m_rangeCurrent);
+
+    auto* customRow = new QHBoxLayout;
+    customRow->setSpacing(8);
+    customRow->addWidget(m_rangeCustom);
+    m_rangeText = new QLineEdit(host);
+    m_rangeText->setPlaceholderText(tr("e.g. 1-5, 8, 11-13"));
+    m_rangeText->setEnabled(false);
+    customRow->addWidget(m_rangeText, 1);
+    opts->addLayout(customRow);
+
+    // Subset — print all / only odd / only even pages within the range.
+    auto* subsetRow = new QHBoxLayout;
+    subsetRow->setSpacing(8);
+    auto* subsetLabel = new QLabel(tr("Subset"), host);
+    subsetLabel->setObjectName(QStringLiteral("FieldLabel"));
+    subsetRow->addWidget(subsetLabel);
+    m_subset = new QComboBox(host);
+    m_subset->addItem(tr("All pages in range"));
+    m_subset->addItem(tr("Odd pages only"));
+    m_subset->addItem(tr("Even pages only"));
+    subsetRow->addWidget(m_subset, 1);
+    opts->addLayout(subsetRow);
+
+    // ── Copies & colour ───────────────────────────────────────────────────────
+    opts->addSpacing(8);
+    opts->addWidget(sectionHead(tr("Copies & Colour"), host));
+    auto* copiesRow = new QHBoxLayout;
+    auto* copiesLabel = new QLabel(tr("Copies"), host);
+    copiesLabel->setObjectName(QStringLiteral("FieldLabel"));
+    copiesRow->addWidget(copiesLabel);
+    m_copies = new QSpinBox(host);
+    m_copies->setRange(1, 99);
+    m_copies->setFixedWidth(72);
+    copiesRow->addStretch(1);
+    copiesRow->addWidget(m_copies);
+    opts->addLayout(copiesRow);
+
+    m_grayscale = new QCheckBox(tr("Print in grayscale"), host);
+    connect(m_grayscale, &QCheckBox::toggled, this, [this] { showPreviewAt(m_previewPos); });
+    opts->addWidget(m_grayscale);
+
+    opts->addStretch(1);
+
+    auto* buttons = new QDialogButtonBox(host);
+    auto* printBtn = buttons->addButton(tr("Print"), QDialogButtonBox::AcceptRole);
+    buttons->addButton(QDialogButtonBox::Cancel);
+    printBtn->setObjectName(QStringLiteral("Share")); // reuse the accent-filled primary style
+    printBtn->setCursor(Qt::PointingHandCursor);
+    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    opts->addWidget(buttons);
+
+    // React to option changes.
+    auto refresh = [this] { rebuildSelection(); };
+    connect(m_rangeAll, &QRadioButton::toggled, this, refresh);
+    connect(m_rangeCurrent, &QRadioButton::toggled, this, refresh);
+    connect(m_rangeCustom, &QRadioButton::toggled, this, [this, refresh](bool on) {
+        m_rangeText->setEnabled(on);
+        if (on)
+            m_rangeText->setFocus();
+        refresh();
+    });
+    connect(m_rangeText, &QLineEdit::textChanged, this, refresh);
+    connect(m_subset, &QComboBox::currentIndexChanged, this, refresh);
+    connect(m_printer, &QComboBox::currentIndexChanged, this,
+            [this] { updateOutputRowVisibility(); });
+
+    return host;
+}
+
+QWidget* PrintDialog::buildPreviewPane() {
+    auto* pane = new QFrame(this);
+    pane->setStyleSheet(
+        QStringLiteral("background:%1;").arg(css(Theme::instance().palette().sunken)));
+    auto* pv = new QVBoxLayout(pane);
+    pv->setContentsMargins(28, 24, 28, 18);
+    pv->setSpacing(16);
+
+    pv->addStretch(1);
+    m_preview = new QLabel(pane);
+    m_preview->setAlignment(Qt::AlignCenter);
+    m_preview->setMinimumSize(kPreviewW / 2, kPreviewH / 2);
+    // The page is the one element that gets a prominent shadow (ui-guidelines).
+    auto* shadow = new QGraphicsDropShadowEffect(m_preview);
+    shadow->setBlurRadius(30);
+    shadow->setOffset(0, 8);
+    shadow->setColor(QColor(0, 0, 0, 56));
+    m_preview->setGraphicsEffect(shadow);
+    pv->addWidget(m_preview, 0, Qt::AlignCenter);
+    pv->addStretch(1);
+
+    auto* navRow = new QHBoxLayout;
+    navRow->setSpacing(10);
+    navRow->addStretch(1);
+    m_prevPreview = new QPushButton(QStringLiteral("‹"), pane);
+    m_nextPreview = new QPushButton(QStringLiteral("›"), pane);
+    m_previewCounter = new QLabel(pane);
+    m_previewCounter->setObjectName(QStringLiteral("PreviewCounter"));
+    m_previewCounter->setAlignment(Qt::AlignCenter);
+    m_previewCounter->setMinimumWidth(120);
+    for (QPushButton* b : {m_prevPreview, m_nextPreview}) {
+        b->setObjectName(QStringLiteral("GhostBtn"));
+        b->setFixedSize(30, 26);
+        b->setCursor(Qt::PointingHandCursor);
+    }
+    navRow->addWidget(m_prevPreview);
+    navRow->addWidget(m_previewCounter);
+    navRow->addWidget(m_nextPreview);
+    navRow->addStretch(1);
+    pv->addLayout(navRow);
+
+    connect(m_prevPreview, &QPushButton::clicked, this,
+            [this] { showPreviewAt(m_previewPos - 1); });
+    connect(m_nextPreview, &QPushButton::clicked, this,
+            [this] { showPreviewAt(m_previewPos + 1); });
+
+    return pane;
 }
 
 void PrintDialog::updateOutputRowVisibility() {
@@ -242,14 +369,14 @@ QList<int> PrintDialog::parseRange(const QString& text) const {
                 continue;
             if (a > b)
                 std::swap(a, b);
-            for (int p = a; p <= b; ++p)
-                if (p >= 1 && p <= m_pageCount)
-                    pages << (p - 1);
+            for (int pg = a; pg <= b; ++pg)
+                if (pg >= 1 && pg <= m_pageCount)
+                    pages << (pg - 1);
         } else {
             bool ok = false;
-            const int p = part.toInt(&ok);
-            if (ok && p >= 1 && p <= m_pageCount)
-                pages << (p - 1);
+            const int pg = part.toInt(&ok);
+            if (ok && pg >= 1 && pg <= m_pageCount)
+                pages << (pg - 1);
         }
     }
     return pages;
@@ -294,6 +421,7 @@ void PrintDialog::showPreviewAt(int positionInSelection) {
     if (m_selection.isEmpty()) {
         m_preview->setPixmap({});
         m_preview->setText(tr("No pages selected"));
+        m_preview->setFixedSize(kPreviewW / 2, kPreviewH / 2);
         m_previewCounter->clear();
         m_prevPreview->setEnabled(false);
         m_nextPreview->setEnabled(false);
@@ -301,7 +429,11 @@ void PrintDialog::showPreviewAt(int positionInSelection) {
     }
     m_previewPos = qBound(0, positionInSelection, m_selection.size() - 1);
     const int slot = m_selection[m_previewPos];
-    m_preview->setPixmap(renderSlot(slot, kPreviewW, kPreviewH));
+    const QPixmap pm = renderSlot(slot, kPreviewW, kPreviewH);
+    m_preview->setPixmap(pm);
+    // Size the label to the page so the drop shadow hugs the sheet, not a box.
+    m_preview->setFixedSize(pm.isNull() ? QSize(kPreviewW / 2, kPreviewH / 2)
+                                        : pm.deviceIndependentSize().toSize());
     m_previewCounter->setText(tr("%1 / %2  ·  page %3")
                                   .arg(m_previewPos + 1)
                                   .arg(m_selection.size())
@@ -332,7 +464,20 @@ QPixmap PrintDialog::renderSlot(int slot, int maxW, int maxH) const {
     case 270: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise270); break;
     default: break;
     }
-    QPixmap pm = QPixmap::fromImage(m_pdf->render(orig, px, opts));
+    const QImage rendered = m_pdf->render(orig, px, opts);
+    // The render has a transparent background, so always flatten onto white —
+    // the sheet looks like real paper, and grayscale won't turn it solid black.
+    QImage img(rendered.size(), QImage::Format_RGB32);
+    img.fill(Qt::white);
+    if (!rendered.isNull()) {
+        QPainter pp(&img);
+        pp.drawImage(0, 0, rendered);
+        pp.end();
+    }
+    // Mirror the grayscale option so the preview shows what will actually print.
+    if (m_grayscale && m_grayscale->isChecked())
+        img = img.convertToFormat(QImage::Format_Grayscale8);
+    QPixmap pm = QPixmap::fromImage(img);
     pm.setDevicePixelRatio(dpr);
     return pm;
 }
