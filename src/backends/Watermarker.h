@@ -21,7 +21,7 @@
 
 // Stamps text overlays onto pages with QPDF: a watermark (one centred, rotated
 // label on every page) and Bates numbering (a sequential identifier in a corner
-// of every page). Lossless — the original content is untouched, the stamp is an
+// of every page). Lossless - the original content is untouched, the stamp is an
 // added overlay.
 class Watermarker {
 public:
@@ -36,6 +36,17 @@ public:
     // Add a centred, rotated watermark to every page.
     static bool addWatermark(const QString& inputPath, const QString& outputPath,
                              const WatermarkOptions& opts, QString* error);
+
+    struct ImageWatermarkOptions {
+        QString imagePath;
+        double opacity = 0.30;     // 0..1
+        double scale = 0.5;        // fraction of the page width
+        double rotationDeg = 0.0;
+    };
+
+    // Add a centred image (e.g. a logo) to every page, honouring transparency.
+    static bool addImageWatermark(const QString& inputPath, const QString& outputPath,
+                                  const ImageWatermarkOptions& opts, QString* error);
 
     enum class Corner { TopLeft, TopRight, BottomLeft, BottomRight };
 

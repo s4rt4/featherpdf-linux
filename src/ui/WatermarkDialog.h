@@ -23,6 +23,8 @@
 class QLineEdit;
 class QSpinBox;
 class QPushButton;
+class QRadioButton;
+class QWidget;
 
 // Collects the settings for a centred, rotated text watermark.
 class WatermarkDialog : public QDialog {
@@ -30,6 +32,10 @@ class WatermarkDialog : public QDialog {
 
 public:
     explicit WatermarkDialog(QWidget* parent = nullptr);
+
+    bool useImage() const;      // image watermark vs text
+    QString imagePath() const;
+    double scale() const;       // image: fraction of page width
 
     QString text() const;
     QColor color() const { return m_color; }
@@ -39,8 +45,15 @@ public:
 
 private:
     void selectSwatch(int i);
+    void updateMode();
 
+    QRadioButton* m_modeText = nullptr;
+    QRadioButton* m_modeImage = nullptr;
+    QWidget* m_textRows = nullptr;
+    QWidget* m_imageRows = nullptr;
     QLineEdit* m_text = nullptr;
+    QLineEdit* m_imagePath = nullptr;
+    QSpinBox* m_scale = nullptr;
     QSpinBox* m_opacity = nullptr;
     QSpinBox* m_size = nullptr;
     QSpinBox* m_rotation = nullptr;

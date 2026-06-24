@@ -17,6 +17,7 @@
 #include "backends/Watermarker.h"
 
 #include <QFile>
+#include <QImage>
 
 #include <cmath>
 #include <exception>
@@ -78,7 +79,7 @@ void stampPage(QPDF& qpdf, QPDFPageObjectHelper& ph, const std::string& content,
         egs.replaceKey("/GsStamp", gs);
     }
     // Wrap the original content in q/Q so its (possibly unbalanced) graphics state
-    // can't leak into the overlay — then the overlay draws in page coordinates.
+    // can't leak into the overlay - then the overlay draws in page coordinates.
     ph.addPageContents(QPDFObjectHandle::newStream(&qpdf, "q\n"), /*first=*/true);
     ph.addPageContents(QPDFObjectHandle::newStream(&qpdf, "Q\n" + content), /*first=*/false);
 }
@@ -147,6 +148,117 @@ bool Watermarker::addWatermark(const QString& inputPath, const QString& outputPa
                                   num(-opts.fontSize * 0.33) + " Td\n" + pdfStr(opts.text) +
                                   " Tj\nET\nQ\n";
             stampPage(qpdf, ph, content, /*withGs=*/true, opts.opacity);
+        }
+        return writeOut(qpdf, outputPath, error);
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        return false;
+    }
+}
+
+bool Watermarker::addImageWatermark(const QString& inputPath, const QString& outputPath,
+                                    const ImageWatermarkOptions& opts, QString* error) {
+    QImage src(opts.imagePath);
+    if (src.isNull()) {
+        if (error)
+            *error = QStringLiteral("That image couldn't be read.");
+        return false;
+    }
+    const QImage img = src.convertToFormat(QImage::Format_ARGB32);
+    const int w = img.width(), h = img.height();
+    // Tightly packed RGB and (if present) alpha buffers.
+    std::string rgb;
+    rgb.reserve(size_t(w) * h * 3);
+    std::string alpha;
+    bool hasAlpha = false;
+    for (int y = 0; y < h; ++y) {
+        const QRgb* row = reinterpret_cast<const QRgb*>(img.constScanLine(y));
+        for (int x = 0; x < w; ++x) {
+            const QRgb px = row[x];
+            rgb.push_back(char(qRed(px)));
+            rgb.push_back(char(qGreen(px)));
+            rgb.push_back(char(qBlue(px)));
+            const int a = qAlpha(px);
+            alpha.push_back(char(a));
+            if (a != 255)
+                hasAlpha = true;
+        }
+    }
+
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData());
+        QPDFPageDocumentHelper dh(qpdf);
+        dh.pushInheritedAttributesToPage();
+
+        // One shared image XObject (raw RGB; QPDF compresses it on write). An
+        // SMask carries transparency when the image has an alpha channel.
+        QPDFObjectHandle image = QPDFObjectHandle::newStream(&qpdf);
+        QPDFObjectHandle d = image.getDict();
+        d.replaceKey("/Type", QPDFObjectHandle::newName("/XObject"));
+        d.replaceKey("/Subtype", QPDFObjectHandle::newName("/Image"));
+        d.replaceKey("/Width", QPDFObjectHandle::newInteger(w));
+        d.replaceKey("/Height", QPDFObjectHandle::newInteger(h));
+        d.replaceKey("/ColorSpace", QPDFObjectHandle::newName("/DeviceRGB"));
+        d.replaceKey("/BitsPerComponent", QPDFObjectHandle::newInteger(8));
+        image.replaceStreamData(rgb, QPDFObjectHandle::newNull(), QPDFObjectHandle::newNull());
+        if (hasAlpha) {
+            QPDFObjectHandle smask = QPDFObjectHandle::newStream(&qpdf);
+            QPDFObjectHandle sd = smask.getDict();
+            sd.replaceKey("/Type", QPDFObjectHandle::newName("/XObject"));
+            sd.replaceKey("/Subtype", QPDFObjectHandle::newName("/Image"));
+            sd.replaceKey("/Width", QPDFObjectHandle::newInteger(w));
+            sd.replaceKey("/Height", QPDFObjectHandle::newInteger(h));
+            sd.replaceKey("/ColorSpace", QPDFObjectHandle::newName("/DeviceGray"));
+            sd.replaceKey("/BitsPerComponent", QPDFObjectHandle::newInteger(8));
+            smask.replaceStreamData(alpha, QPDFObjectHandle::newNull(),
+                                    QPDFObjectHandle::newNull());
+            d.replaceKey("/SMask", smask);
+        }
+
+        const double rad = opts.rotationDeg * M_PI / 180.0;
+        const double ca = std::cos(rad), sa = std::sin(rad);
+        const double aspect = double(h) / double(w);
+
+        for (QPDFPageObjectHelper& ph : dh.getAllPages()) {
+            double pw, phh, llx, lly;
+            if (!pageBox(ph.getObjectHandle(), pw, phh, llx, lly))
+                continue;
+            // Add the image to the page's XObject resources as /WmImg.
+            QPDFObjectHandle res = ph.getObjectHandle().getKey("/Resources");
+            if (!res.isDictionary()) {
+                res = QPDFObjectHandle::newDictionary();
+                ph.getObjectHandle().replaceKey("/Resources", res);
+            }
+            QPDFObjectHandle xobjs = res.getKey("/XObject");
+            if (!xobjs.isDictionary()) {
+                xobjs = QPDFObjectHandle::newDictionary();
+                res.replaceKey("/XObject", xobjs);
+            }
+            xobjs.replaceKey("/WmImg", image);
+            QPDFObjectHandle egs = res.getKey("/ExtGState");
+            if (!egs.isDictionary()) {
+                egs = QPDFObjectHandle::newDictionary();
+                res.replaceKey("/ExtGState", egs);
+            }
+            QPDFObjectHandle gs = QPDFObjectHandle::newDictionary();
+            gs.replaceKey("/ca", QPDFObjectHandle::newReal(num(opts.opacity)));
+            gs.replaceKey("/CA", QPDFObjectHandle::newReal(num(opts.opacity)));
+            egs.replaceKey("/GsStamp", gs);
+
+            const double drawW = pw * opts.scale;
+            const double drawH = drawW * aspect;
+            const double cx = llx + pw / 2.0, cy = lly + phh / 2.0;
+            // cm = rotation × scale, then translate to the centre, drawing the
+            // unit image from its own centre (-0.5..0.5).
+            const double m0 = drawW * ca, m1 = drawW * sa, m2 = -drawH * sa, m3 = drawH * ca;
+            const double e = cx - (m0 * 0.5 + m2 * 0.5), f = cy - (m1 * 0.5 + m3 * 0.5);
+            std::string content = "q\n/GsStamp gs\n" + num(m0) + " " + num(m1) + " " + num(m2) +
+                                  " " + num(m3) + " " + num(e) + " " + num(f) + " cm\n/WmImg Do\nQ\n";
+            // q/Q wrap so the original page state can't displace the overlay.
+            ph.addPageContents(QPDFObjectHandle::newStream(&qpdf, "q\n"), /*first=*/true);
+            ph.addPageContents(QPDFObjectHandle::newStream(&qpdf, "Q\n" + content), /*first=*/false);
         }
         return writeOut(qpdf, outputPath, error);
     } catch (const std::exception& e) {

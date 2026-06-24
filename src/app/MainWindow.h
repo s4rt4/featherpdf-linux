@@ -50,7 +50,7 @@ class QStackedWidget;
 class QUndoGroup;
 class QUndoStack;
 
-// The application shell (ui-guidelines §5): a tabbed Acrobat-style workspace —
+// The application shell (ui-guidelines §5): a tabbed Acrobat-style workspace -
 // menu bar, tab strip, command toolbar, then the body (left navigation rail ·
 // center viewport with its floating pill · right Tools pane). M0 is a single
 // document; the multi-document tab workspace builds on this same shell.
@@ -103,7 +103,7 @@ private:
     void combineDocuments();  // merge several PDFs into one (QPDF)
     void signDocument();      // digitally sign with a certificate (Poppler/NSS)
     void viewSignatures();    // show/verify the document's existing signatures
-    void recognizeText();     // OCR — add a searchable text layer (Tesseract)
+    void recognizeText();     // OCR - add a searchable text layer (Tesseract)
     void protectDocument();   // write a password-encrypted copy (QPDF, AES-256)
     void removeProtection();  // write a decrypted (password-free) copy (QPDF)
     void printActive();       // custom print dialog (async printers + preview)
@@ -137,7 +137,7 @@ private:
     void closeDocs();  // close the docs tab and return to home/document
 
     // Immersive reading: hide all chrome, leaving the page alone with its pill
-    // (ui-guidelines §1 — the signature moment). F11 toggles, Esc exits.
+    // (ui-guidelines §1 - the signature moment). F11 toggles, Esc exits.
     void setImmersive(bool on);
     void animateChrome(bool collapse);                 // slide the chrome in/out
     QVector<QPair<QWidget*, bool>> chromeItems() const; // {widget, vertical}
@@ -151,8 +151,8 @@ private:
     void rebuildRecentMenu();
     QStringList recentFiles() const;
 
-    void showProperties(); // Document ▸ Properties — metadata dialog
-    void showAbout();      // Help ▸ About — branded dialog with links
+    void showProperties(); // Document ▸ Properties - metadata dialog
+    void showAbout();      // Help ▸ About - branded dialog with links
 
     // Honest placeholder for features that arrive in later milestones.
     void notImplemented(const QString& feature);

@@ -19,11 +19,14 @@
 #include "ui/Theme.h"
 
 #include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QSpinBox>
 #include <QVBoxLayout>
 
@@ -60,15 +63,24 @@ WatermarkDialog::WatermarkDialog(QWidget* parent) : QDialog(parent) {
     root->setContentsMargins(22, 20, 22, 18);
     root->setSpacing(14);
 
-    auto* hint = new QLabel(tr("Stamp a centred, rotated label on every page."), this);
+    auto* hint = new QLabel(tr("Stamp every page with text or an image."), this);
     hint->setObjectName(QStringLiteral("Hint"));
     hint->setWordWrap(true);
     root->addWidget(hint);
 
+    // Text / Image mode.
+    auto* modeRow = new QHBoxLayout;
+    m_modeText = new QRadioButton(tr("Text"), this);
+    m_modeImage = new QRadioButton(tr("Image"), this);
+    m_modeText->setChecked(true);
+    modeRow->addWidget(m_modeText);
+    modeRow->addWidget(m_modeImage);
+    modeRow->addStretch(1);
+    root->addLayout(modeRow);
+
+    // ── Text rows ─────────────────────────────────────────────────────────────
     m_text = new QLineEdit(tr("CONFIDENTIAL"), this);
     m_text->setMinimumWidth(260);
-
-    // Colour swatches.
     m_colors = {QColor(120, 120, 120), QColor(200, 0, 0), QColor(40, 90, 200),
                 QColor(30, 140, 70)};
     auto* swatchRow = new QHBoxLayout;
@@ -88,29 +100,61 @@ WatermarkDialog::WatermarkDialog(QWidget* parent) : QDialog(parent) {
         swatchRow->addWidget(sw);
     }
     swatchRow->addStretch(1);
-
-    m_opacity = new QSpinBox(this);
-    m_opacity->setRange(5, 100);
-    m_opacity->setValue(30);
-    m_opacity->setSuffix(QStringLiteral(" %"));
     m_size = new QSpinBox(this);
     m_size->setRange(8, 200);
     m_size->setValue(64);
     m_size->setSuffix(QStringLiteral(" pt"));
+
+    m_textRows = new QWidget(this);
+    auto* tf = new QFormLayout(m_textRows);
+    tf->setContentsMargins(0, 0, 0, 0);
+    tf->setSpacing(10);
+    tf->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    tf->addRow(tr("Text"), m_text);
+    tf->addRow(tr("Colour"), swatchRow);
+    tf->addRow(tr("Size"), m_size);
+    root->addWidget(m_textRows);
+
+    // ── Image rows ────────────────────────────────────────────────────────────
+    m_imagePath = new QLineEdit(this);
+    m_imagePath->setPlaceholderText(tr("Choose a PNG or JPEG…"));
+    auto* browse = new QPushButton(QStringLiteral("…"), this);
+    browse->setObjectName(QStringLiteral("GhostBtn"));
+    browse->setFixedWidth(36);
+    browse->setCursor(Qt::PointingHandCursor);
+    auto* imgRow = new QHBoxLayout;
+    imgRow->setSpacing(6);
+    imgRow->addWidget(m_imagePath, 1);
+    imgRow->addWidget(browse);
+    m_scale = new QSpinBox(this);
+    m_scale->setRange(5, 100);
+    m_scale->setValue(50);
+    m_scale->setSuffix(QStringLiteral(" % width"));
+
+    m_imageRows = new QWidget(this);
+    auto* imf = new QFormLayout(m_imageRows);
+    imf->setContentsMargins(0, 0, 0, 0);
+    imf->setSpacing(10);
+    imf->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    imf->addRow(tr("Image"), imgRow);
+    imf->addRow(tr("Size"), m_scale);
+    root->addWidget(m_imageRows);
+
+    // ── Common ────────────────────────────────────────────────────────────────
+    m_opacity = new QSpinBox(this);
+    m_opacity->setRange(5, 100);
+    m_opacity->setValue(30);
+    m_opacity->setSuffix(QStringLiteral(" %"));
     m_rotation = new QSpinBox(this);
     m_rotation->setRange(-90, 90);
     m_rotation->setValue(45);
     m_rotation->setSuffix(QStringLiteral("°"));
-
-    auto* form = new QFormLayout;
-    form->setSpacing(10);
-    form->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-    form->addRow(tr("Text"), m_text);
-    form->addRow(tr("Colour"), swatchRow);
-    form->addRow(tr("Opacity"), m_opacity);
-    form->addRow(tr("Size"), m_size);
-    form->addRow(tr("Rotation"), m_rotation);
-    root->addLayout(form);
+    auto* common = new QFormLayout;
+    common->setSpacing(10);
+    common->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    common->addRow(tr("Opacity"), m_opacity);
+    common->addRow(tr("Rotation"), m_rotation);
+    root->addLayout(common);
     root->addStretch(1);
 
     auto* buttons = new QDialogButtonBox(this);
@@ -118,14 +162,35 @@ WatermarkDialog::WatermarkDialog(QWidget* parent) : QDialog(parent) {
     buttons->addButton(QDialogButtonBox::Cancel);
     m_apply->setObjectName(QStringLiteral("Share"));
     m_apply->setCursor(Qt::PointingHandCursor);
-    connect(m_text, &QLineEdit::textChanged, this,
-            [this](const QString& t) { m_apply->setEnabled(!t.trimmed().isEmpty()); });
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     root->addWidget(buttons);
 
+    connect(browse, &QPushButton::clicked, this, [this] {
+        const QString f = QFileDialog::getOpenFileName(
+            this, tr("Choose watermark image"), QString(),
+            tr("Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp)"));
+        if (!f.isEmpty())
+            m_imagePath->setText(f);
+        updateMode();
+    });
+    auto revalidate = [this] { updateMode(); };
+    connect(m_modeText, &QRadioButton::toggled, this, revalidate);
+    connect(m_text, &QLineEdit::textChanged, this, revalidate);
+    connect(m_imagePath, &QLineEdit::textChanged, this, revalidate);
+
     selectSwatch(0);
-    resize(440, 0);
+    updateMode();
+    resize(450, 0);
+}
+
+void WatermarkDialog::updateMode() {
+    const bool image = m_modeImage->isChecked();
+    m_textRows->setVisible(!image);
+    m_imageRows->setVisible(image);
+    const bool ok = image ? !m_imagePath->text().trimmed().isEmpty()
+                          : !m_text->text().trimmed().isEmpty();
+    m_apply->setEnabled(ok);
 }
 
 void WatermarkDialog::selectSwatch(int i) {
@@ -135,6 +200,9 @@ void WatermarkDialog::selectSwatch(int i) {
         m_color = m_colors[i];
 }
 
+bool WatermarkDialog::useImage() const { return m_modeImage->isChecked(); }
+QString WatermarkDialog::imagePath() const { return m_imagePath->text().trimmed(); }
+double WatermarkDialog::scale() const { return m_scale->value() / 100.0; }
 QString WatermarkDialog::text() const { return m_text->text().trimmed(); }
 double WatermarkDialog::opacity() const { return m_opacity->value() / 100.0; }
 double WatermarkDialog::fontSize() const { return m_size->value(); }

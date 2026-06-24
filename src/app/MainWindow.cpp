@@ -181,7 +181,7 @@ void MainWindow::buildActions() {
     m_fitPageAct = new QAction(tr("Fit &Page"), this);
     m_fitPageAct->setShortcut(Qt::CTRL | Qt::Key_2);
 
-    // Page layout — a radio group (default Continuous).
+    // Page layout - a radio group (default Continuous).
     auto* layoutGroup = new QActionGroup(this);
     m_singlePageAct = new QAction(tr("&Single Page"), this);
     m_continuousAct = new QAction(tr("&Continuous"), this);
@@ -413,7 +413,7 @@ void MainWindow::showDocs() {
         m_immersiveAct->setChecked(false);
     m_findBar->hide();
     m_centerStack->setCurrentWidget(m_docsView);
-    // Documentation is a full-page view, like Home — chrome recedes.
+    // Documentation is a full-page view, like Home - chrome recedes.
     m_rail->setVisible(false);
     m_panelHost->setVisible(false);
     m_toolsPane->setVisible(false);
@@ -450,7 +450,7 @@ void MainWindow::setImmersive(bool on) {
 }
 
 QVector<QPair<QWidget*, bool>> MainWindow::chromeItems() const {
-    // {widget, vertical} — vertical collapses height, horizontal collapses width.
+    // {widget, vertical} - vertical collapses height, horizontal collapses width.
     QVector<QPair<QWidget*, bool>> items{
         {menuBar(), true}, {m_tabStrip, true}, {m_commandBar, true},
         {m_rail, false}, {m_toolsPane, false}};
@@ -974,7 +974,7 @@ void MainWindow::applyRedactions() {
         const int rot = m_doc->rotation(slot);
         QSizeF pt = pdf->pagePointSize(orig);
         if (rot == 90 || rot == 270)
-            pt.transpose(); // effective (displayed) size — what the marks are relative to
+            pt.transpose(); // effective (displayed) size - what the marks are relative to
         if (pt.width() <= 0 || pt.height() <= 0)
             continue;
 
@@ -1074,7 +1074,7 @@ void MainWindow::createPdf() {
         return;
     }
 
-    // LibreOffice can take several seconds — convert off the UI thread.
+    // LibreOffice can take several seconds - convert off the UI thread.
     m_toast->show(tr("Converting…"));
     const QString input = files.first();
     auto* watcher = new QFutureWatcher<bool>(this);
@@ -1170,7 +1170,9 @@ void MainWindow::watermarkDocument() {
     if (!hasActiveDoc())
         return;
     WatermarkDialog dialog(this);
-    if (dialog.exec() != QDialog::Accepted || dialog.text().isEmpty())
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    if (dialog.useImage() ? dialog.imagePath().isEmpty() : dialog.text().isEmpty())
         return;
 
     const QFileInfo info(m_doc->filePath());
@@ -1181,16 +1183,25 @@ void MainWindow::watermarkDocument() {
     if (out.isEmpty())
         return;
 
-    Watermarker::WatermarkOptions opts;
-    opts.text = dialog.text();
-    opts.color = dialog.color();
-    opts.opacity = dialog.opacity();
-    opts.fontSize = dialog.fontSize();
-    opts.rotationDeg = dialog.rotation();
-
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
-    const bool ok = Watermarker::addWatermark(m_doc->filePath(), out, opts, &error);
+    bool ok;
+    if (dialog.useImage()) {
+        Watermarker::ImageWatermarkOptions opts;
+        opts.imagePath = dialog.imagePath();
+        opts.opacity = dialog.opacity();
+        opts.scale = dialog.scale();
+        opts.rotationDeg = dialog.rotation();
+        ok = Watermarker::addImageWatermark(m_doc->filePath(), out, opts, &error);
+    } else {
+        Watermarker::WatermarkOptions opts;
+        opts.text = dialog.text();
+        opts.color = dialog.color();
+        opts.opacity = dialog.opacity();
+        opts.fontSize = dialog.fontSize();
+        opts.rotationDeg = dialog.rotation();
+        ok = Watermarker::addWatermark(m_doc->filePath(), out, opts, &error);
+    }
     QApplication::restoreOverrideCursor();
     if (!ok) {
         QMessageBox::warning(this, tr("Couldn't add watermark"), error);
@@ -1397,7 +1408,7 @@ void MainWindow::recognizeText() {
     if (out.isEmpty())
         return;
 
-    // OCR is slow (render + Tesseract per page) — run it off the UI thread.
+    // OCR is slow (render + Tesseract per page) - run it off the UI thread.
     m_toast->show(tr("Recognizing text… this may take a while."));
     const QString input = m_doc->filePath();
     auto* watcher = new QFutureWatcher<bool>(this);
@@ -1409,7 +1420,7 @@ void MainWindow::recognizeText() {
                                  tr("Text recognition failed."));
             return;
         }
-        m_toast->show(tr("Recognized text — saved to %1").arg(QFileInfo(out).fileName()));
+        m_toast->show(tr("Recognized text - saved to %1").arg(QFileInfo(out).fileName()));
         openPath(out);
     });
     watcher->setFuture(QtConcurrent::run([input, out, language] {
@@ -1438,7 +1449,7 @@ void MainWindow::protectDocument() {
         return;
 
     // Apply the current edit arrangement first (rotation/delete/reorder), then
-    // encrypt — so the protected copy reflects what's on screen. Two-step: write
+    // encrypt - so the protected copy reflects what's on screen. Two-step: write
     // the arrangement to the chosen path, then encrypt it in place.
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
@@ -1512,7 +1523,7 @@ void MainWindow::printActive() {
         return;
 
     // Custom dialog: opens instantly, discovers printers off-thread, shows a
-    // preview, and supports odd/even subsets — none of which the native dialog
+    // preview, and supports odd/even subsets - none of which the native dialog
     // does without freezing the UI on open.
     PrintDialog dialog(m_doc->pdf(), m_doc->pageOrder(), m_doc->rotations(), m_doc->fileName(),
                        m_viewport->currentPage(), this);
@@ -1875,7 +1886,7 @@ void MainWindow::closeEvent(QCloseEvent* event) {
             return;
         }
     } else if (m_sessions.size() > 1) {
-        // No unsaved work, but several tabs are open — confirm the bulk close.
+        // No unsaved work, but several tabs are open - confirm the bulk close.
         const auto choice = QMessageBox::question(
             this, tr("Close Feather PDF"),
             tr("%n tab(s) are open. Close them all?", "", m_sessions.size()),
@@ -1890,7 +1901,7 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 
 void MainWindow::updateWindowTitle() {
     if (hasActiveDoc())
-        setWindowTitle(tr("%1 — Feather PDF").arg(m_doc->title()));
+        setWindowTitle(tr("%1 | Feather PDF").arg(m_doc->title()));
     else
         setWindowTitle(tr("Feather PDF"));
 }
@@ -1925,8 +1936,8 @@ void MainWindow::updateChromeState() {
 
 void MainWindow::updatePageIndicator() {
     if (!hasActiveDoc()) {
-        m_commandBar->setPageText("— / —");
-        m_pill->setPageText("— / —");
+        m_commandBar->setPageText("- / -");
+        m_pill->setPageText("- / -");
         return;
     }
     const QString text =
@@ -1937,8 +1948,8 @@ void MainWindow::updatePageIndicator() {
 
 void MainWindow::updateZoomIndicator() {
     if (!hasActiveDoc()) {
-        m_commandBar->setZoomText("—");
-        m_pill->setZoomText("—");
+        m_commandBar->setZoomText("-");
+        m_pill->setZoomText("-");
         return;
     }
     const QString text = tr("%1%").arg(qRound(m_viewport->zoomFactor() * 100.0));
@@ -1950,7 +1961,7 @@ void MainWindow::showAbout() {
     const auto& pal = Theme::instance().palette();
 
     // Frameless so there is no title-bar "Feather PDF" duplicating the name
-    // inside — a clean floating card with a shadow instead.
+    // inside - a clean floating card with a shadow instead.
     QDialog dlg(this);
     dlg.setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     dlg.setAttribute(Qt::WA_TranslucentBackground);
