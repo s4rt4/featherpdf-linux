@@ -20,6 +20,7 @@
 #include <QFileInfo>
 
 #include <exception>
+#include <memory>
 #include <vector>
 
 #include <qpdf/QPDF.hh>
@@ -78,6 +79,104 @@ bool PdfEditor::saveArrangement(const QString& inputPath, const QString& outputP
         if (!QFile::rename(target, outputPath)) {
             if (error)
                 *error = QStringLiteral("The edited file couldn't replace the original.");
+            QFile::remove(target);
+            return false;
+        }
+    }
+    return true;
+}
+
+bool PdfEditor::combine(const QStringList& inputPaths, const QString& outputPath, QString* error) {
+    if (inputPaths.isEmpty()) {
+        if (error)
+            *error = QStringLiteral("No files to combine.");
+        return false;
+    }
+
+    // Always write to a sibling temp file, then rename over the target — this
+    // keeps every input intact during the (lazy) read/write even when the output
+    // path equals one of the inputs.
+    const QString target = outputPath + QStringLiteral(".feather-tmp");
+
+    try {
+        QPDF out;
+        out.emptyPDF();
+        QPDFPageDocumentHelper outDH(out);
+
+        // The source documents must outlive write(): QPDF copies foreign page
+        // objects lazily, so keep every input open until the file is flushed.
+        std::vector<std::unique_ptr<QPDF>> sources;
+        sources.reserve(inputPaths.size());
+
+        for (const QString& path : inputPaths) {
+            auto in = std::make_unique<QPDF>();
+            in->processFile(path.toLocal8Bit().constData());
+            QPDFPageDocumentHelper inDH(*in);
+            inDH.pushInheritedAttributesToPage(); // self-contained pages survive the copy
+            for (QPDFPageObjectHelper& page : inDH.getAllPages())
+                outDH.addPage(page, /*first=*/false);
+            sources.push_back(std::move(in));
+        }
+
+        QPDFWriter writer(out, target.toLocal8Bit().constData());
+        writer.write();
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        QFile::remove(target);
+        return false;
+    }
+
+    QFile::remove(outputPath); // rename won't clobber an existing file
+    if (!QFile::rename(target, outputPath)) {
+        if (error)
+            *error = QStringLiteral("The combined file couldn't be written.");
+        QFile::remove(target);
+        return false;
+    }
+    return true;
+}
+
+bool PdfEditor::protect(const QString& inputPath, const QString& outputPath,
+                        const QString& password, QString* error) {
+    if (password.isEmpty()) {
+        if (error)
+            *error = QStringLiteral("A password is required.");
+        return false;
+    }
+
+    const bool inPlace =
+        QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
+    const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
+
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData());
+
+        QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
+        // Same password to open and to own: this protects access; granular
+        // permission restrictions (which need a separate owner password) come
+        // in a later increment. R6 = AES-256, the only scheme PDF 2.0 defines.
+        const QByteArray pass = password.toUtf8();
+        writer.setR6EncryptionParameters(pass.constData(), pass.constData(),
+                                         /*allow_accessibility=*/true, /*allow_extract=*/true,
+                                         /*allow_assemble=*/true, /*allow_annotate_and_form=*/true,
+                                         /*allow_form_filling=*/true, /*allow_modify_other=*/true,
+                                         qpdf_r3p_full, /*encrypt_metadata_aes=*/true);
+        writer.write();
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        if (inPlace)
+            QFile::remove(target);
+        return false;
+    }
+
+    if (inPlace) {
+        QFile::remove(outputPath);
+        if (!QFile::rename(target, outputPath)) {
+            if (error)
+                *error = QStringLiteral("The protected file couldn't replace the original.");
             QFile::remove(target);
             return false;
         }

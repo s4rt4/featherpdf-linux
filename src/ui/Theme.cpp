@@ -264,6 +264,16 @@ QString Theme::styleSheet() const {
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.canvas))
                .arg(css(p.text), css(p.accentTint), css(p.accent));
 
+    // Annotations / Attachments list panels — soft rows with a hairline divider.
+    qss += QStringLiteral(
+               "#AnnotationsList, #AttachmentsList { background:transparent; outline:0; }"
+               "#AnnotationsList::item, #AttachmentsList::item { padding:8px 12px; color:%1;"
+               " border-bottom:1px solid %2; }"
+               "#AnnotationsList::item:hover, #AttachmentsList::item:hover { background:%3; }"
+               "#AnnotationsList::item:selected, #AttachmentsList::item:selected {"
+               " background:%4; color:%1; }")
+               .arg(css(p.text), css(p.hairline), css(p.canvas), css(p.accentTint));
+
     // Home start screen — canvas backdrop, big suggested action, recent cards.
     qss += QStringLiteral(
                "#HomeView { background:%1; }"

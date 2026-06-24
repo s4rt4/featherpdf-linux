@@ -22,6 +22,12 @@ qt_add_executable(feather-pdf
     ui/ThumbnailPanel.h
     ui/OutlinePanel.cpp
     ui/OutlinePanel.h
+    ui/AnnotationsPanel.cpp
+    ui/AnnotationsPanel.h
+    ui/AttachmentsPanel.cpp
+    ui/AttachmentsPanel.h
+    ui/LayersPanel.cpp
+    ui/LayersPanel.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp
@@ -30,6 +36,10 @@ qt_add_executable(feather-pdf
     ui/FindBar.h
     ui/PrintDialog.cpp
     ui/PrintDialog.h
+    ui/CombineDialog.cpp
+    ui/CombineDialog.h
+    ui/ProtectDialog.cpp
+    ui/ProtectDialog.h
     ui/NavigationRail.cpp
     ui/NavigationRail.h
     ui/ToolsPane.cpp
@@ -60,6 +70,7 @@ target_link_libraries(feather-pdf PRIVATE
     Qt6::PrintSupport
     Qt6::Concurrent
     PkgConfig::QPDF
+    PkgConfig::POPPLER_QT6
 )
 
 install(TARGETS feather-pdf RUNTIME DESTINATION bin)

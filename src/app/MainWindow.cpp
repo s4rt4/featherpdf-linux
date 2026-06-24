@@ -19,13 +19,18 @@
 #include "backends/PdfEditor.h"
 #include "core/FeatherDocument.h"
 #include "core/PageCommands.h"
+#include "ui/AnnotationsPanel.h"
+#include "ui/AttachmentsPanel.h"
+#include "ui/CombineDialog.h"
 #include "ui/CommandBar.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
 #include "ui/HomeView.h"
+#include "ui/LayersPanel.h"
 #include "ui/NavigationRail.h"
 #include "ui/OutlinePanel.h"
 #include "ui/PrintDialog.h"
+#include "ui/ProtectDialog.h"
 #include "ui/TabStrip.h"
 #include "ui/Theme.h"
 #include "ui/ThumbnailPanel.h"
@@ -97,6 +102,9 @@ void MainWindow::buildActions() {
     m_saveAsAct = new QAction(tr("Save &As…"), this);
     m_saveAsAct->setShortcut(QKeySequence::SaveAs);
     connect(m_saveAsAct, &QAction::triggered, this, [this] { saveActiveAs(); });
+
+    m_protectAct = new QAction(tr("Pro&tect with Password…"), this);
+    connect(m_protectAct, &QAction::triggered, this, &MainWindow::protectDocument);
 
     m_printAct = new QAction(tr("&Print…"), this);
     m_printAct->setShortcut(QKeySequence::Print);
@@ -190,6 +198,7 @@ void MainWindow::buildMenus() {
     file->addSeparator();
     file->addAction(m_saveAct);
     file->addAction(m_saveAsAct);
+    file->addAction(m_protectAct);
     file->addSeparator();
     file->addAction(m_printAct);
     file->addSeparator();
@@ -282,14 +291,14 @@ void MainWindow::buildShell() {
     m_panelStack = new QStackedWidget(m_panelHost);
     m_thumbnails = new ThumbnailPanel(m_panelHost);
     m_outline = new OutlinePanel(m_panelHost);
-    m_panelPlaceholder = new QLabel(m_panelHost);
-    m_panelPlaceholder->setObjectName("RailPanelPlaceholder");
-    m_panelPlaceholder->setAlignment(Qt::AlignCenter);
-    m_panelPlaceholder->setWordWrap(true);
-    m_panelPlaceholder->setContentsMargins(16, 16, 16, 16);
-    m_panelStack->addWidget(m_thumbnails);       // index 0
-    m_panelStack->addWidget(m_outline);          // index 1
-    m_panelStack->addWidget(m_panelPlaceholder); // index 2
+    m_annotations = new AnnotationsPanel(m_panelHost);
+    m_attachments = new AttachmentsPanel(m_panelHost);
+    m_layers = new LayersPanel(m_panelHost);
+    m_panelStack->addWidget(m_thumbnails);  // index 0
+    m_panelStack->addWidget(m_outline);     // index 1
+    m_panelStack->addWidget(m_annotations); // index 2
+    m_panelStack->addWidget(m_attachments); // index 3
+    m_panelStack->addWidget(m_layers);      // index 4
     panelCol->addWidget(m_panelStack, 1);
     m_panelHost->setVisible(false);
 
@@ -499,27 +508,33 @@ void MainWindow::wireSignals() {
     connect(m_fitWidthAct, &QAction::triggered, m_viewport, &Viewport::fitToWidth);
     connect(m_fitPageAct, &QAction::triggered, m_viewport, &Viewport::fitWholePage);
 
-    // Navigation rail → expandable panel. Thumbnails is real; the others show a
-    // placeholder until their increments land.
+    // Navigation rail → expandable panel. Each panel owns its own content; the
+    // semantic panels (annotations/attachments/layers) load lazily when shown.
     connect(m_rail, &NavigationRail::panelChanged, this, [this](NavigationRail::Panel p) {
-        if (p == NavigationRail::Panel::None) {
+        switch (p) {
+        case NavigationRail::Panel::None:
             m_panelHost->setVisible(false);
             return;
-        }
-        if (p == NavigationRail::Panel::Thumbnails) {
+        case NavigationRail::Panel::Thumbnails:
             m_panelHead->setText(tr("THUMBNAILS"));
             m_panelStack->setCurrentWidget(m_thumbnails);
-        } else if (p == NavigationRail::Panel::Outline) {
+            break;
+        case NavigationRail::Panel::Outline:
             m_panelHead->setText(tr("OUTLINE"));
             m_panelStack->setCurrentWidget(m_outline);
-        } else {
-            static const QHash<NavigationRail::Panel, QString> names{
-                {NavigationRail::Panel::Annotations, tr("ANNOTATIONS")},
-                {NavigationRail::Panel::Attachments, tr("ATTACHMENTS")},
-                {NavigationRail::Panel::Layers, tr("LAYERS")}};
-            m_panelHead->setText(names.value(p));
-            m_panelPlaceholder->setText(tr("This panel arrives in a later milestone."));
-            m_panelStack->setCurrentWidget(m_panelPlaceholder);
+            break;
+        case NavigationRail::Panel::Annotations:
+            m_panelHead->setText(tr("ANNOTATIONS"));
+            m_panelStack->setCurrentWidget(m_annotations);
+            break;
+        case NavigationRail::Panel::Attachments:
+            m_panelHead->setText(tr("ATTACHMENTS"));
+            m_panelStack->setCurrentWidget(m_attachments);
+            break;
+        case NavigationRail::Panel::Layers:
+            m_panelHead->setText(tr("LAYERS"));
+            m_panelStack->setCurrentWidget(m_layers);
+            break;
         }
         m_panelHost->setVisible(true);
     });
@@ -536,6 +551,16 @@ void MainWindow::wireSignals() {
     // Outline → viewport navigation.
     connect(m_outline, &OutlinePanel::pageActivated, m_viewport, &Viewport::goToPage);
 
+    // Annotations list → viewport. Poppler reports the original page index; map
+    // it to the current display slot so edits (reorder/delete) are honoured.
+    connect(m_annotations, &AnnotationsPanel::annotationActivated, this, [this](int originalPage) {
+        if (!m_doc)
+            return;
+        const int slot = m_doc->pageOrder().indexOf(originalPage);
+        if (slot >= 0)
+            m_viewport->goToPage(slot);
+    });
+
     // Tools pane.
     connect(m_toolsPane, &ToolsPane::toolActivated, this, [this](const QString& id) {
         // Wire the tools whose backends already exist; the rest await their
@@ -545,6 +570,8 @@ void MainWindow::wireSignals() {
         } else if (id == QLatin1String("organize")) {
             if (hasActiveDoc())
                 m_rail->setCurrentPanel(NavigationRail::Panel::Thumbnails);
+        } else if (id == QLatin1String("combine")) {
+            combineDocuments();
         } else {
             notImplemented(id.left(1).toUpper() + id.mid(1));
         }
@@ -627,6 +654,75 @@ bool MainWindow::saveActiveAs() {
     }
     m_toast->show(tr("Exported to %1").arg(QFileInfo(out).fileName()));
     return true;
+}
+
+void MainWindow::combineDocuments() {
+    // Seed the list with the current document (if any), then let the user add
+    // more and reorder. The merge is lossless (QPDF foreign-page copy).
+    CombineDialog dialog(hasActiveDoc() ? m_doc->filePath() : QString(), this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const QStringList inputs = dialog.paths();
+    if (inputs.size() < 2)
+        return;
+
+    const QString suggested =
+        QFileInfo(inputs.first()).dir().filePath(QStringLiteral("combined.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save combined PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = PdfEditor::combine(inputs, out, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't combine"), error);
+        return;
+    }
+    m_toast->show(tr("Combined %1 files").arg(inputs.size()));
+    openPath(out); // open the merged result in a new tab
+}
+
+void MainWindow::protectDocument() {
+    if (!hasActiveDoc())
+        return;
+
+    ProtectDialog dialog(m_doc->fileName(), this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const QString password = dialog.password();
+    if (password.isEmpty())
+        return;
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-protected.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save protected PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    // Apply the current edit arrangement first (rotation/delete/reorder), then
+    // encrypt — so the protected copy reflects what's on screen. Two-step: write
+    // the arrangement to the chosen path, then encrypt it in place.
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    bool ok = PdfEditor::saveArrangement(m_doc->filePath(), out, m_doc->pageOrder(),
+                                         m_doc->rotations(), &error);
+    if (ok)
+        ok = PdfEditor::protect(out, out, password, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't protect"), error);
+        return;
+    }
+    // The result is encrypted; the viewer can't reopen it without password
+    // support yet, so just confirm rather than loading it into a tab.
+    m_toast->show(tr("Saved protected copy to %1").arg(QFileInfo(out).fileName()));
 }
 
 bool MainWindow::saveActive() {
@@ -857,6 +953,12 @@ void MainWindow::activateSession(int id) {
     m_thumbnails->setArrangement(m_doc->pageOrder(), m_doc->rotations());
     m_thumbnails->setCurrentPage(target->lastPage);
     m_outline->setDocument(m_doc->pdf());
+    // The semantic panels read the file on disk via Poppler; they rebuild lazily
+    // the next time each is shown.
+    const QString path = m_doc->filePath();
+    m_annotations->setDocumentPath(path);
+    m_attachments->setDocumentPath(path);
+    m_layers->setDocumentPath(path);
 
     m_tabStrip->setActiveDocument(id);
     updateWindowTitle();
@@ -890,6 +992,9 @@ void MainWindow::closeSession(int id) {
         m_viewport->clear();
         m_thumbnails->clear();
         m_outline->clear();
+        m_annotations->clear();
+        m_attachments->clear();
+        m_layers->clear();
     }
     if (doc)
         doc->deleteLater();
@@ -1008,6 +1113,7 @@ void MainWindow::updateChromeState() {
 
     m_saveAct->setEnabled(loaded);
     m_saveAsAct->setEnabled(loaded);
+    m_protectAct->setEnabled(loaded);
     m_printAct->setEnabled(loaded);
     m_rotateLeftAct->setEnabled(loaded);
     m_rotateRightAct->setEnabled(loaded);

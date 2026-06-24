@@ -32,6 +32,10 @@ option(BUILD_TESTING "Build the test suite" ON)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(QPDF REQUIRED IMPORTED_TARGET libqpdf)
 
+# Poppler-Qt6 (semantic layer — annotations, attachments, optional content). Its
+# CMake config is unreliable across distros, so use pkg-config like QPDF.
+pkg_check_modules(POPPLER_QT6 REQUIRED IMPORTED_TARGET poppler-qt6)
+
 qt_standard_project_setup()
 
 # qt_standard_project_setup() turns on AUTOMOC/AUTOUIC but not AUTORCC; we embed

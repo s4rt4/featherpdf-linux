@@ -27,6 +27,9 @@ class Viewport;
 class HomeView;
 class ThumbnailPanel;
 class OutlinePanel;
+class AnnotationsPanel;
+class AttachmentsPanel;
+class LayersPanel;
 class TabStrip;
 class CommandBar;
 class FindBar;
@@ -82,6 +85,8 @@ private:
     void deleteActivePage();
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
+    void combineDocuments();  // merge several PDFs into one (QPDF)
+    void protectDocument();   // write a password-encrypted copy (QPDF, AES-256)
     void printActive();       // custom print dialog (async printers + preview)
     void printDocument(QPrinter& printer, const QList<int>& pages, bool grayscale);
 
@@ -143,9 +148,11 @@ private:
     QWidget* m_panelHost = nullptr;
     QStackedWidget* m_panelStack = nullptr;
     QLabel* m_panelHead = nullptr;
-    QLabel* m_panelPlaceholder = nullptr;
     ThumbnailPanel* m_thumbnails = nullptr;
     OutlinePanel* m_outline = nullptr;
+    AnnotationsPanel* m_annotations = nullptr;
+    AttachmentsPanel* m_attachments = nullptr;
+    LayersPanel* m_layers = nullptr;
     CommandBar* m_commandBar = nullptr;
     FindBar* m_findBar = nullptr;
     int m_searchIndex = 0;
@@ -158,6 +165,7 @@ private:
     QAction* m_openAct = nullptr;
     QAction* m_saveAct = nullptr;
     QAction* m_saveAsAct = nullptr;
+    QAction* m_protectAct = nullptr;
     QAction* m_printAct = nullptr;
     QAction* m_closeAct = nullptr;
     QAction* m_quitAct = nullptr;
