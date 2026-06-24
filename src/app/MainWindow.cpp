@@ -19,6 +19,7 @@
 #include "backends/PdfEditor.h"
 #include "backends/Annotator.h"
 #include "backends/FormFiller.h"
+#include "backends/Signer.h"
 #include "core/FeatherDocument.h"
 #include "core/PageCommands.h"
 #include "ui/AnnotationBar.h"
@@ -39,6 +40,8 @@
 #include "ui/PrintDialog.h"
 #include "ui/ProtectDialog.h"
 #include "ui/RedactionBar.h"
+#include "ui/SignDialog.h"
+#include "ui/SignaturesDialog.h"
 #include "ui/TabStrip.h"
 #include "ui/Theme.h"
 #include "ui/ThumbnailPanel.h"
@@ -251,6 +254,11 @@ void MainWindow::buildMenus() {
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
     connect(props, &QAction::triggered, this, &MainWindow::showProperties);
+    document->addSeparator();
+    QAction* sign = document->addAction(tr("&Sign…"));
+    connect(sign, &QAction::triggered, this, &MainWindow::signDocument);
+    QAction* sigs = document->addAction(tr("Si&gnatures…"));
+    connect(sigs, &QAction::triggered, this, &MainWindow::viewSignatures);
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
     for (const QString& name : {tr("Export"), tr("Create"), tr("Edit"), tr("Comment"),
@@ -662,6 +670,8 @@ void MainWindow::wireSignals() {
         } else if (id == QLatin1String("comment")) {
             if (hasActiveDoc())
                 setHighlightMode(!m_viewport->highlightMode());
+        } else if (id == QLatin1String("sign")) {
+            signDocument();
         } else {
             notImplemented(id.left(1).toUpper() + id.mid(1));
         }
@@ -967,6 +977,61 @@ void MainWindow::combineDocuments() {
     }
     m_toast->show(tr("Combined %1 files").arg(inputs.size()));
     openPath(out); // open the merged result in a new tab
+}
+
+void MainWindow::signDocument() {
+    if (!hasActiveDoc())
+        return;
+    const QStringList certs = Signer::availableCertificates();
+    if (certs.isEmpty()) {
+        QMessageBox::information(
+            this, tr("No signing certificate"),
+            tr("No signing certificate was found in your system's certificate store. "
+               "Import a certificate (into the NSS database) to sign documents."));
+        return;
+    }
+
+    SignDialog dialog(certs, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    // Place the signature near the bottom-left of the current page.
+    const int slot = m_viewport->currentPage();
+    const int orig = m_doc->originalPageAt(slot);
+    if (orig < 0)
+        return;
+    const QSizeF pt = m_doc->pdf()->pagePointSize(orig);
+    const double w = std::min(240.0, pt.width() - 96.0);
+    const QRectF rect(48, 40, std::max(160.0, w), 56);
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-signed.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save signed PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = Signer::sign(m_doc->filePath(), out, dialog.certificate(), dialog.password(),
+                                 dialog.reason(), dialog.location(), orig, rect, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't sign"), error);
+        return;
+    }
+    m_toast->show(tr("Signed and saved to %1").arg(QFileInfo(out).fileName()));
+    openPath(out);
+    // Show the verification result for the freshly signed copy.
+    SignaturesDialog(Signer::verify(out), this).exec();
+}
+
+void MainWindow::viewSignatures() {
+    if (!hasActiveDoc())
+        return;
+    SignaturesDialog(Signer::verify(m_doc->filePath()), this).exec();
 }
 
 void MainWindow::protectDocument() {

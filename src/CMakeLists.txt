@@ -14,6 +14,8 @@ qt_add_executable(feather-pdf
     backends/Annotator.h
     backends/FormFiller.cpp
     backends/FormFiller.h
+    backends/Signer.cpp
+    backends/Signer.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -34,6 +36,10 @@ qt_add_executable(feather-pdf
     ui/LayersPanel.h
     ui/FormPanel.cpp
     ui/FormPanel.h
+    ui/SignDialog.cpp
+    ui/SignDialog.h
+    ui/SignaturesDialog.cpp
+    ui/SignaturesDialog.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

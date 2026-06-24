@@ -93,6 +93,8 @@ private:
     void setHighlightMode(bool on); // enter/leave the annotation-authoring mode
     void applyAnnotations();        // write highlight + note annotations, save, open result
     void combineDocuments();  // merge several PDFs into one (QPDF)
+    void signDocument();      // digitally sign with a certificate (Poppler/NSS)
+    void viewSignatures();    // show/verify the document's existing signatures
     void protectDocument();   // write a password-encrypted copy (QPDF, AES-256)
     void removeProtection();  // write a decrypted (password-free) copy (QPDF)
     void printActive();       // custom print dialog (async printers + preview)
