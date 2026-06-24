@@ -32,7 +32,7 @@ class NavigationRail : public QWidget {
     Q_OBJECT
 
 public:
-    enum class Panel { None, Thumbnails, Outline, Annotations, Attachments, Layers };
+    enum class Panel { None, Thumbnails, Outline, Annotations, Attachments, Layers, Forms };
 
     explicit NavigationRail(QWidget* parent = nullptr);
 

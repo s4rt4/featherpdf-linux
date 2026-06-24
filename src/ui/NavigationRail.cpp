@@ -41,6 +41,7 @@ NavigationRail::NavigationRail(QWidget* parent) : QWidget(parent) {
     col->addWidget(addButton(Panel::Attachments, "attachment", tr("Attachments")),
                    0, Qt::AlignHCenter);
     col->addWidget(addButton(Panel::Layers, "layers", tr("Layers")), 0, Qt::AlignHCenter);
+    col->addWidget(addButton(Panel::Forms, "form", tr("Forms")), 0, Qt::AlignHCenter);
 
     refreshIcons();
     connect(&Theme::instance(), &Theme::changed, this, &NavigationRail::refreshIcons);

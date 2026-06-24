@@ -30,6 +30,7 @@ class OutlinePanel;
 class AnnotationsPanel;
 class AttachmentsPanel;
 class LayersPanel;
+class FormPanel;
 class TabStrip;
 class CommandBar;
 class FindBar;
@@ -160,6 +161,7 @@ private:
     AnnotationsPanel* m_annotations = nullptr;
     AttachmentsPanel* m_attachments = nullptr;
     LayersPanel* m_layers = nullptr;
+    FormPanel* m_forms = nullptr;
     CommandBar* m_commandBar = nullptr;
     FindBar* m_findBar = nullptr;
     RedactionBar* m_redactionBar = nullptr;

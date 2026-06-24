@@ -12,6 +12,8 @@ qt_add_executable(feather-pdf
     backends/PdfEditor.h
     backends/Annotator.cpp
     backends/Annotator.h
+    backends/FormFiller.cpp
+    backends/FormFiller.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -30,6 +32,8 @@ qt_add_executable(feather-pdf
     ui/AttachmentsPanel.h
     ui/LayersPanel.cpp
     ui/LayersPanel.h
+    ui/FormPanel.cpp
+    ui/FormPanel.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

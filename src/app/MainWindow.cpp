@@ -18,6 +18,7 @@
 
 #include "backends/PdfEditor.h"
 #include "backends/Annotator.h"
+#include "backends/FormFiller.h"
 #include "core/FeatherDocument.h"
 #include "core/PageCommands.h"
 #include "ui/AnnotationBar.h"
@@ -28,6 +29,7 @@
 #include "ui/GoToPageDialog.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
+#include "ui/FormPanel.h"
 #include "ui/HomeView.h"
 #include "ui/LayersPanel.h"
 #include "ui/NavigationRail.h"
@@ -311,11 +313,13 @@ void MainWindow::buildShell() {
     m_annotations = new AnnotationsPanel(m_panelHost);
     m_attachments = new AttachmentsPanel(m_panelHost);
     m_layers = new LayersPanel(m_panelHost);
+    m_forms = new FormPanel(m_panelHost);
     m_panelStack->addWidget(m_thumbnails);  // index 0
     m_panelStack->addWidget(m_outline);     // index 1
     m_panelStack->addWidget(m_annotations); // index 2
     m_panelStack->addWidget(m_attachments); // index 3
     m_panelStack->addWidget(m_layers);      // index 4
+    m_panelStack->addWidget(m_forms);       // index 5
     panelCol->addWidget(m_panelStack, 1);
     m_panelHost->setVisible(false);
 
@@ -553,6 +557,10 @@ void MainWindow::wireSignals() {
             m_panelHead->setText(tr("LAYERS"));
             m_panelStack->setCurrentWidget(m_layers);
             break;
+        case NavigationRail::Panel::Forms:
+            m_panelHead->setText(tr("FORMS"));
+            m_panelStack->setCurrentWidget(m_forms);
+            break;
         }
         m_panelHost->setVisible(true);
     });
@@ -602,6 +610,29 @@ void MainWindow::wireSignals() {
         NoteDialog dialog(this);
         if (dialog.exec() == QDialog::Accepted)
             m_viewport->addNote(slot, pos, dialog.text());
+    });
+
+    // Forms panel → fill and save via Poppler, then open the result.
+    connect(m_forms, &FormPanel::saveRequested, this, [this](const QHash<int, QVariant>& values) {
+        if (!hasActiveDoc() || values.isEmpty())
+            return;
+        const QFileInfo info(m_doc->filePath());
+        const QString suggested =
+            info.dir().filePath(info.completeBaseName() + QStringLiteral("-filled.pdf"));
+        const QString out = QFileDialog::getSaveFileName(this, tr("Save filled form"), suggested,
+                                                         tr("PDF documents (*.pdf)"));
+        if (out.isEmpty())
+            return;
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        QString error;
+        const bool ok = FormFiller::save(m_doc->filePath(), out, values, &error);
+        QApplication::restoreOverrideCursor();
+        if (!ok) {
+            QMessageBox::warning(this, tr("Couldn't save form"), error);
+            return;
+        }
+        m_toast->show(tr("Saved filled form to %1").arg(QFileInfo(out).fileName()));
+        openPath(out);
     });
 
     // Annotations list → viewport. Poppler reports the original page index; map
@@ -1264,6 +1295,7 @@ void MainWindow::activateSession(int id) {
     m_annotations->setDocumentPath(path);
     m_attachments->setDocumentPath(path);
     m_layers->setDocumentPath(path);
+    m_forms->setDocumentPath(path);
 
     m_tabStrip->setActiveDocument(id);
     updateWindowTitle();
@@ -1300,6 +1332,7 @@ void MainWindow::closeSession(int id) {
         m_annotations->clear();
         m_attachments->clear();
         m_layers->clear();
+        m_forms->clear();
     }
     if (doc)
         doc->deleteLater();
