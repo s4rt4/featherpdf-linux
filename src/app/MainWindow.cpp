@@ -578,18 +578,22 @@ void MainWindow::wireSignals() {
 
     // Annotation bar ↔ viewport. The bar's count is highlights + notes.
     const auto refreshAnnotCount = [this] {
-        m_annotationBar->setCount(m_viewport->highlightCount() + m_viewport->noteCount());
+        m_annotationBar->setCount(m_viewport->highlightCount() + m_viewport->noteCount() +
+                                  m_viewport->inkCount());
     };
     connect(m_viewport, &Viewport::highlightsChanged, this, refreshAnnotCount);
     connect(m_viewport, &Viewport::notesChanged, this, refreshAnnotCount);
+    connect(m_viewport, &Viewport::inksChanged, this, refreshAnnotCount);
     connect(m_annotationBar, &AnnotationBar::saveRequested, this, &MainWindow::applyAnnotations);
     connect(m_annotationBar, &AnnotationBar::clearRequested, m_viewport,
             &Viewport::clearAnnotations);
     connect(m_annotationBar, &AnnotationBar::doneRequested, this,
             [this] { setHighlightMode(false); });
     connect(m_annotationBar, &AnnotationBar::toolChanged, this, [this](int tool) {
-        m_viewport->setAnnotationTool(tool == 1 ? PageView::AnnotTool::Note
-                                                : PageView::AnnotTool::Highlight);
+        const PageView::AnnotTool t = tool == 1 ? PageView::AnnotTool::Note
+                                      : tool == 2 ? PageView::AnnotTool::Ink
+                                                  : PageView::AnnotTool::Highlight;
+        m_viewport->setAnnotationTool(t);
     });
     connect(m_annotationBar, &AnnotationBar::colorChanged, this,
             [this](const QColor& c) { m_viewport->setHighlightColor(c); });
@@ -735,7 +739,8 @@ void MainWindow::setHighlightMode(bool on) {
     m_annotationBar->setVisible(on);
     if (on) {
         m_findBar->hide();
-        m_annotationBar->setCount(m_viewport->highlightCount() + m_viewport->noteCount());
+        m_annotationBar->setCount(m_viewport->highlightCount() + m_viewport->noteCount() +
+                                  m_viewport->inkCount());
     } else {
         m_viewport->clearAnnotations();
     }
@@ -746,7 +751,8 @@ void MainWindow::applyAnnotations() {
         return;
     const QHash<int, QList<QPair<QRectF, QColor>>> hiMarks = m_viewport->highlightMarks();
     const QHash<int, QList<QPair<QPointF, QString>>> noteMarks = m_viewport->noteMarks();
-    if (hiMarks.isEmpty() && noteMarks.isEmpty())
+    const QHash<int, QList<QPair<QPolygonF, QColor>>> inkMarks = m_viewport->inkMarks();
+    if (hiMarks.isEmpty() && noteMarks.isEmpty() && inkMarks.isEmpty())
         return;
 
     // Map a normalized point from displayed (rotated) page space back to the
@@ -785,7 +791,21 @@ void MainWindow::applyAnnotations() {
         for (const auto& nm : it.value())
             notes.append(Annotator::Note{orig, mapPoint(nm.first, rot), nm.second, noteColor});
     }
-    if (highlights.isEmpty() && notes.isEmpty())
+    QList<Annotator::Ink> inks;
+    for (auto it = inkMarks.constBegin(); it != inkMarks.constEnd(); ++it) {
+        const int orig = m_doc->originalPageAt(it.key());
+        if (orig < 0)
+            continue;
+        const int rot = m_doc->rotation(it.key());
+        for (const auto& stroke : it.value()) {
+            QPolygonF mapped;
+            mapped.reserve(stroke.first.size());
+            for (const QPointF& p : stroke.first)
+                mapped.append(mapPoint(p, rot));
+            inks.append(Annotator::Ink{orig, {mapped}, stroke.second});
+        }
+    }
+    if (highlights.isEmpty() && notes.isEmpty() && inks.isEmpty())
         return;
 
     const QFileInfo info(m_doc->filePath());
@@ -798,7 +818,8 @@ void MainWindow::applyAnnotations() {
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
-    const bool ok = Annotator::saveAnnotations(m_doc->filePath(), out, highlights, notes, &error);
+    const bool ok =
+        Annotator::saveAnnotations(m_doc->filePath(), out, highlights, notes, inks, &error);
     QApplication::restoreOverrideCursor();
 
     if (!ok) {

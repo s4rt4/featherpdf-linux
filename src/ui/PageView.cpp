@@ -29,6 +29,7 @@
 #include <QScrollBar>
 #include <QWheelEvent>
 #include <algorithm>
+#include <cmath>
 
 namespace {
 constexpr int kMargin = 18;       // top/bottom/side margin around the page column
@@ -105,6 +106,11 @@ void PageView::setDocument(QPdfDocument* doc) {
         m_notes.clear();
         emit notesChanged(0);
     }
+    if (!m_inks.isEmpty()) {
+        m_inks.clear();
+        emit inksChanged(0);
+    }
+    m_currentStroke.clear();
 
     m_renderer->setDocument(doc);
     m_search->setSearchString(QString());
@@ -300,6 +306,13 @@ int PageView::noteCount() const {
     return n;
 }
 
+int PageView::inkCount() const {
+    int n = 0;
+    for (const auto& list : m_inks)
+        n += list.size();
+    return n;
+}
+
 void PageView::setAnnotationTool(AnnotTool tool) {
     m_annotTool = tool;
 }
@@ -325,14 +338,19 @@ void PageView::clearRedactions() {
 void PageView::clearAnnotations() {
     const bool hadHi = !m_highlights.isEmpty();
     const bool hadNotes = !m_notes.isEmpty();
+    const bool hadInk = !m_inks.isEmpty();
     m_highlights.clear();
     m_notes.clear();
+    m_inks.clear();
+    m_currentStroke.clear();
     m_dragging = false;
     m_dragSlot = -1;
     if (hadHi)
         emit highlightsChanged(0);
     if (hadNotes)
         emit notesChanged(0);
+    if (hadInk)
+        emit inksChanged(0);
     viewport()->update();
 }
 
@@ -340,18 +358,29 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
     if (obj != viewport() || !dragModeActive())
         return QAbstractScrollArea::eventFilter(obj, event);
 
+    const bool inkTool = m_highlightMode && m_annotTool == AnnotTool::Ink;
+
     switch (event->type()) {
     case QEvent::MouseButtonPress: {
         auto* me = static_cast<QMouseEvent*>(event);
+        // Right-click removes the topmost mark under the cursor (any tool).
+        if (me->button() == Qt::RightButton) {
+            for (int slot = 0; slot < pageCount(); ++slot)
+                if (pageRect(slot).contains(me->pos()))
+                    return deleteMarkAt(slot, normInSlot(slot, me->pos()));
+            break;
+        }
         if (me->button() != Qt::LeftButton)
             break;
-        // Find the page under the cursor.
         for (int slot = 0; slot < pageCount(); ++slot) {
             if (pageRect(slot).contains(me->pos())) {
                 m_dragging = true;
                 m_dragSlot = slot;
                 m_dragStart = normInSlot(slot, me->pos());
                 m_dragNorm = QRectF(m_dragStart, QSizeF(0, 0));
+                m_currentStroke.clear();
+                if (inkTool)
+                    m_currentStroke.append(m_dragStart);
                 viewport()->update();
                 return true;
             }
@@ -363,7 +392,10 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
             break;
         auto* me = static_cast<QMouseEvent*>(event);
         const QPointF cur = normInSlot(m_dragSlot, me->pos());
-        m_dragNorm = QRectF(m_dragStart, cur).normalized();
+        if (inkTool)
+            m_currentStroke.append(cur);
+        else
+            m_dragNorm = QRectF(m_dragStart, cur).normalized();
         viewport()->update();
         return true;
     }
@@ -371,7 +403,13 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
         if (!m_dragging)
             break;
         m_dragging = false;
-        if (m_highlightMode && m_annotTool == AnnotTool::Note) {
+        if (inkTool) {
+            if (m_currentStroke.size() >= 2) {
+                m_inks[m_dragSlot].append(qMakePair(m_currentStroke, m_highlightColor));
+                emit inksChanged(inkCount());
+            }
+            m_currentStroke.clear();
+        } else if (m_highlightMode && m_annotTool == AnnotTool::Note) {
             // A note is a single point — drop it where the press landed.
             emit noteRequested(m_dragSlot, m_dragStart);
         } else if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004) {
@@ -392,6 +430,50 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
         break;
     }
     return QAbstractScrollArea::eventFilter(obj, event);
+}
+
+bool PageView::deleteMarkAt(int slot, const QPointF& norm) {
+    // Notes first (small targets), then ink strokes, then highlights.
+    if (auto it = m_notes.find(slot); it != m_notes.end()) {
+        for (int i = it->size() - 1; i >= 0; --i) {
+            const QPointF d = (*it)[i].first - norm;
+            if (std::abs(d.x()) < 0.02 && d.y() > -0.001 && d.y() < 0.03) {
+                it->removeAt(i);
+                if (it->isEmpty())
+                    m_notes.erase(it);
+                emit notesChanged(noteCount());
+                viewport()->update();
+                return true;
+            }
+        }
+    }
+    if (auto it = m_inks.find(slot); it != m_inks.end()) {
+        for (int i = it->size() - 1; i >= 0; --i) {
+            for (const QPointF& p : (*it)[i].first) {
+                if (std::abs(p.x() - norm.x()) < 0.012 && std::abs(p.y() - norm.y()) < 0.012) {
+                    it->removeAt(i);
+                    if (it->isEmpty())
+                        m_inks.erase(it);
+                    emit inksChanged(inkCount());
+                    viewport()->update();
+                    return true;
+                }
+            }
+        }
+    }
+    if (auto it = m_highlights.find(slot); it != m_highlights.end()) {
+        for (int i = it->size() - 1; i >= 0; --i) {
+            if ((*it)[i].first.contains(norm)) {
+                it->removeAt(i);
+                if (it->isEmpty())
+                    m_highlights.erase(it);
+                emit highlightsChanged(highlightCount());
+                viewport()->update();
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void PageView::updateCurrentPage() {
@@ -546,8 +628,26 @@ void PageView::paintEvent(QPaintEvent*) {
                 p.drawRoundedRect(box, 3, 3);
             }
         }
-        const bool dragRect = m_dragging && slot == m_dragSlot && m_dragNorm.isValid() &&
-                              !(m_highlightMode && m_annotTool == AnnotTool::Note);
+        // Ink strokes — freehand polylines in their colour.
+        const auto drawStroke = [&](const QPolygonF& stroke, const QColor& c) {
+            if (stroke.size() < 2)
+                return;
+            QPolygonF pts;
+            pts.reserve(stroke.size());
+            for (const QPointF& n : stroke)
+                pts.append(QPointF(r.x() + n.x() * r.width(), r.y() + n.y() * r.height()));
+            p.setBrush(Qt::NoBrush);
+            p.setPen(QPen(c, 2.2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            p.drawPolyline(pts);
+        };
+        if (auto it = m_inks.constFind(slot); it != m_inks.constEnd())
+            for (const auto& ink : *it)
+                drawStroke(ink.first, ink.second);
+        if (m_dragging && slot == m_dragSlot && !m_currentStroke.isEmpty())
+            drawStroke(m_currentStroke, m_highlightColor);
+        const bool dragRect =
+            m_dragging && slot == m_dragSlot && m_dragNorm.isValid() &&
+            !(m_highlightMode && (m_annotTool == AnnotTool::Note || m_annotTool == AnnotTool::Ink));
         if (dragRect) {
             QColor dragFill = m_highlightMode ? m_highlightColor : QColor(200, 30, 30);
             dragFill.setAlpha(110);

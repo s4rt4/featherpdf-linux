@@ -40,6 +40,8 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)
             [this](int count) { emit highlightsChanged(count); });
     connect(m_view, &PageView::notesChanged, this,
             [this](int count) { emit notesChanged(count); });
+    connect(m_view, &PageView::inksChanged, this,
+            [this](int count) { emit inksChanged(count); });
     connect(m_view, &PageView::noteRequested, this,
             [this](int slot, QPointF pos) { emit noteRequested(slot, pos); });
 }
@@ -62,8 +64,12 @@ QHash<int, QList<QPair<QRectF, QColor>>> Viewport::highlightMarks() const {
 QHash<int, QList<QPair<QPointF, QString>>> Viewport::noteMarks() const {
     return m_view->noteMarks();
 }
+QHash<int, QList<QPair<QPolygonF, QColor>>> Viewport::inkMarks() const {
+    return m_view->inkMarks();
+}
 int Viewport::highlightCount() const { return m_view->highlightCount(); }
 int Viewport::noteCount() const { return m_view->noteCount(); }
+int Viewport::inkCount() const { return m_view->inkCount(); }
 void Viewport::addNote(int slot, const QPointF& pos, const QString& text) {
     m_view->addNote(slot, pos, text);
 }

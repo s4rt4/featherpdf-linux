@@ -31,7 +31,8 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
 
     m_highlightTool = new QPushButton(tr("Highlight"), this);
     m_noteTool = new QPushButton(tr("Note"), this);
-    for (QPushButton* b : {m_highlightTool, m_noteTool}) {
+    m_inkTool = new QPushButton(tr("Draw"), this);
+    for (QPushButton* b : {m_highlightTool, m_noteTool, m_inkTool}) {
         b->setObjectName(QStringLiteral("GhostBtn"));
         b->setCheckable(true);
         b->setCursor(Qt::PointingHandCursor);
@@ -74,6 +75,7 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
 
     row->addWidget(m_highlightTool);
     row->addWidget(m_noteTool);
+    row->addWidget(m_inkTool);
     row->addSpacing(8);
     for (QPushButton* sw : m_swatches)
         row->addWidget(sw);
@@ -87,16 +89,13 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     connect(m_save, &QPushButton::clicked, this, &AnnotationBar::saveRequested);
     connect(m_clear, &QPushButton::clicked, this, &AnnotationBar::clearRequested);
     connect(done, &QPushButton::clicked, this, &AnnotationBar::doneRequested);
-    connect(m_highlightTool, &QPushButton::clicked, this, [this] {
-        m_highlightTool->setChecked(true);
-        m_noteTool->setChecked(false);
-        emit toolChanged(0);
-    });
-    connect(m_noteTool, &QPushButton::clicked, this, [this] {
-        m_noteTool->setChecked(true);
-        m_highlightTool->setChecked(false);
-        emit toolChanged(1);
-    });
+    const QVector<QPushButton*> tools{m_highlightTool, m_noteTool, m_inkTool};
+    for (int i = 0; i < tools.size(); ++i)
+        connect(tools[i], &QPushButton::clicked, this, [this, tools, i] {
+            for (int j = 0; j < tools.size(); ++j)
+                tools[j]->setChecked(j == i);
+            emit toolChanged(i);
+        });
 
     const Theme::Palette& p = Theme::instance().palette();
     const auto css = [](const QColor& c) {
@@ -127,9 +126,10 @@ void AnnotationBar::selectSwatch(int index) {
 }
 
 void AnnotationBar::setCount(int count) {
-    m_label->setText(count == 0
-                         ? tr("Pick a tool, then drag to highlight or click to drop a note.")
-                         : tr("%n annotation(s). Save to write them into the document.", "", count));
+    m_label->setText(
+        count == 0
+            ? tr("Pick a tool and draw. Right-click a mark to remove it.")
+            : tr("%n annotation(s) · right-click to remove · Save to write them in.", "", count));
     m_save->setEnabled(count > 0);
     m_clear->setEnabled(count > 0);
 }

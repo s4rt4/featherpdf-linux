@@ -20,6 +20,7 @@
 #include <QColor>
 #include <QHash>
 #include <QList>
+#include <QPolygonF>
 #include <QSet>
 #include <QSizeF>
 
@@ -95,19 +96,21 @@ public:
     // Highlight tool drags rects; the Note tool clicks to drop a note (the click
     // emits noteRequested so the app can collect text, then calls addNote).
     // Marks are normalized to the displayed page.
-    enum class AnnotTool { Highlight, Note };
+    enum class AnnotTool { Highlight, Note, Ink };
     void setHighlightMode(bool on);  // really "annotation mode"; name kept for callers
     bool highlightMode() const { return m_highlightMode; }
     void setAnnotationTool(AnnotTool tool);
     AnnotTool annotationTool() const { return m_annotTool; }
     void setHighlightColor(const QColor& color) { m_highlightColor = color; }
-    // slot → [(rect, colour)] and slot → [(pos, text)].
+    // slot → [(rect, colour)], [(pos, text)], and [(stroke points, colour)].
     QHash<int, QList<QPair<QRectF, QColor>>> highlightMarks() const { return m_highlights; }
     QHash<int, QList<QPair<QPointF, QString>>> noteMarks() const { return m_notes; }
+    QHash<int, QList<QPair<QPolygonF, QColor>>> inkMarks() const { return m_inks; }
     int highlightCount() const;
     int noteCount() const;
+    int inkCount() const;
     void addNote(int slot, const QPointF& pos, const QString& text);
-    void clearAnnotations(); // clears highlights and notes
+    void clearAnnotations(); // clears highlights, notes, and ink
 
 signals:
     void currentPageChanged(int page);
@@ -117,6 +120,7 @@ signals:
     void redactionsChanged(int count);
     void highlightsChanged(int count);
     void notesChanged(int count);
+    void inksChanged(int count);
     void noteRequested(int slot, QPointF normPos); // Note tool clicked at a point
 
 protected:
@@ -201,12 +205,15 @@ private:
     // Drag-to-mark state, shared by redaction and highlight modes (only one is
     // active at a time). normInSlot maps a viewport point to page fractions.
     QPointF normInSlot(int slot, const QPoint& vpPt) const;
+    bool deleteMarkAt(int slot, const QPointF& norm); // remove the topmost mark under a point
     bool dragModeActive() const { return m_redactMode || m_highlightMode; }
     bool m_redactMode = false;
     bool m_highlightMode = false;
     QHash<int, QList<QRectF>> m_redactions;             // slot → normalized rects
     QHash<int, QList<QPair<QRectF, QColor>>> m_highlights; // slot → [(rect, colour)]
     QHash<int, QList<QPair<QPointF, QString>>> m_notes; // slot → [(pos, text)]
+    QHash<int, QList<QPair<QPolygonF, QColor>>> m_inks; // slot → [(stroke, colour)]
+    QPolygonF m_currentStroke;   // in-progress ink stroke (normalized points)
     AnnotTool m_annotTool = AnnotTool::Highlight;
     QColor m_highlightColor = QColor(255, 214, 0);
     bool m_dragging = false;

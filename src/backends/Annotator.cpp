@@ -58,8 +58,8 @@ void appendAnnot(QPDFObjectHandle& page, QPDFObjectHandle annot, QPDF& qpdf) {
 
 bool Annotator::saveAnnotations(const QString& inputPath, const QString& outputPath,
                                 const QList<Highlight>& highlights, const QList<Note>& notes,
-                                QString* error) {
-    if (highlights.isEmpty() && notes.isEmpty()) {
+                                const QList<Ink>& inks, QString* error) {
+    if (highlights.isEmpty() && notes.isEmpty() && inks.isEmpty()) {
         if (error)
             *error = QStringLiteral("Nothing to save.");
         return false;
@@ -183,6 +183,84 @@ bool Annotator::saveAnnotations(const QString& inputPath, const QString& outputP
             annot.replaceKey("/Name", QPDFObjectHandle::newName("/Comment"));
             annot.replaceKey("/Contents", QPDFObjectHandle::newUnicodeString(note.text.toStdString()));
             annot.replaceKey("/C", numberArray({r, g, b}));
+            annot.replaceKey("/F", QPDFObjectHandle::newInteger(4));
+            annot.replaceKey("/AP", ap);
+
+            appendAnnot(page, annot, qpdf);
+        }
+
+        for (const Ink& ink : inks) {
+            if (ink.page < 0 || ink.page >= n || ink.strokes.isEmpty())
+                continue;
+            QPDFObjectHandle page = pages[ink.page].getObjectHandle();
+            QPDFObjectHandle mb = page.getKey("/MediaBox");
+            const double llx = mb.getArrayItem(0).getNumericValue();
+            const double lly = mb.getArrayItem(1).getNumericValue();
+            const double urx = mb.getArrayItem(2).getNumericValue();
+            const double ury = mb.getArrayItem(3).getNumericValue();
+            const double pw = urx - llx;
+            const double ph = ury - lly;
+
+            const double red = ink.color.redF();
+            const double grn = ink.color.greenF();
+            const double blu = ink.color.blueF();
+            constexpr double penW = 2.0;
+
+            // Map normalized strokes to PDF coordinates, tracking the bounds.
+            QList<QList<QPointF>> pdfStrokes;
+            double minX = urx, minY = ury, maxX = llx, maxY = lly;
+            for (const QPolygonF& s : ink.strokes) {
+                QList<QPointF> ps;
+                for (const QPointF& nrm : s) {
+                    const double x = llx + nrm.x() * pw;
+                    const double y = ury - nrm.y() * ph;
+                    ps.append(QPointF(x, y));
+                    minX = std::min(minX, x);
+                    minY = std::min(minY, y);
+                    maxX = std::max(maxX, x);
+                    maxY = std::max(maxY, y);
+                }
+                if (ps.size() >= 2)
+                    pdfStrokes.append(ps);
+            }
+            if (pdfStrokes.isEmpty())
+                continue;
+            const double pad = penW + 1.0;
+            minX -= pad;
+            minY -= pad;
+            maxX += pad;
+            maxY += pad;
+
+            // Appearance stream: stroke each path with round caps/joins.
+            std::string draw = num(red) + " " + num(grn) + " " + num(blu) + " RG " + num(penW) +
+                               " w 1 J 1 j ";
+            QPDFObjectHandle inkList = QPDFObjectHandle::newArray();
+            for (const QList<QPointF>& ps : pdfStrokes) {
+                QPDFObjectHandle coords = QPDFObjectHandle::newArray();
+                for (int i = 0; i < ps.size(); ++i) {
+                    coords.appendItem(QPDFObjectHandle::newReal(num(ps[i].x())));
+                    coords.appendItem(QPDFObjectHandle::newReal(num(ps[i].y())));
+                    draw += num(ps[i].x()) + " " + num(ps[i].y()) + (i == 0 ? " m " : " l ");
+                }
+                draw += "S ";
+                inkList.appendItem(coords);
+            }
+
+            QPDFObjectHandle form = QPDFObjectHandle::newStream(&qpdf);
+            QPDFObjectHandle fd = form.getDict();
+            fd.replaceKey("/Type", QPDFObjectHandle::newName("/XObject"));
+            fd.replaceKey("/Subtype", QPDFObjectHandle::newName("/Form"));
+            fd.replaceKey("/BBox", numberArray({minX, minY, maxX, maxY}));
+            form.replaceStreamData(draw, QPDFObjectHandle::newNull(), QPDFObjectHandle::newNull());
+            QPDFObjectHandle ap = QPDFObjectHandle::newDictionary();
+            ap.replaceKey("/N", form);
+
+            QPDFObjectHandle annot = QPDFObjectHandle::newDictionary();
+            annot.replaceKey("/Type", QPDFObjectHandle::newName("/Annot"));
+            annot.replaceKey("/Subtype", QPDFObjectHandle::newName("/Ink"));
+            annot.replaceKey("/Rect", numberArray({minX, minY, maxX, maxY}));
+            annot.replaceKey("/InkList", inkList);
+            annot.replaceKey("/C", numberArray({red, grn, blu}));
             annot.replaceKey("/F", QPDFObjectHandle::newInteger(4));
             annot.replaceKey("/AP", ap);
 

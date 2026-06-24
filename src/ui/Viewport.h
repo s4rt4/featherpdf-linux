@@ -77,8 +77,10 @@ public:
     void setHighlightColor(const QColor& color);
     QHash<int, QList<QPair<QRectF, QColor>>> highlightMarks() const;
     QHash<int, QList<QPair<QPointF, QString>>> noteMarks() const;
+    QHash<int, QList<QPair<QPolygonF, QColor>>> inkMarks() const;
     int highlightCount() const;
     int noteCount() const;
+    int inkCount() const;
     void addNote(int slot, const QPointF& pos, const QString& text);
     void clearAnnotations();
 
@@ -91,6 +93,7 @@ signals:
     void redactionsChanged(int count);
     void highlightsChanged(int count);
     void notesChanged(int count);
+    void inksChanged(int count);
     void noteRequested(int slot, QPointF normPos);
 
 private:

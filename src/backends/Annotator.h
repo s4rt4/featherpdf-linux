@@ -18,6 +18,7 @@
 
 #include <QColor>
 #include <QList>
+#include <QPolygonF>
 #include <QRectF>
 #include <QString>
 
@@ -40,10 +41,16 @@ public:
         QColor color;       // the note icon colour
     };
 
-    // Add `highlights` and `notes` to `inputPath` and write the result to
-    // `outputPath`. Temp file + atomic rename, so `outputPath` may equal
+    struct Ink {
+        int page = 0;             // original 0-based page index
+        QList<QPolygonF> strokes; // each stroke = normalized [0,1] points
+        QColor color;             // the pen colour
+    };
+
+    // Add `highlights`, `notes`, and `inks` to `inputPath` and write the result
+    // to `outputPath`. Temp file + atomic rename, so `outputPath` may equal
     // `inputPath`. Returns true on success; on failure fills *error.
     static bool saveAnnotations(const QString& inputPath, const QString& outputPath,
                                 const QList<Highlight>& highlights, const QList<Note>& notes,
-                                QString* error);
+                                const QList<Ink>& inks, QString* error);
 };
