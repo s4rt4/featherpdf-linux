@@ -23,10 +23,12 @@
 #include "backends/FormFiller.h"
 #include "backends/Ocr.h"
 #include "backends/Signer.h"
+#include "backends/Watermarker.h"
 #include "core/FeatherDocument.h"
 #include "core/PageCommands.h"
 #include "ui/AnnotationBar.h"
 #include "ui/AnnotationsPanel.h"
+#include "ui/BatesDialog.h"
 #include "ui/AttachmentsPanel.h"
 #include "ui/CombineDialog.h"
 #include "ui/CommandBar.h"
@@ -47,6 +49,7 @@
 #include "ui/RedactionBar.h"
 #include "ui/SignDialog.h"
 #include "ui/SignaturesDialog.h"
+#include "ui/WatermarkDialog.h"
 #include "ui/TabStrip.h"
 #include "ui/Theme.h"
 #include "ui/ThumbnailPanel.h"
@@ -727,6 +730,10 @@ void MainWindow::wireSignals() {
             optimizeDocument();
         } else if (id == QLatin1String("compare")) {
             compareDocuments();
+        } else if (id == QLatin1String("watermark")) {
+            watermarkDocument();
+        } else if (id == QLatin1String("bates")) {
+            batesNumber();
         } else {
             notImplemented(id.left(1).toUpper() + id.mid(1));
         }
@@ -1147,6 +1154,67 @@ void MainWindow::compareDocuments() {
         QString error;
         return Comparer::compare(baseline, current, out, changed, &error);
     }));
+}
+
+void MainWindow::watermarkDocument() {
+    if (!hasActiveDoc())
+        return;
+    WatermarkDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted || dialog.text().isEmpty())
+        return;
+
+    const QFileInfo info(m_doc->filePath());
+    const QString out = QFileDialog::getSaveFileName(
+        this, tr("Save watermarked PDF"),
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-watermarked.pdf")),
+        tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    Watermarker::WatermarkOptions opts;
+    opts.text = dialog.text();
+    opts.color = dialog.color();
+    opts.opacity = dialog.opacity();
+    opts.fontSize = dialog.fontSize();
+    opts.rotationDeg = dialog.rotation();
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = Watermarker::addWatermark(m_doc->filePath(), out, opts, &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't add watermark"), error);
+        return;
+    }
+    m_toast->show(tr("Watermark added"));
+    openPath(out);
+}
+
+void MainWindow::batesNumber() {
+    if (!hasActiveDoc())
+        return;
+    BatesDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    const QFileInfo info(m_doc->filePath());
+    const QString out = QFileDialog::getSaveFileName(
+        this, tr("Save numbered PDF"),
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-bates.pdf")),
+        tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = Watermarker::addBates(m_doc->filePath(), out, dialog.options(), &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't add numbering"), error);
+        return;
+    }
+    m_toast->show(tr("Bates numbering added"));
+    openPath(out);
 }
 
 void MainWindow::combineDocuments() {

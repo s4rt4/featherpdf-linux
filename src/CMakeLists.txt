@@ -22,6 +22,8 @@ qt_add_executable(feather-pdf
     backends/Ocr.h
     backends/Comparer.cpp
     backends/Comparer.h
+    backends/Watermarker.cpp
+    backends/Watermarker.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -50,6 +52,10 @@ qt_add_executable(feather-pdf
     ui/OcrDialog.h
     ui/DocsView.cpp
     ui/DocsView.h
+    ui/WatermarkDialog.cpp
+    ui/WatermarkDialog.h
+    ui/BatesDialog.cpp
+    ui/BatesDialog.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

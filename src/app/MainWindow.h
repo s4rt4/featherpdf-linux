@@ -96,6 +96,8 @@ private:
     void createPdf();         // make a PDF from images (native) or an office doc (LibreOffice)
     void optimizeDocument();  // rewrite more compactly (QPDF)
     void compareDocuments();  // visual diff against another PDF
+    void watermarkDocument(); // stamp a text watermark on every page
+    void batesNumber();       // stamp sequential Bates numbers
     void combineDocuments();  // merge several PDFs into one (QPDF)
     void signDocument();      // digitally sign with a certificate (Poppler/NSS)
     void viewSignatures();    // show/verify the document's existing signatures

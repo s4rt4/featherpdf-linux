@@ -140,6 +140,8 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
         {"combine", QT_TR_NOOP("Combine"), "combine", true},
         {"compare", QT_TR_NOOP("Compare"), "compare", false},
         {"optimize", QT_TR_NOOP("Optimize"), "optimize", false},
+        {"watermark", QT_TR_NOOP("Watermark"), "watermark", false},
+        {"bates", QT_TR_NOOP("Bates numbering"), "bates", false},
         {"organize", QT_TR_NOOP("Organize"), "organize", true},
         {"redact", QT_TR_NOOP("Redact"), "redact", false},
         {"sign", QT_TR_NOOP("Sign"), "sign", false},
