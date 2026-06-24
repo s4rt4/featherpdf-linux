@@ -220,18 +220,15 @@ TabStrip::TabStrip(QWidget* parent) : QWidget(parent) {
     m_layout->setAlignment(Qt::AlignBottom | Qt::AlignLeft);
 
     m_home = new Tab(Tab::Kind::Home, "home", tr("Home"), this);
-    m_tools = new Tab(Tab::Kind::Tools, "wrench", tr("Tools"), this);
     m_add = new Tab(Tab::Kind::Add, QString(), QString(), this);
     m_add->setToolTip(tr("Open a document in a new tab"));
 
-    // Document tabs are inserted between Tools and the "+".
+    // Document tabs are inserted between Home and the "+".
     m_layout->addWidget(m_home);
-    m_layout->addWidget(m_tools);
     m_layout->addWidget(m_add);
     m_layout->addStretch(1);
 
     connect(m_home, &Tab::clicked, this, [this] { emit homeSelected(); });
-    connect(m_tools, &Tab::clicked, this, [this] { emit toolsSelected(); });
     connect(m_add, &Tab::clicked, this, &TabStrip::newTabRequested);
 
     // Right-side controls: search · theme · menu.
@@ -283,7 +280,6 @@ void TabStrip::setActiveHome() {
 
 void TabStrip::clearActiveStates() {
     m_home->setActive(false);
-    m_tools->setActive(false);
     for (Tab* tab : std::as_const(m_docTabs))
         tab->setActive(false);
 }

@@ -22,6 +22,7 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPushButton>
+#include <QToolButton>
 #include <QVBoxLayout>
 
 // One tool row: accent-tinted icon chip + label + optional expand chevron.
@@ -36,25 +37,35 @@ public:
         setCursor(Qt::PointingHandCursor);
         setAttribute(Qt::WA_StyledBackground, true);
 
-        auto* row = new QHBoxLayout(this);
-        row->setContentsMargins(16, 9, 16, 9);
-        row->setSpacing(11);
+        setToolTip(label); // shown when collapsed to icon-only
+
+        m_row = new QHBoxLayout(this);
+        m_row->setContentsMargins(16, 9, 16, 9);
+        m_row->setSpacing(11);
 
         m_chip = new QLabel(this);
         m_chip->setObjectName("ToolChip");
         m_chip->setFixedSize(26, 26);
         m_chip->setAlignment(Qt::AlignCenter);
-        row->addWidget(m_chip);
+        m_row->addWidget(m_chip);
 
-        auto* name = new QLabel(label, this);
-        row->addWidget(name, 1);
+        m_name = new QLabel(label, this);
+        m_row->addWidget(m_name, 1);
 
         if (expandable) {
             m_chev = new QLabel(this);
             m_chev->setFixedSize(14, 14);
             m_chev->setAlignment(Qt::AlignCenter);
-            row->addWidget(m_chev);
+            m_row->addWidget(m_chev);
         }
+    }
+
+    // Icon-only: hide the label and chevron, centre the chip.
+    void setCompact(bool compact) {
+        m_name->setVisible(!compact);
+        if (m_chev)
+            m_chev->setVisible(!compact);
+        m_row->setContentsMargins(compact ? 13 : 16, 9, compact ? 13 : 16, 9);
     }
 
     void refresh() {
@@ -82,7 +93,9 @@ protected:
 private:
     QString m_id;
     QString m_iconName;
+    QHBoxLayout* m_row = nullptr;
     QLabel* m_chip = nullptr;
+    QLabel* m_name = nullptr;
     QLabel* m_chev = nullptr;
 };
 
@@ -94,10 +107,24 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
     col->setContentsMargins(0, 0, 0, 0);
     col->setSpacing(0);
 
-    auto* head = new QLabel(tr("TOOLS"), this);
-    head->setObjectName("PaneHead");
-    head->setContentsMargins(16, 14, 16, 8);
-    col->addWidget(head);
+    // Header: the TOOLS label and a collapse/expand toggle.
+    auto* header = new QWidget(this);
+    auto* headerRow = new QHBoxLayout(header);
+    headerRow->setContentsMargins(16, 12, 8, 8);
+    headerRow->setSpacing(0);
+    m_head = new QLabel(tr("TOOLS"), header);
+    m_head->setObjectName("PaneHead");
+    headerRow->addWidget(m_head);
+    headerRow->addStretch(1);
+    m_toggle = new QToolButton(header);
+    m_toggle->setObjectName("ToolsCollapse");
+    m_toggle->setCursor(Qt::PointingHandCursor);
+    m_toggle->setAutoRaise(true);
+    m_toggle->setFixedSize(26, 26);
+    m_toggle->setToolTip(tr("Collapse the tools pane"));
+    connect(m_toggle, &QToolButton::clicked, this, [this] { setCollapsed(!m_collapsed); });
+    headerRow->addWidget(m_toggle);
+    col->addWidget(header);
 
     struct Def {
         const char* id;
@@ -124,23 +151,41 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
 
     col->addStretch(1);
 
-    auto* customize = new QPushButton(tr("Customize tools"), this);
-    customize->setObjectName("CustomizeTools");
-    customize->setCursor(Qt::PointingHandCursor);
-    connect(customize, &QPushButton::clicked, this, &ToolsPane::customizeRequested);
-    col->addWidget(customize);
+    m_customize = new QPushButton(tr("Customize tools"), this);
+    m_customize->setObjectName("CustomizeTools");
+    m_customize->setCursor(Qt::PointingHandCursor);
+    connect(m_customize, &QPushButton::clicked, this, &ToolsPane::customizeRequested);
+    col->addWidget(m_customize);
 
     refreshIcons();
     connect(&Theme::instance(), &Theme::changed, this, &ToolsPane::refreshIcons);
 }
 
+void ToolsPane::setCollapsed(bool collapsed) {
+    m_collapsed = collapsed;
+    setFixedWidth(collapsed ? 52 : 232);
+    m_head->setVisible(!collapsed);
+    for (ToolRow* r : m_rows)
+        r->setCompact(collapsed);
+    m_customize->setText(collapsed ? QString() : tr("Customize tools"));
+    m_customize->setToolTip(tr("Customize tools"));
+    m_toggle->setToolTip(collapsed ? tr("Expand the tools pane") : tr("Collapse the tools pane"));
+    refreshIcons(); // re-point the toggle chevron
+}
+
 void ToolsPane::refreshIcons() {
+    const auto& pal = Theme::instance().palette();
     for (ToolRow* r : m_rows)
         r->refresh();
-    // The footer's sliders icon is set on the button directly.
-    if (auto* customize = findChild<QPushButton*>("CustomizeTools")) {
-        customize->setIcon(Theme::instance().icon("sliders", Theme::instance().palette().dim));
-        customize->setIconSize(QSize(14, 14));
+    if (m_customize) {
+        m_customize->setIcon(Theme::instance().icon("sliders", pal.dim));
+        m_customize->setIconSize(QSize(14, 14));
+    }
+    if (m_toggle) {
+        // Pane sits on the right: chevron-right collapses, chevron-left expands.
+        m_toggle->setIcon(
+            Theme::instance().icon(m_collapsed ? "chevron-left" : "chevron-right", pal.dim));
+        m_toggle->setIconSize(QSize(15, 15));
     }
 }
 

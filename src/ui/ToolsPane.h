@@ -20,6 +20,9 @@
 #include <QWidget>
 
 class ToolRow;
+class QLabel;
+class QPushButton;
+class QToolButton;
 
 // The right Tools pane (ui-guidelines §8 / mockup .tools): a vertical list of
 // tool rows, each an accent-tinted icon chip + label, some expandable (chevron).
@@ -38,6 +41,11 @@ signals:
 
 private:
     void refreshIcons();
+    void setCollapsed(bool collapsed); // icon-only when collapsed
 
     QVector<ToolRow*> m_rows;
+    QLabel* m_head = nullptr;
+    QToolButton* m_toggle = nullptr;
+    QPushButton* m_customize = nullptr;
+    bool m_collapsed = false;
 };

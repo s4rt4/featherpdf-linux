@@ -50,7 +50,6 @@ public:
 
 signals:
     void homeSelected();
-    void toolsSelected();
     void documentSelected(int id);
     void newTabRequested();
     void closeDocumentRequested(int id);
@@ -67,7 +66,6 @@ private:
 
     QHBoxLayout* m_layout = nullptr;
     Tab* m_home = nullptr;
-    Tab* m_tools = nullptr;
     Tab* m_add = nullptr;
     QToolButton* m_search = nullptr;
     QToolButton* m_theme = nullptr;

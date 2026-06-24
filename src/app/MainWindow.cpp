@@ -640,7 +640,6 @@ void MainWindow::wireSignals() {
     // Tab strip.
     connect(m_tabStrip, &TabStrip::homeSelected, this, &MainWindow::showHome);
     connect(m_tabStrip, &TabStrip::documentSelected, this, &MainWindow::activateSession);
-    connect(m_tabStrip, &TabStrip::toolsSelected, this, [this] { notImplemented(tr("Tools gallery")); });
     connect(m_tabStrip, &TabStrip::newTabRequested, this, &MainWindow::openFileDialog);
     connect(m_tabStrip, &TabStrip::closeDocumentRequested, this, &MainWindow::closeTab);
     connect(m_tabStrip, &TabStrip::searchRequested, this, &MainWindow::openFind);

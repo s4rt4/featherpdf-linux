@@ -255,7 +255,10 @@ QString Theme::styleSheet() const {
                "#ToolsPane QPushButton.toolrow:hover { background:%5; }"
                "#ToolsPane QPushButton#CustomizeTools { background:transparent; border:none;"
                " text-align:left; color:%3; padding:11px 16px; }"
-               "#ToolsPane QPushButton#CustomizeTools:hover { color:%4; }")
+               "#ToolsPane QPushButton#CustomizeTools:hover { color:%4; }"
+               "#ToolsPane QToolButton#ToolsCollapse { background:transparent; border:none;"
+               " border-radius:7px; }"
+               "#ToolsPane QToolButton#ToolsCollapse:hover { background:%5; }")
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.text), css(p.canvas));
 
     // Find bar — slim strip beneath the command toolbar.
