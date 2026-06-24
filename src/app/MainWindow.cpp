@@ -20,6 +20,7 @@
 #include "backends/Annotator.h"
 #include "backends/Converter.h"
 #include "backends/FormFiller.h"
+#include "backends/Ocr.h"
 #include "backends/Signer.h"
 #include "core/FeatherDocument.h"
 #include "core/PageCommands.h"
@@ -36,6 +37,7 @@
 #include "ui/LayersPanel.h"
 #include "ui/NavigationRail.h"
 #include "ui/NoteDialog.h"
+#include "ui/OcrDialog.h"
 #include "ui/OutlinePanel.h"
 #include "ui/PasswordDialog.h"
 #include "ui/PrintDialog.h"
@@ -264,6 +266,9 @@ void MainWindow::buildMenus() {
     connect(sign, &QAction::triggered, this, &MainWindow::signDocument);
     QAction* sigs = document->addAction(tr("Si&gnatures…"));
     connect(sigs, &QAction::triggered, this, &MainWindow::viewSignatures);
+    document->addSeparator();
+    QAction* ocr = document->addAction(tr("&Recognize Text (OCR)…"));
+    connect(ocr, &QAction::triggered, this, &MainWindow::recognizeText);
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
     for (const QString& name : {tr("Export"), tr("Create"), tr("Edit"), tr("Comment"),
@@ -1111,6 +1116,56 @@ void MainWindow::viewSignatures() {
     if (!hasActiveDoc())
         return;
     SignaturesDialog(Signer::verify(m_doc->filePath()), this).exec();
+}
+
+void MainWindow::recognizeText() {
+    if (!hasActiveDoc())
+        return;
+    if (!Ocr::isAvailable()) {
+        QMessageBox::information(
+            this, tr("Recognize Text"),
+            tr("Text recognition needs Tesseract, which isn't installed."));
+        return;
+    }
+    const QStringList langs = Ocr::languages();
+    if (langs.isEmpty()) {
+        QMessageBox::information(this, tr("Recognize Text"),
+                                 tr("No Tesseract language data is installed."));
+        return;
+    }
+
+    OcrDialog dialog(langs, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const QString language = dialog.language();
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-ocr.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save recognized PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    // OCR is slow (render + Tesseract per page) — run it off the UI thread.
+    m_toast->show(tr("Recognizing text… this may take a while."));
+    const QString input = m_doc->filePath();
+    auto* watcher = new QFutureWatcher<bool>(this);
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [this, watcher, out] {
+        const bool ok = watcher->result();
+        watcher->deleteLater();
+        if (!ok) {
+            QMessageBox::warning(this, tr("Couldn't recognize text"),
+                                 tr("Text recognition failed."));
+            return;
+        }
+        m_toast->show(tr("Recognized text — saved to %1").arg(QFileInfo(out).fileName()));
+        openPath(out);
+    });
+    watcher->setFuture(QtConcurrent::run([input, out, language] {
+        QString error;
+        return Ocr::addTextLayer(input, out, language, &error);
+    }));
 }
 
 void MainWindow::protectDocument() {

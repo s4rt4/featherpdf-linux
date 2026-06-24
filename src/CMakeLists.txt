@@ -18,6 +18,8 @@ qt_add_executable(feather-pdf
     backends/Signer.h
     backends/Converter.cpp
     backends/Converter.h
+    backends/Ocr.cpp
+    backends/Ocr.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -42,6 +44,8 @@ qt_add_executable(feather-pdf
     ui/SignDialog.h
     ui/SignaturesDialog.cpp
     ui/SignaturesDialog.h
+    ui/OcrDialog.cpp
+    ui/OcrDialog.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp
