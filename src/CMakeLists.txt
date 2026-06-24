@@ -16,6 +16,8 @@ qt_add_executable(feather-pdf
     backends/FormFiller.h
     backends/Signer.cpp
     backends/Signer.h
+    backends/Converter.cpp
+    backends/Converter.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp

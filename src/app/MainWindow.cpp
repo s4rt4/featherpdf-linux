@@ -18,6 +18,7 @@
 
 #include "backends/PdfEditor.h"
 #include "backends/Annotator.h"
+#include "backends/Converter.h"
 #include "backends/FormFiller.h"
 #include "backends/Signer.h"
 #include "core/FeatherDocument.h"
@@ -65,6 +66,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QLocale>
 #include <QBuffer>
+#include <QFutureWatcher>
 #include <QImage>
 #include <QPainter>
 #include <QPdfDocument>
@@ -82,6 +84,7 @@
 #include <QUndoGroup>
 #include <QUndoStack>
 #include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace {
 constexpr auto kRecentFilesKey = "recentFiles";
@@ -210,6 +213,8 @@ void MainWindow::buildMenus() {
     QMenu* file = menuBar()->addMenu(tr("&File"));
     file->addAction(m_openAct);
     m_recentMenu = file->addMenu(tr("Open &Recent"));
+    QAction* createAct = file->addAction(tr("Create PDF &from…"));
+    connect(createAct, &QAction::triggered, this, &MainWindow::createPdf);
     file->addSeparator();
     file->addAction(m_saveAct);
     file->addAction(m_saveAsAct);
@@ -672,6 +677,8 @@ void MainWindow::wireSignals() {
                 setHighlightMode(!m_viewport->highlightMode());
         } else if (id == QLatin1String("sign")) {
             signDocument();
+        } else if (id == QLatin1String("create")) {
+            createPdf();
         } else {
             notImplemented(id.left(1).toUpper() + id.mid(1));
         }
@@ -947,6 +954,78 @@ void MainWindow::applyRedactions() {
     m_toast->show(tr("Saved redacted copy to %1").arg(QFileInfo(out).fileName()));
     setRedactionMode(false);
     openPath(out); // open the flattened result
+}
+
+void MainWindow::createPdf() {
+    const QStringList files = QFileDialog::getOpenFileNames(
+        this, tr("Create PDF from files"), QString(),
+        tr("Documents and images (*.png *.jpg *.jpeg *.bmp *.gif *.tif *.tiff *.webp *.doc *.docx "
+           "*.odt *.rtf *.txt *.xls *.xlsx *.ods *.csv *.ppt *.pptx *.odp);;All files (*)"));
+    if (files.isEmpty())
+        return;
+
+    bool allImages = true;
+    for (const QString& f : files)
+        if (!Converter::isImage(f)) {
+            allImages = false;
+            break;
+        }
+
+    if (!allImages && files.size() != 1) {
+        QMessageBox::information(
+            this, tr("Create PDF"),
+            tr("Select images to combine into one PDF, or a single document to convert."));
+        return;
+    }
+
+    const QFileInfo first(files.first());
+    const QString suggested =
+        first.dir().filePath(first.completeBaseName() + QStringLiteral(".pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    if (allImages) {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        QString error;
+        const bool ok = Converter::imagesToPdf(files, out, &error);
+        QApplication::restoreOverrideCursor();
+        if (!ok) {
+            QMessageBox::warning(this, tr("Couldn't create PDF"), error);
+            return;
+        }
+        m_toast->show(tr("Created %1").arg(QFileInfo(out).fileName()));
+        openPath(out);
+        return;
+    }
+
+    if (!Converter::hasOfficeConverter()) {
+        QMessageBox::information(
+            this, tr("Create PDF"),
+            tr("Converting this document needs LibreOffice, which isn't installed."));
+        return;
+    }
+
+    // LibreOffice can take several seconds — convert off the UI thread.
+    m_toast->show(tr("Converting…"));
+    const QString input = files.first();
+    auto* watcher = new QFutureWatcher<bool>(this);
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [this, watcher, out] {
+        const bool ok = watcher->result();
+        watcher->deleteLater();
+        if (!ok) {
+            QMessageBox::warning(this, tr("Couldn't create PDF"),
+                                 tr("The document couldn't be converted."));
+            return;
+        }
+        m_toast->show(tr("Created %1").arg(QFileInfo(out).fileName()));
+        openPath(out);
+    });
+    watcher->setFuture(QtConcurrent::run([input, out] {
+        QString error;
+        return Converter::officeToPdf(input, out, &error);
+    }));
 }
 
 void MainWindow::combineDocuments() {
