@@ -24,6 +24,10 @@ qt_add_executable(feather-pdf
     backends/Comparer.h
     backends/Watermarker.cpp
     backends/Watermarker.h
+    backends/Flattener.cpp
+    backends/Flattener.h
+    backends/Splitter.cpp
+    backends/Splitter.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -56,6 +60,10 @@ qt_add_executable(feather-pdf
     ui/WatermarkDialog.h
     ui/BatesDialog.cpp
     ui/BatesDialog.h
+    ui/FlattenDialog.cpp
+    ui/FlattenDialog.h
+    ui/SplitDialog.cpp
+    ui/SplitDialog.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

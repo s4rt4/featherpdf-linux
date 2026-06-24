@@ -98,6 +98,8 @@ private:
     void compareDocuments();  // visual diff against another PDF
     void watermarkDocument(); // stamp a text watermark on every page
     void batesNumber();       // stamp sequential Bates numbers
+    void flattenDocument();   // bake annotations/forms in (lossless or raster)
+    void splitDocument();     // split into several files
     void combineDocuments();  // merge several PDFs into one (QPDF)
     void signDocument();      // digitally sign with a certificate (Poppler/NSS)
     void viewSignatures();    // show/verify the document's existing signatures

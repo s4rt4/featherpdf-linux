@@ -25,6 +25,7 @@
   <file alias="gear.svg">icons/gear.svg</file>
   <file alias="home.svg">icons/home.svg</file>
   <file alias="layers.svg">icons/layers.svg</file>
+  <file alias="lock.svg">icons/lock.svg</file>
   <file alias="mail.svg">icons/mail.svg</file>
   <file alias="minus.svg">icons/minus.svg</file>
   <file alias="moon.svg">icons/moon.svg</file>
@@ -37,6 +38,7 @@
   <file alias="search.svg">icons/search.svg</file>
   <file alias="share.svg">icons/share.svg</file>
   <file alias="sign.svg">icons/sign.svg</file>
+  <file alias="split.svg">icons/split.svg</file>
   <file alias="sliders.svg">icons/sliders.svg</file>
   <file alias="sun.svg">icons/sun.svg</file>
   <file alias="thumbnails.svg">icons/thumbnails.svg</file>

@@ -20,7 +20,9 @@
 #include "backends/Annotator.h"
 #include "backends/Comparer.h"
 #include "backends/Converter.h"
+#include "backends/Flattener.h"
 #include "backends/FormFiller.h"
+#include "backends/Splitter.h"
 #include "backends/Ocr.h"
 #include "backends/Signer.h"
 #include "backends/Watermarker.h"
@@ -33,6 +35,7 @@
 #include "ui/CombineDialog.h"
 #include "ui/CommandBar.h"
 #include "ui/DocsView.h"
+#include "ui/FlattenDialog.h"
 #include "ui/GoToPageDialog.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
@@ -49,6 +52,7 @@
 #include "ui/RedactionBar.h"
 #include "ui/SignDialog.h"
 #include "ui/SignaturesDialog.h"
+#include "ui/SplitDialog.h"
 #include "ui/WatermarkDialog.h"
 #include "ui/TabStrip.h"
 #include "ui/Theme.h"
@@ -734,6 +738,12 @@ void MainWindow::wireSignals() {
             watermarkDocument();
         } else if (id == QLatin1String("bates")) {
             batesNumber();
+        } else if (id == QLatin1String("protect")) {
+            protectDocument();
+        } else if (id == QLatin1String("flatten")) {
+            flattenDocument();
+        } else if (id == QLatin1String("split")) {
+            splitDocument();
         } else {
             notImplemented(id.left(1).toUpper() + id.mid(1));
         }
@@ -1215,6 +1225,62 @@ void MainWindow::batesNumber() {
     }
     m_toast->show(tr("Bates numbering added"));
     openPath(out);
+}
+
+void MainWindow::flattenDocument() {
+    if (!hasActiveDoc())
+        return;
+    FlattenDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    const QFileInfo info(m_doc->filePath());
+    const QString out = QFileDialog::getSaveFileName(
+        this, tr("Save flattened PDF"),
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-flattened.pdf")),
+        tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = dialog.raster()
+                        ? Flattener::flattenRaster(m_doc->filePath(), out, dialog.dpi(), &error)
+                        : Flattener::flattenLossless(m_doc->filePath(), out, &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't flatten"), error);
+        return;
+    }
+    m_toast->show(tr("Flattened"));
+    openPath(out);
+}
+
+void MainWindow::splitDocument() {
+    if (!hasActiveDoc())
+        return;
+    SplitDialog dialog(m_doc->originalPageCount(), this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    const QString dir = QFileDialog::getExistingDirectory(
+        this, tr("Choose a folder for the split files"),
+        QFileInfo(m_doc->filePath()).absolutePath());
+    if (dir.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    int files = 0;
+    QString error;
+    const bool ok = Splitter::split(m_doc->filePath(), dir,
+                                    QFileInfo(m_doc->filePath()).completeBaseName(), dialog.mode(),
+                                    dialog.everyN(), dialog.ranges(), &files, &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't split"), error);
+        return;
+    }
+    m_toast->show(tr("Split into %n file(s)", "", files));
 }
 
 void MainWindow::combineDocuments() {
