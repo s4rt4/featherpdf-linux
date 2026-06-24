@@ -129,7 +129,14 @@ private slots:
         const int row = m_reqRow.take(id);
         if (image.isNull() || row < 0 || row >= m_order.size())
             return;
-        QPixmap pm = QPixmap::fromImage(image);
+        // QtPdf renders a transparent page background; flatten onto white so the
+        // thumbnail looks like paper instead of showing the panel through it.
+        QImage flat(image.size(), QImage::Format_RGB32);
+        flat.fill(Qt::white);
+        QPainter pp(&flat);
+        pp.drawImage(0, 0, image);
+        pp.end();
+        QPixmap pm = QPixmap::fromImage(flat);
         pm.setDevicePixelRatio(dpr());
         m_cache.insert(row, pm);
         m_pending.remove(row);
