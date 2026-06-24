@@ -17,6 +17,7 @@
 #pragma once
 
 #include <QAbstractScrollArea>
+#include <QColor>
 #include <QHash>
 #include <QList>
 #include <QSet>
@@ -99,7 +100,9 @@ public:
     bool highlightMode() const { return m_highlightMode; }
     void setAnnotationTool(AnnotTool tool);
     AnnotTool annotationTool() const { return m_annotTool; }
-    QHash<int, QList<QRectF>> highlightMarks() const { return m_highlights; }
+    void setHighlightColor(const QColor& color) { m_highlightColor = color; }
+    // slot → [(rect, colour)] and slot → [(pos, text)].
+    QHash<int, QList<QPair<QRectF, QColor>>> highlightMarks() const { return m_highlights; }
     QHash<int, QList<QPair<QPointF, QString>>> noteMarks() const { return m_notes; }
     int highlightCount() const;
     int noteCount() const;
@@ -201,10 +204,11 @@ private:
     bool dragModeActive() const { return m_redactMode || m_highlightMode; }
     bool m_redactMode = false;
     bool m_highlightMode = false;
-    QHash<int, QList<QRectF>> m_redactions; // slot → normalized rects
-    QHash<int, QList<QRectF>> m_highlights; // slot → normalized rects
+    QHash<int, QList<QRectF>> m_redactions;             // slot → normalized rects
+    QHash<int, QList<QPair<QRectF, QColor>>> m_highlights; // slot → [(rect, colour)]
     QHash<int, QList<QPair<QPointF, QString>>> m_notes; // slot → [(pos, text)]
     AnnotTool m_annotTool = AnnotTool::Highlight;
+    QColor m_highlightColor = QColor(255, 214, 0);
     bool m_dragging = false;
     int m_dragSlot = -1;
     QPointF m_dragStart;          // normalized start point

@@ -591,6 +591,8 @@ void MainWindow::wireSignals() {
         m_viewport->setAnnotationTool(tool == 1 ? PageView::AnnotTool::Note
                                                 : PageView::AnnotTool::Highlight);
     });
+    connect(m_annotationBar, &AnnotationBar::colorChanged, this,
+            [this](const QColor& c) { m_viewport->setHighlightColor(c); });
     // Note tool clicked → collect text, then add the note at that point.
     connect(m_viewport, &Viewport::noteRequested, this, [this](int slot, QPointF pos) {
         NoteDialog dialog(this);
@@ -742,7 +744,7 @@ void MainWindow::setHighlightMode(bool on) {
 void MainWindow::applyAnnotations() {
     if (!hasActiveDoc())
         return;
-    const QHash<int, QList<QRectF>> hiMarks = m_viewport->highlightMarks();
+    const QHash<int, QList<QPair<QRectF, QColor>>> hiMarks = m_viewport->highlightMarks();
     const QHash<int, QList<QPair<QPointF, QString>>> noteMarks = m_viewport->noteMarks();
     if (hiMarks.isEmpty() && noteMarks.isEmpty())
         return;
@@ -765,23 +767,23 @@ void MainWindow::applyAnnotations() {
     };
 
     QList<Annotator::Highlight> highlights;
-    const QColor color(255, 214, 0); // the bar's yellow
     for (auto it = hiMarks.constBegin(); it != hiMarks.constEnd(); ++it) {
         const int orig = m_doc->originalPageAt(it.key());
         if (orig < 0)
             continue;
         const int rot = m_doc->rotation(it.key());
-        for (const QRectF& nrm : it.value())
-            highlights.append(Annotator::Highlight{orig, toPageRect(nrm, rot), color});
+        for (const auto& mark : it.value())
+            highlights.append(Annotator::Highlight{orig, toPageRect(mark.first, rot), mark.second});
     }
     QList<Annotator::Note> notes;
+    const QColor noteColor(255, 214, 0);
     for (auto it = noteMarks.constBegin(); it != noteMarks.constEnd(); ++it) {
         const int orig = m_doc->originalPageAt(it.key());
         if (orig < 0)
             continue;
         const int rot = m_doc->rotation(it.key());
         for (const auto& nm : it.value())
-            notes.append(Annotator::Note{orig, mapPoint(nm.first, rot), nm.second, color});
+            notes.append(Annotator::Note{orig, mapPoint(nm.first, rot), nm.second, noteColor});
     }
     if (highlights.isEmpty() && notes.isEmpty())
         return;

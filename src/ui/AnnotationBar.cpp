@@ -38,6 +38,25 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     }
     m_highlightTool->setChecked(true);
 
+    // Highlight colour swatches.
+    m_colors = {QColor(255, 214, 0), QColor(120, 220, 90), QColor(255, 140, 190),
+                QColor(110, 190, 255)};
+    const QString textColor = Theme::instance().palette().text.name();
+    for (int i = 0; i < m_colors.size(); ++i) {
+        auto* sw = new QPushButton(this);
+        sw->setObjectName(QStringLiteral("AnnotSwatch"));
+        sw->setCheckable(true);
+        sw->setCursor(Qt::PointingHandCursor);
+        sw->setFixedSize(18, 18);
+        sw->setToolTip(tr("Highlight colour"));
+        sw->setStyleSheet(
+            QStringLiteral("QPushButton { background:%1; border:1px solid rgba(0,0,0,0.25);"
+                           " border-radius:4px; } QPushButton:checked { border:2px solid %2; }")
+                .arg(m_colors[i].name(), textColor));
+        connect(sw, &QPushButton::clicked, this, [this, i] { selectSwatch(i); });
+        m_swatches.append(sw);
+    }
+
     m_label = new QLabel(this);
     m_label->setObjectName(QStringLiteral("AnnotLabel"));
 
@@ -55,6 +74,9 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
 
     row->addWidget(m_highlightTool);
     row->addWidget(m_noteTool);
+    row->addSpacing(8);
+    for (QPushButton* sw : m_swatches)
+        row->addWidget(sw);
     row->addSpacing(6);
     row->addWidget(m_label);
     row->addStretch(1);
@@ -93,7 +115,15 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
             .arg(css(p.surface), css(p.hairline), css(p.text), css(p.accentTint),
                  css(p.accent)));
 
+    selectSwatch(0); // default to the first colour
     setCount(0);
+}
+
+void AnnotationBar::selectSwatch(int index) {
+    for (int i = 0; i < m_swatches.size(); ++i)
+        m_swatches[i]->setChecked(i == index);
+    if (index >= 0 && index < m_colors.size())
+        emit colorChanged(m_colors[index]);
 }
 
 void AnnotationBar::setCount(int count) {

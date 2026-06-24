@@ -380,7 +380,7 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
                 m_redactions[m_dragSlot].append(m_dragNorm);
                 emit redactionsChanged(redactionCount());
             } else if (m_highlightMode) {
-                m_highlights[m_dragSlot].append(m_dragNorm);
+                m_highlights[m_dragSlot].append(qMakePair(m_dragNorm, m_highlightColor));
                 emit highlightsChanged(highlightCount());
             }
         }
@@ -527,13 +527,15 @@ void PageView::paintEvent(QPaintEvent*) {
             p.drawRect(box);
         };
         const QColor redactFill(200, 30, 30, 120);
-        const QColor hiFill(255, 214, 0, 90);
         if (auto it = m_redactions.constFind(slot); it != m_redactions.constEnd())
             for (const QRectF& nrm : *it)
                 drawMark(nrm, redactFill, false);
         if (auto it = m_highlights.constFind(slot); it != m_highlights.constEnd())
-            for (const QRectF& nrm : *it)
-                drawMark(nrm, hiFill, false);
+            for (const auto& mark : *it) {
+                QColor fill = mark.second;
+                fill.setAlpha(90);
+                drawMark(mark.first, fill, false);
+            }
         // Note markers — a small yellow card at each anchor point.
         if (auto it = m_notes.constFind(slot); it != m_notes.constEnd()) {
             for (const auto& note : *it) {
@@ -546,9 +548,11 @@ void PageView::paintEvent(QPaintEvent*) {
         }
         const bool dragRect = m_dragging && slot == m_dragSlot && m_dragNorm.isValid() &&
                               !(m_highlightMode && m_annotTool == AnnotTool::Note);
-        if (dragRect)
-            drawMark(m_dragNorm, m_highlightMode ? QColor(255, 214, 0, 110) : QColor(200, 30, 30, 90),
-                     true);
+        if (dragRect) {
+            QColor dragFill = m_highlightMode ? m_highlightColor : QColor(200, 30, 30);
+            dragFill.setAlpha(110);
+            drawMark(m_dragNorm, dragFill, true);
+        }
 
         p.setBrush(Qt::NoBrush);
         p.setPen(pal.hairline);

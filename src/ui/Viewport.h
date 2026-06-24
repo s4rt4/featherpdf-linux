@@ -74,7 +74,8 @@ public:
     void setHighlightMode(bool on);
     bool highlightMode() const;
     void setAnnotationTool(PageView::AnnotTool tool);
-    QHash<int, QList<QRectF>> highlightMarks() const;
+    void setHighlightColor(const QColor& color);
+    QHash<int, QList<QPair<QRectF, QColor>>> highlightMarks() const;
     QHash<int, QList<QPair<QPointF, QString>>> noteMarks() const;
     int highlightCount() const;
     int noteCount() const;

@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <QColor>
+#include <QVector>
 #include <QWidget>
 
 class QLabel;
@@ -37,11 +39,16 @@ signals:
     void clearRequested();
     void doneRequested();
     void toolChanged(int tool); // 0 = Highlight, 1 = Note
+    void colorChanged(const QColor& color);
 
 private:
+    void selectSwatch(int index);
+
     QLabel* m_label = nullptr;
     QPushButton* m_highlightTool = nullptr;
     QPushButton* m_noteTool = nullptr;
     QPushButton* m_save = nullptr;
     QPushButton* m_clear = nullptr;
+    QVector<QPushButton*> m_swatches;
+    QVector<QColor> m_colors;
 };

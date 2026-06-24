@@ -55,7 +55,10 @@ void Viewport::clearRedactions() { m_view->clearRedactions(); }
 void Viewport::setHighlightMode(bool on) { m_view->setHighlightMode(on); }
 bool Viewport::highlightMode() const { return m_view->highlightMode(); }
 void Viewport::setAnnotationTool(PageView::AnnotTool tool) { m_view->setAnnotationTool(tool); }
-QHash<int, QList<QRectF>> Viewport::highlightMarks() const { return m_view->highlightMarks(); }
+void Viewport::setHighlightColor(const QColor& color) { m_view->setHighlightColor(color); }
+QHash<int, QList<QPair<QRectF, QColor>>> Viewport::highlightMarks() const {
+    return m_view->highlightMarks();
+}
 QHash<int, QList<QPair<QPointF, QString>>> Viewport::noteMarks() const {
     return m_view->noteMarks();
 }
