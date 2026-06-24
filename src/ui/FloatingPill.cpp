@@ -120,10 +120,12 @@ void FloatingPill::refreshIcons() {
 
 void FloatingPill::setPageText(const QString& text) {
     m_page->setText(text);
+    reposition(); // the label may have grown - re-fit and re-center the pill
 }
 
 void FloatingPill::setZoomText(const QString& text) {
     m_zoom->setText(text);
+    reposition();
 }
 
 void FloatingPill::reposition() {
