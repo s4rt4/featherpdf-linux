@@ -24,6 +24,7 @@
 #include <vector>
 
 #include <qpdf/QPDF.hh>
+#include <qpdf/QPDFExc.hh>
 #include <qpdf/QPDFPageDocumentHelper.hh>
 #include <qpdf/QPDFPageObjectHelper.hh>
 #include <qpdf/QPDFWriter.hh>
@@ -182,4 +183,19 @@ bool PdfEditor::protect(const QString& inputPath, const QString& outputPath,
         }
     }
     return true;
+}
+
+bool PdfEditor::isPasswordProtected(const QString& path) {
+    try {
+        QPDF qpdf;
+        qpdf.processFile(path.toLocal8Bit().constData());
+        // Opened with no password: it's only "needs a password" if it carries an
+        // encryption layer (an empty user password but owner restrictions).
+        return qpdf.isEncrypted();
+    } catch (const QPDFExc& e) {
+        // A wrong/missing password throws specifically with qpdf_e_password.
+        return e.getErrorCode() == qpdf_e_password;
+    } catch (const std::exception&) {
+        return false;
+    }
 }

@@ -53,6 +53,7 @@
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
 #include <QInputDialog>
+#include <QLineEdit>
 #include <QLocale>
 #include <QPainter>
 #include <QPdfDocument>
@@ -885,11 +886,43 @@ bool MainWindow::openPath(const QString& path) {
 
     auto* doc = new FeatherDocument(this);
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    const FeatherDocument::LoadResult result = doc->load(absolute);
+    FeatherDocument::LoadResult result = doc->load(absolute);
     QApplication::restoreOverrideCursor();
+
+    // Encrypted file: ask for the password and retry until it opens or the user
+    // cancels. QtPdf reports a wrong/absent password on an AES-256 file as an
+    // "unsupported scheme", so we ask QPDF whether the file actually needs a
+    // password before prompting (and to avoid looping on a truly unknown scheme).
+    using LR = FeatherDocument::LoadResult;
+    const auto needsPassword = [](LR r) {
+        return r == LR::PasswordRequired || r == LR::Unsupported;
+    };
+    bool cancelled = false;
+    if (needsPassword(result) && PdfEditor::isPasswordProtected(absolute)) {
+        bool firstTry = true;
+        while (needsPassword(result)) {
+            bool ok = false;
+            const QString prompt =
+                firstTry ? tr("“%1” is password-protected. Enter its password:")
+                               .arg(QFileInfo(absolute).fileName())
+                         : tr("Incorrect password. Try again:");
+            const QString password = QInputDialog::getText(this, tr("Password required"), prompt,
+                                                           QLineEdit::Password, QString(), &ok);
+            if (!ok) {
+                cancelled = true;
+                break;
+            }
+            firstTry = false;
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+            result = doc->load(absolute, password);
+            QApplication::restoreOverrideCursor();
+        }
+    }
+
     if (result != FeatherDocument::LoadResult::Ok) {
-        QMessageBox::warning(this, tr("Couldn't open document"),
-                             FeatherDocument::describe(result));
+        if (!cancelled) // cancelling the password prompt is not an error
+            QMessageBox::warning(this, tr("Couldn't open document"),
+                                 FeatherDocument::describe(result));
         doc->deleteLater();
         return false;
     }

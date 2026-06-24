@@ -49,4 +49,9 @@ public:
     // on failure fills *error with a friendly message.
     static bool protect(const QString& inputPath, const QString& outputPath,
                         const QString& password, QString* error);
+
+    // True if `path` is an encrypted PDF that needs a user password to open.
+    // (QtPdf reports AES-256 files as an "unsupported scheme" until the right
+    // password is set, so the viewer asks QPDF whether to prompt for one.)
+    static bool isPasswordProtected(const QString& path);
 };

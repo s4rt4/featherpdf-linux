@@ -24,7 +24,8 @@ FeatherDocument::FeatherDocument(QObject* parent)
 
 FeatherDocument::~FeatherDocument() = default;
 
-FeatherDocument::LoadResult FeatherDocument::load(const QString& path) {
+FeatherDocument::LoadResult FeatherDocument::load(const QString& path, const QString& password) {
+    m_pdf->setPassword(password); // ignored for unencrypted files
     const QPdfDocument::Error err = m_pdf->load(path);
 
     LoadResult result;

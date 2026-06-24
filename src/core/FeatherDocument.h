@@ -43,8 +43,10 @@ public:
         UnknownError,
     };
 
-    // Loads a PDF from disk, replacing any currently open document.
-    LoadResult load(const QString& path);
+    // Loads a PDF from disk, replacing any currently open document. For an
+    // encrypted file, pass the password; an empty password is fine for a normal
+    // file and yields LoadResult::PasswordRequired for a protected one.
+    LoadResult load(const QString& path, const QString& password = QString());
     void close();
 
     bool isLoaded() const;
