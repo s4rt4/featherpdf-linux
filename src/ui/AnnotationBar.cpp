@@ -42,7 +42,6 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     // Highlight colour swatches.
     m_colors = {QColor(255, 214, 0), QColor(120, 220, 90), QColor(255, 140, 190),
                 QColor(110, 190, 255)};
-    const QString textColor = Theme::instance().palette().text.name();
     for (int i = 0; i < m_colors.size(); ++i) {
         auto* sw = new QPushButton(this);
         sw->setObjectName(QStringLiteral("AnnotSwatch"));
@@ -50,10 +49,6 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
         sw->setCursor(Qt::PointingHandCursor);
         sw->setFixedSize(18, 18);
         sw->setToolTip(tr("Highlight colour"));
-        sw->setStyleSheet(
-            QStringLiteral("QPushButton { background:%1; border:1px solid rgba(0,0,0,0.25);"
-                           " border-radius:4px; } QPushButton:checked { border:2px solid %2; }")
-                .arg(m_colors[i].name(), textColor));
         connect(sw, &QPushButton::clicked, this, [this, i] { selectSwatch(i); });
         m_swatches.append(sw);
     }
@@ -97,22 +92,32 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
             emit toolChanged(i);
         });
 
-    const Theme::Palette& p = Theme::instance().palette();
-    const auto css = [](const QColor& c) {
-        return c.alpha() == 255 ? c.name(QColor::HexRgb)
-                                : QStringLiteral("rgba(%1,%2,%3,%4)")
-                                      .arg(c.red())
-                                      .arg(c.green())
-                                      .arg(c.blue())
-                                      .arg(QString::number(c.alphaF(), 'f', 3));
+    auto applyTheme = [this] {
+        const Theme::Palette& p = Theme::instance().palette();
+        const auto css = [](const QColor& c) {
+            return c.alpha() == 255 ? c.name(QColor::HexRgb)
+                                    : QStringLiteral("rgba(%1,%2,%3,%4)")
+                                          .arg(c.red())
+                                          .arg(c.green())
+                                          .arg(c.blue())
+                                          .arg(QString::number(c.alphaF(), 'f', 3));
+        };
+        // Swatches keep their fixed colours; only the checked outline follows text.
+        for (int i = 0; i < m_swatches.size(); ++i)
+            m_swatches[i]->setStyleSheet(
+                QStringLiteral("QPushButton { background:%1; border:1px solid rgba(0,0,0,0.25);"
+                               " border-radius:4px; } QPushButton:checked { border:2px solid %2; }")
+                    .arg(m_colors[i].name(), css(p.text)));
+        setStyleSheet(
+            QStringLiteral("#AnnotationBar { background:%1; border-bottom:1px solid %2; }"
+                           "#AnnotLabel { color:%3; }"
+                           "#AnnotationBar QPushButton#GhostBtn:checked { background:%4;"
+                           " border:1px solid %5; color:%5; }")
+                .arg(css(p.surface), css(p.hairline), css(p.text), css(p.accentTint),
+                     css(p.accent)));
     };
-    setStyleSheet(
-        QStringLiteral("#AnnotationBar { background:%1; border-bottom:1px solid %2; }"
-                       "#AnnotLabel { color:%3; }"
-                       "#AnnotationBar QPushButton#GhostBtn:checked { background:%4;"
-                       " border:1px solid %5; color:%5; }")
-            .arg(css(p.surface), css(p.hairline), css(p.text), css(p.accentTint),
-                 css(p.accent)));
+    applyTheme();
+    connect(&Theme::instance(), &Theme::changed, this, applyTheme);
 
     selectSwatch(0); // default to the first colour
     setCount(0);

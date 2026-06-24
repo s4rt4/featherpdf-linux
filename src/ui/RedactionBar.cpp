@@ -59,20 +59,25 @@ RedactionBar::RedactionBar(QWidget* parent) : QWidget(parent) {
     connect(m_clear, &QPushButton::clicked, this, &RedactionBar::clearRequested);
     connect(done, &QPushButton::clicked, this, &RedactionBar::doneRequested);
 
-    const Theme::Palette& p = Theme::instance().palette();
-    const auto css = [](const QColor& c) {
-        return c.alpha() == 255 ? c.name(QColor::HexRgb)
-                                : QStringLiteral("rgba(%1,%2,%3,%4)")
-                                      .arg(c.red())
-                                      .arg(c.green())
-                                      .arg(c.blue())
-                                      .arg(QString::number(c.alphaF(), 'f', 3));
+    // Re-apply on every theme change so colours follow light/dark.
+    auto applyTheme = [this] {
+        const Theme::Palette& p = Theme::instance().palette();
+        const auto css = [](const QColor& c) {
+            return c.alpha() == 255 ? c.name(QColor::HexRgb)
+                                    : QStringLiteral("rgba(%1,%2,%3,%4)")
+                                          .arg(c.red())
+                                          .arg(c.green())
+                                          .arg(c.blue())
+                                          .arg(QString::number(c.alphaF(), 'f', 3));
+        };
+        setStyleSheet(
+            QStringLiteral("#RedactionBar { background:%1; border-bottom:1px solid %2; }"
+                           "#RedactLabel { color:%3; }"
+                           "#RedactDot { background:%4; border-radius:4px; }")
+                .arg(css(p.surface), css(p.hairline), css(p.text), css(p.destructive)));
     };
-    setStyleSheet(
-        QStringLiteral("#RedactionBar { background:%1; border-bottom:1px solid %2; }"
-                       "#RedactLabel { color:%3; }"
-                       "#RedactDot { background:%4; border-radius:4px; }")
-            .arg(css(p.surface), css(p.hairline), css(p.text), css(p.destructive)));
+    applyTheme();
+    connect(&Theme::instance(), &Theme::changed, this, applyTheme);
 
     setCount(0);
 }

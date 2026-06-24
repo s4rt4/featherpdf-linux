@@ -32,25 +32,29 @@
 FormPanel::FormPanel(QWidget* parent) : QWidget(parent) {
     setObjectName(QStringLiteral("FormPanel"));
 
-    const Theme::Palette& p = Theme::instance().palette();
-    QColor ctlBorder = p.text;
-    ctlBorder.setAlpha(46);
-    const auto css = [](const QColor& c) {
-        return c.alpha() == 255 ? c.name(QColor::HexRgb)
-                                : QStringLiteral("rgba(%1,%2,%3,%4)")
-                                      .arg(c.red())
-                                      .arg(c.green())
-                                      .arg(c.blue())
-                                      .arg(QString::number(c.alphaF(), 'f', 3));
+    auto applyTheme = [this] {
+        const Theme::Palette& p = Theme::instance().palette();
+        QColor ctlBorder = p.text;
+        ctlBorder.setAlpha(46);
+        const auto css = [](const QColor& c) {
+            return c.alpha() == 255 ? c.name(QColor::HexRgb)
+                                    : QStringLiteral("rgba(%1,%2,%3,%4)")
+                                          .arg(c.red())
+                                          .arg(c.green())
+                                          .arg(c.blue())
+                                          .arg(QString::number(c.alphaF(), 'f', 3));
+        };
+        setStyleSheet(
+            QStringLiteral("#FormPanel QLabel#FieldName { color:%1; font-size:11px; }"
+                           "#FormPanel QLineEdit, #FormPanel QComboBox { background:%2;"
+                           " border:1px solid %3; border-radius:7px; padding:5px 7px; color:%4; }"
+                           "#FormPanel QLineEdit:focus, #FormPanel QComboBox:focus {"
+                           " border:1px solid %5; }"
+                           "#FormPanel QCheckBox { color:%4; spacing:8px; }")
+                .arg(css(p.dim), css(p.surface), css(ctlBorder), css(p.text), css(p.accent)));
     };
-    setStyleSheet(
-        QStringLiteral("#FormPanel QLabel#FieldName { color:%1; font-size:11px; }"
-                       "#FormPanel QLineEdit, #FormPanel QComboBox { background:%2;"
-                       " border:1px solid %3; border-radius:7px; padding:5px 7px; color:%4; }"
-                       "#FormPanel QLineEdit:focus, #FormPanel QComboBox:focus {"
-                       " border:1px solid %5; }"
-                       "#FormPanel QCheckBox { color:%4; spacing:8px; }")
-            .arg(css(p.dim), css(p.surface), css(ctlBorder), css(p.text), css(p.accent)));
+    applyTheme();
+    connect(&Theme::instance(), &Theme::changed, this, applyTheme);
 
     auto* col = new QVBoxLayout(this);
     col->setContentsMargins(0, 0, 0, 0);

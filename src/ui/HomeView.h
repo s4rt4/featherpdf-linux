@@ -20,12 +20,14 @@
 
 class QLabel;
 class QVBoxLayout;
+class QScrollArea;
 
-// The Home start screen (ui-guidelines §6, §9): the landing place when no
-// document is focused. A welcome with the feather mark, one big suggested
-// action (Open), recent files as cards, and a drag-and-drop zone — an
-// invitation, not a blank. Reads recents from the same QSettings key the rest
-// of the app uses; call refresh() after that list changes.
+class QPushButton;
+
+// The Home start screen: a left sidebar (the brand, an Open action, and a
+// "Recent files" nav item) beside a main area listing recent files as cards.
+// The whole view is a drag-and-drop target. Reads recents from the same
+// QSettings key the rest of the app uses; call refresh() after that list changes.
 class HomeView : public QWidget {
     Q_OBJECT
 
@@ -35,7 +37,7 @@ public:
     void refresh(); // rebuild the recent-files cards
 
 signals:
-    void openRequested();                       // the big Open button
+    void openRequested();                        // the Open action
     void openPathRequested(const QString& path); // a recent card or a drop
 
 protected:
@@ -43,15 +45,25 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
+    enum class ViewMode { List, Grid };
     void rebuildIcons();
+    void setViewMode(ViewMode mode);
+    int gridColumns() const; // columns that fit the current width in grid mode
 
     QLabel* m_logo = nullptr;
-    QLabel* m_title = nullptr;
-    QLabel* m_tagline = nullptr;
-    QLabel* m_recentHead = nullptr;
-    QWidget* m_cards = nullptr;     // container holding RecentCard rows
-    QVBoxLayout* m_cardsLayout = nullptr;
+    QLabel* m_brandName = nullptr;
+    QPushButton* m_openBtn = nullptr;
+    QPushButton* m_recentNav = nullptr;
+    QLabel* m_mainTitle = nullptr;
+    QPushButton* m_listBtn = nullptr;
+    QPushButton* m_gridBtn = nullptr;
+    QLabel* m_empty = nullptr;
+    QScrollArea* m_scroll = nullptr;
+    QWidget* m_cards = nullptr; // re-created per refresh
+    ViewMode m_viewMode = ViewMode::List;
+    int m_lastColumns = 1;
     bool m_dragActive = false;
 };

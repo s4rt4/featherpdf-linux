@@ -23,6 +23,7 @@
 #include <QHash>
 #include <QStandardPaths>
 #include <QPainter>
+#include <QPalette>
 #include <QPixmap>
 #include <QScreen>
 #include <QStyleHints>
@@ -129,8 +130,32 @@ void Theme::toggleMode() {
 
 void Theme::rebuild() {
     m_palette = paletteFor(m_mode);
-    if (auto* app = qobject_cast<QApplication*>(QApplication::instance()))
+    if (auto* app = qobject_cast<QApplication*>(QApplication::instance())) {
+        // Set the QPalette too, not just the style sheet: widgets that paint from
+        // the palette (scroll-area viewports, item views, plain containers) would
+        // otherwise stay light in dark mode regardless of the style sheet.
+        const Palette& p = m_palette;
+        QPalette pal;
+        pal.setColor(QPalette::Window, p.canvas);
+        pal.setColor(QPalette::WindowText, p.text);
+        pal.setColor(QPalette::Base, p.surface);
+        pal.setColor(QPalette::AlternateBase, p.canvas);
+        pal.setColor(QPalette::Text, p.text);
+        pal.setColor(QPalette::Button, p.surface);
+        pal.setColor(QPalette::ButtonText, p.text);
+        pal.setColor(QPalette::BrightText, QColor(0xFF, 0xFF, 0xFF));
+        pal.setColor(QPalette::Highlight, p.accent);
+        pal.setColor(QPalette::HighlightedText, QColor(0xFF, 0xFF, 0xFF));
+        pal.setColor(QPalette::ToolTipBase, p.surface);
+        pal.setColor(QPalette::ToolTipText, p.text);
+        pal.setColor(QPalette::PlaceholderText, p.dim);
+        pal.setColor(QPalette::Link, p.accent);
+        pal.setColor(QPalette::Disabled, QPalette::Text, p.dim);
+        pal.setColor(QPalette::Disabled, QPalette::ButtonText, p.dim);
+        pal.setColor(QPalette::Disabled, QPalette::WindowText, p.dim);
+        app->setPalette(pal);
         app->setStyleSheet(styleSheet());
+    }
     emit changed();
 }
 
@@ -304,16 +329,31 @@ QString Theme::styleSheet() const {
                " background:%4; color:%1; }")
                .arg(css(p.text), css(p.hairline), css(p.canvas), css(p.accentTint));
 
-    // Home start screen — canvas backdrop, big suggested action, recent cards.
+    // Home start screen — a left sidebar (brand + actions) over a canvas main
+    // area of recent-file cards.
     qss += QStringLiteral(
                "#HomeView { background:%1; }"
-               "QPushButton#HomePrimary { background:%2; color:#FFFFFF; border:none;"
-               " border-radius:10px; padding:11px 22px; font-size:14px; font-weight:600; }"
-               "QPushButton#HomePrimary:hover { background:%3; }"
+               "#HomeSidebar { background:%4; border-right:1px solid %5; }"
+               "#HomeBrandName { color:%6; font-size:15px; font-weight:700; }"
+               "QPushButton#HomeOpen { background:%2; color:#FFFFFF; border:none;"
+               " border-radius:9px; padding:10px 14px; font-size:14px; font-weight:600;"
+               " text-align:left; }"
+               "QPushButton#HomeOpen:hover { background:%3; }"
+               "QPushButton#HomeNavItem { background:transparent; border:none; border-radius:9px;"
+               " padding:9px 12px; color:%6; text-align:left; font-size:13px; }"
+               "QPushButton#HomeNavItem:hover { background:%1; }"
+               "QPushButton#HomeNavItem:checked { background:%7; color:%2; font-weight:600; }"
+               "#HomeMainTitle { color:%6; font-size:20px; font-weight:700; }"
+               "QPushButton#HomeViewToggle { background:transparent; border:1px solid %5;"
+               " border-radius:7px; }"
+               "QPushButton#HomeViewToggle:hover { background:%4; }"
+               "QPushButton#HomeViewToggle:checked { background:%7; border:1px solid %2; }"
                "#RecentCard { background:%4; border:1px solid %5; border-radius:12px; }"
-               "#RecentCard:hover { border:1px solid %2; }")
+               "#RecentCard:hover { border:1px solid %2; }"
+               "#RecentTile { background:%4; border:1px solid %5; border-radius:14px; }"
+               "#RecentTile:hover { border:1px solid %2; }")
                .arg(css(p.canvas), css(p.accent), css(p.accentHover), css(p.surface),
-                    css(p.hairline));
+                    css(p.hairline), css(p.text), css(p.accentTint));
 
     return qss;
 }
