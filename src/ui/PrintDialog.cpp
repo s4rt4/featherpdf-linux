@@ -452,6 +452,7 @@ QPixmap PrintDialog::renderSlot(int slot, int maxW, int maxH) const {
     const QSize px(qRound(pt.width() * scale * dpr), qRound(pt.height() * scale * dpr));
 
     QPdfDocumentRenderOptions opts;
+    opts.setRenderFlags(QPdfDocumentRenderOptions::RenderFlag::Annotations);
     switch (rot) {
     case 90: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise90); break;
     case 180: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise180); break;

@@ -36,6 +36,8 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)
             [this](PageView::LayoutMode m) { emit layoutModeChanged(m); });
     connect(m_view, &PageView::redactionsChanged, this,
             [this](int count) { emit redactionsChanged(count); });
+    connect(m_view, &PageView::highlightsChanged, this,
+            [this](int count) { emit highlightsChanged(count); });
 }
 
 Viewport::~Viewport() = default;
@@ -45,6 +47,12 @@ bool Viewport::redactionMode() const { return m_view->redactionMode(); }
 QHash<int, QList<QRectF>> Viewport::redactionMarks() const { return m_view->redactionMarks(); }
 int Viewport::redactionCount() const { return m_view->redactionCount(); }
 void Viewport::clearRedactions() { m_view->clearRedactions(); }
+
+void Viewport::setHighlightMode(bool on) { m_view->setHighlightMode(on); }
+bool Viewport::highlightMode() const { return m_view->highlightMode(); }
+QHash<int, QList<QRectF>> Viewport::highlightMarks() const { return m_view->highlightMarks(); }
+int Viewport::highlightCount() const { return m_view->highlightCount(); }
+void Viewport::clearHighlights() { m_view->clearHighlights(); }
 
 void Viewport::setDocument(FeatherDocument* doc) {
     if (m_doc)

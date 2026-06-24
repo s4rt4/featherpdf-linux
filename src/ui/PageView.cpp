@@ -90,12 +90,16 @@ void PageView::setDocument(QPdfDocument* doc) {
     m_currentPage = 0;
     m_currentResult = -1;
     m_renderedCount = 0;
-    // Redaction marks are tied to this document's slots — reset for the new one.
+    // Edit-mode marks are tied to this document's slots — reset for the new one.
     m_dragging = false;
     m_dragSlot = -1;
     if (!m_redactions.isEmpty()) {
         m_redactions.clear();
         emit redactionsChanged(0);
+    }
+    if (!m_highlights.isEmpty()) {
+        m_highlights.clear();
+        emit highlightsChanged(0);
     }
 
     m_renderer->setDocument(doc);
@@ -251,15 +255,36 @@ void PageView::setRedactionMode(bool on) {
     if (m_redactMode == on)
         return;
     m_redactMode = on;
+    if (on)
+        m_highlightMode = false; // the two drag modes are mutually exclusive
     m_dragging = false;
     m_dragSlot = -1;
-    viewport()->setCursor(on ? Qt::CrossCursor : Qt::ArrowCursor);
+    viewport()->setCursor(dragModeActive() ? Qt::CrossCursor : Qt::ArrowCursor);
+    viewport()->update();
+}
+
+void PageView::setHighlightMode(bool on) {
+    if (m_highlightMode == on)
+        return;
+    m_highlightMode = on;
+    if (on)
+        m_redactMode = false;
+    m_dragging = false;
+    m_dragSlot = -1;
+    viewport()->setCursor(dragModeActive() ? Qt::CrossCursor : Qt::ArrowCursor);
     viewport()->update();
 }
 
 int PageView::redactionCount() const {
     int n = 0;
     for (const auto& rects : m_redactions)
+        n += rects.size();
+    return n;
+}
+
+int PageView::highlightCount() const {
+    int n = 0;
+    for (const auto& rects : m_highlights)
         n += rects.size();
     return n;
 }
@@ -274,8 +299,18 @@ void PageView::clearRedactions() {
     viewport()->update();
 }
 
+void PageView::clearHighlights() {
+    if (m_highlights.isEmpty())
+        return;
+    m_highlights.clear();
+    m_dragging = false;
+    m_dragSlot = -1;
+    emit highlightsChanged(0);
+    viewport()->update();
+}
+
 bool PageView::eventFilter(QObject* obj, QEvent* event) {
-    if (obj != viewport() || !m_redactMode)
+    if (obj != viewport() || !dragModeActive())
         return QAbstractScrollArea::eventFilter(obj, event);
 
     switch (event->type()) {
@@ -311,8 +346,13 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
         m_dragging = false;
         // Ignore accidental tiny marks (a click without a real drag).
         if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004) {
-            m_redactions[m_dragSlot].append(m_dragNorm);
-            emit redactionsChanged(redactionCount());
+            if (m_redactMode) {
+                m_redactions[m_dragSlot].append(m_dragNorm);
+                emit redactionsChanged(redactionCount());
+            } else if (m_highlightMode) {
+                m_highlights[m_dragSlot].append(m_dragNorm);
+                emit highlightsChanged(highlightCount());
+            }
         }
         m_dragSlot = -1;
         viewport()->update();
@@ -349,6 +389,9 @@ void PageView::request(int slot) {
         return;
     m_pending.insert(slot);
     QPdfDocumentRenderOptions opts;
+    // PDFium hides annotations unless asked — render them so highlights, notes,
+    // and any existing markup are visible in the viewer.
+    opts.setRenderFlags(QPdfDocumentRenderOptions::RenderFlag::Annotations);
     switch (rotationOf(slot)) {
     case 90: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise90); break;
     case 180: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise180); break;
@@ -443,20 +486,27 @@ void PageView::paintEvent(QPaintEvent*) {
                     p.drawRect(QRectF(r.x() + rp.x() * m_zoom, r.y() + rp.y() * m_zoom,
                                       rp.width() * m_zoom, rp.height() * m_zoom));
         }
-        // Redaction marks — what will be removed. Drawn semi-opaque red while
-        // editing so the user can see what's underneath; the live drag is outlined.
-        const auto drawMark = [&](const QRectF& nrm, bool active) {
+        // Edit-mode overlays. Redaction marks are opaque-ish red (what gets
+        // removed); highlight marks are translucent yellow (what gets annotated).
+        // The live drag is outlined in the active mode's colour.
+        const auto drawMark = [&](const QRectF& nrm, const QColor& fill, bool active) {
             const QRectF box(r.x() + nrm.x() * r.width(), r.y() + nrm.y() * r.height(),
                              nrm.width() * r.width(), nrm.height() * r.height());
-            p.setBrush(QColor(200, 30, 30, active ? 70 : 120));
-            p.setPen(active ? QPen(QColor(200, 30, 30), 1, Qt::DashLine) : QPen(Qt::NoPen));
+            p.setBrush(fill);
+            p.setPen(active ? QPen(fill.darker(130), 1, Qt::DashLine) : QPen(Qt::NoPen));
             p.drawRect(box);
         };
+        const QColor redactFill(200, 30, 30, 120);
+        const QColor hiFill(255, 214, 0, 90);
         if (auto it = m_redactions.constFind(slot); it != m_redactions.constEnd())
             for (const QRectF& nrm : *it)
-                drawMark(nrm, false);
+                drawMark(nrm, redactFill, false);
+        if (auto it = m_highlights.constFind(slot); it != m_highlights.constEnd())
+            for (const QRectF& nrm : *it)
+                drawMark(nrm, hiFill, false);
         if (m_dragging && slot == m_dragSlot && m_dragNorm.isValid())
-            drawMark(m_dragNorm, true);
+            drawMark(m_dragNorm, m_highlightMode ? QColor(255, 214, 0, 110) : QColor(200, 30, 30, 90),
+                     true);
 
         p.setBrush(Qt::NoBrush);
         p.setPen(pal.hairline);

@@ -17,8 +17,10 @@
 #include "app/MainWindow.h"
 
 #include "backends/PdfEditor.h"
+#include "backends/Annotator.h"
 #include "core/FeatherDocument.h"
 #include "core/PageCommands.h"
+#include "ui/AnnotationBar.h"
 #include "ui/AnnotationsPanel.h"
 #include "ui/AttachmentsPanel.h"
 #include "ui/CombineDialog.h"
@@ -273,10 +275,13 @@ void MainWindow::buildShell() {
     m_findBar->hide();
     m_redactionBar = new RedactionBar(shell);
     m_redactionBar->hide();
+    m_annotationBar = new AnnotationBar(shell);
+    m_annotationBar->hide();
     outer->addWidget(m_tabStrip);
     outer->addWidget(m_commandBar);
     outer->addWidget(m_findBar);
     outer->addWidget(m_redactionBar);
+    outer->addWidget(m_annotationBar);
 
     auto* body = new QWidget(shell);
     auto* bodyRow = new QHBoxLayout(body);
@@ -332,6 +337,8 @@ void MainWindow::buildShell() {
 void MainWindow::showHome() {
     if (m_viewport->redactionMode())
         setRedactionMode(false);
+    if (m_viewport->highlightMode())
+        setHighlightMode(false);
     if (m_immersive)
         m_immersiveAct->setChecked(false); // leave immersive before showing Home
     m_home->refresh();
@@ -568,6 +575,14 @@ void MainWindow::wireSignals() {
     connect(m_redactionBar, &RedactionBar::clearRequested, m_viewport, &Viewport::clearRedactions);
     connect(m_redactionBar, &RedactionBar::doneRequested, this, [this] { setRedactionMode(false); });
 
+    // Annotation (highlight) bar ↔ viewport.
+    connect(m_viewport, &Viewport::highlightsChanged, this,
+            [this](int count) { m_annotationBar->setCount(count); });
+    connect(m_annotationBar, &AnnotationBar::saveRequested, this, &MainWindow::applyHighlights);
+    connect(m_annotationBar, &AnnotationBar::clearRequested, m_viewport, &Viewport::clearHighlights);
+    connect(m_annotationBar, &AnnotationBar::doneRequested, this,
+            [this] { setHighlightMode(false); });
+
     // Annotations list → viewport. Poppler reports the original page index; map
     // it to the current display slot so edits (reorder/delete) are honoured.
     connect(m_annotations, &AnnotationsPanel::annotationActivated, this, [this](int originalPage) {
@@ -592,6 +607,9 @@ void MainWindow::wireSignals() {
         } else if (id == QLatin1String("redact")) {
             if (hasActiveDoc())
                 setRedactionMode(!m_viewport->redactionMode());
+        } else if (id == QLatin1String("comment")) {
+            if (hasActiveDoc())
+                setHighlightMode(!m_viewport->highlightMode());
         } else {
             notImplemented(id.left(1).toUpper() + id.mid(1));
         }
@@ -679,6 +697,8 @@ bool MainWindow::saveActiveAs() {
 void MainWindow::setRedactionMode(bool on) {
     if (on && !hasActiveDoc())
         return;
+    if (on)
+        setHighlightMode(false); // the two edit modes are mutually exclusive
     m_viewport->setRedactionMode(on);
     m_redactionBar->setVisible(on);
     if (on) {
@@ -687,6 +707,80 @@ void MainWindow::setRedactionMode(bool on) {
     } else {
         m_viewport->clearRedactions(); // leaving the mode discards unapplied marks
     }
+}
+
+void MainWindow::setHighlightMode(bool on) {
+    if (on && !hasActiveDoc())
+        return;
+    if (on)
+        setRedactionMode(false);
+    m_viewport->setHighlightMode(on);
+    m_annotationBar->setVisible(on);
+    if (on) {
+        m_findBar->hide();
+        m_annotationBar->setCount(m_viewport->highlightCount());
+    } else {
+        m_viewport->clearHighlights();
+    }
+}
+
+void MainWindow::applyHighlights() {
+    if (!hasActiveDoc())
+        return;
+    const QHash<int, QList<QRectF>> marks = m_viewport->highlightMarks();
+    if (marks.isEmpty())
+        return;
+
+    // Map a rect from displayed (rotated) page space back to the unrotated page
+    // space Poppler annotations use.
+    const auto toPageSpace = [](const QRectF& d, int rot) {
+        const auto pt = [rot](const QPointF& p) -> QPointF {
+            switch (((rot % 360) + 360) % 360) {
+            case 90: return {p.y(), 1.0 - p.x()};
+            case 180: return {1.0 - p.x(), 1.0 - p.y()};
+            case 270: return {1.0 - p.y(), p.x()};
+            default: return p;
+            }
+        };
+        const QPointF a = pt(d.topLeft());
+        const QPointF b = pt(d.bottomRight());
+        return QRectF(QPointF(std::min(a.x(), b.x()), std::min(a.y(), b.y())),
+                     QPointF(std::max(a.x(), b.x()), std::max(a.y(), b.y())));
+    };
+
+    QList<Annotator::Highlight> highlights;
+    const QColor color(255, 214, 0); // the bar's yellow swatch
+    for (auto it = marks.constBegin(); it != marks.constEnd(); ++it) {
+        const int orig = m_doc->originalPageAt(it.key());
+        if (orig < 0)
+            continue;
+        const int rot = m_doc->rotation(it.key());
+        for (const QRectF& nrm : it.value())
+            highlights.append(Annotator::Highlight{orig, toPageSpace(nrm, rot), color});
+    }
+    if (highlights.isEmpty())
+        return;
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-annotated.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save annotated PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = Annotator::saveHighlights(m_doc->filePath(), out, highlights, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't save annotations"), error);
+        return;
+    }
+    m_toast->show(tr("Saved annotated copy to %1").arg(QFileInfo(out).fileName()));
+    setHighlightMode(false);
+    openPath(out);
 }
 
 void MainWindow::applyRedactions() {
@@ -724,6 +818,7 @@ void MainWindow::applyRedactions() {
 
         const QSize px(qRound(pt.width() * scale), qRound(pt.height() * scale));
         QPdfDocumentRenderOptions opts;
+        opts.setRenderFlags(QPdfDocumentRenderOptions::RenderFlag::Annotations);
         switch (rot) {
         case 90: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise90); break;
         case 180: opts.setRotation(QPdfDocumentRenderOptions::Rotation::Clockwise180); break;

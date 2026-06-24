@@ -70,6 +70,13 @@ public:
     int redactionCount() const;
     void clearRedactions();
 
+    // Highlight authoring (forwarded to PageView).
+    void setHighlightMode(bool on);
+    bool highlightMode() const;
+    QHash<int, QList<QRectF>> highlightMarks() const;
+    int highlightCount() const;
+    void clearHighlights();
+
 signals:
     void zoomChanged(double factor);
     void currentPageChanged(int page); // 0-based
@@ -77,6 +84,7 @@ signals:
     void searchResultsChanged(int count);
     void layoutModeChanged(PageView::LayoutMode mode);
     void redactionsChanged(int count);
+    void highlightsChanged(int count);
 
 private:
     FeatherDocument* m_doc = nullptr;

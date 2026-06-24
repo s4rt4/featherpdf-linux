@@ -34,6 +34,7 @@ class TabStrip;
 class CommandBar;
 class FindBar;
 class RedactionBar;
+class AnnotationBar;
 class NavigationRail;
 class ToolsPane;
 class FloatingPill;
@@ -88,6 +89,8 @@ private:
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
     void applyRedactions();         // flatten marked pages, save, open the result
+    void setHighlightMode(bool on); // enter/leave the highlight-authoring mode
+    void applyHighlights();         // write highlight annotations, save, open result
     void combineDocuments();  // merge several PDFs into one (QPDF)
     void protectDocument();   // write a password-encrypted copy (QPDF, AES-256)
     void removeProtection();  // write a decrypted (password-free) copy (QPDF)
@@ -160,6 +163,7 @@ private:
     CommandBar* m_commandBar = nullptr;
     FindBar* m_findBar = nullptr;
     RedactionBar* m_redactionBar = nullptr;
+    AnnotationBar* m_annotationBar = nullptr;
     int m_searchIndex = 0;
     NavigationRail* m_rail = nullptr;
     ToolsPane* m_toolsPane = nullptr;

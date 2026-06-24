@@ -90,12 +90,22 @@ public:
     int redactionCount() const; // total rectangles across all pages
     void clearRedactions();
 
+    // Highlight authoring — same drag mechanics as redaction, additive (saved as
+    // PDF highlight annotations rather than flattening). Marks are normalized
+    // rects of the displayed page.
+    void setHighlightMode(bool on);
+    bool highlightMode() const { return m_highlightMode; }
+    QHash<int, QList<QRectF>> highlightMarks() const { return m_highlights; }
+    int highlightCount() const;
+    void clearHighlights();
+
 signals:
     void currentPageChanged(int page);
     void zoomChanged(double zoom);
     void searchResultsChanged(int count);
     void layoutModeChanged(LayoutMode mode);
     void redactionsChanged(int count);
+    void highlightsChanged(int count);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -176,10 +186,14 @@ private:
     bool m_hud = false;
     int m_renderedCount = 0;      // HUD: total renders delivered
 
-    // Redaction state.
-    QPointF normInSlot(int slot, const QPoint& vpPt) const; // viewport px → [0,1]×[0,1]
+    // Drag-to-mark state, shared by redaction and highlight modes (only one is
+    // active at a time). normInSlot maps a viewport point to page fractions.
+    QPointF normInSlot(int slot, const QPoint& vpPt) const;
+    bool dragModeActive() const { return m_redactMode || m_highlightMode; }
     bool m_redactMode = false;
+    bool m_highlightMode = false;
     QHash<int, QList<QRectF>> m_redactions; // slot → normalized rects
+    QHash<int, QList<QRectF>> m_highlights; // slot → normalized rects
     bool m_dragging = false;
     int m_dragSlot = -1;
     QPointF m_dragStart;          // normalized start point

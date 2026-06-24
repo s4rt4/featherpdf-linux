@@ -10,6 +10,8 @@ qt_add_executable(feather-pdf
     core/PageCommands.h
     backends/PdfEditor.cpp
     backends/PdfEditor.h
+    backends/Annotator.cpp
+    backends/Annotator.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -36,6 +38,8 @@ qt_add_executable(feather-pdf
     ui/FindBar.h
     ui/RedactionBar.cpp
     ui/RedactionBar.h
+    ui/AnnotationBar.cpp
+    ui/AnnotationBar.h
     ui/PrintDialog.cpp
     ui/PrintDialog.h
     ui/CombineDialog.cpp
