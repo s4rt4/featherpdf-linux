@@ -51,6 +51,12 @@ public:
 
     bool isLoaded() const;
     QString filePath() const { return m_filePath; }
+    // The password the file opened with (empty for an unencrypted document).
+    QString password() const { return m_password; }
+    // True if this document is encrypted (set by the opener after a successful
+    // load — QtPdf alone can't report this reliably, QPDF confirms it).
+    bool isEncrypted() const { return m_encrypted; }
+    void setEncrypted(bool encrypted) { m_encrypted = encrypted; }
     QString fileName() const;       // base name, e.g. "Annual-Report.pdf"
     QString title() const;          // metadata title, falls back to file name
     int pageCount() const;          // CURRENT (display) page count after edits
@@ -97,6 +103,8 @@ private:
 
     QPdfDocument* m_pdf;
     QString m_filePath;
+    QString m_password;   // the password the document opened with (may be empty)
+    bool m_encrypted = false;
     QVector<int> m_order; // display slot → original page index
     QVector<int> m_rot;   // display slot → rotation (degrees clockwise)
     bool m_modified = false;

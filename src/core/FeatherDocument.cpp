@@ -54,6 +54,7 @@ FeatherDocument::LoadResult FeatherDocument::load(const QString& path, const QSt
 
     if (result == LoadResult::Ok) {
         m_filePath = path;
+        m_password = password;
         const int n = m_pdf->pageCount();
         m_order.resize(n);
         for (int i = 0; i < n; ++i)
@@ -138,6 +139,8 @@ void FeatherDocument::close() {
         return;
     m_pdf->close();
     m_filePath.clear();
+    m_password.clear();
+    m_encrypted = false;
     m_order.clear();
     m_rot.clear();
     setModified(false);

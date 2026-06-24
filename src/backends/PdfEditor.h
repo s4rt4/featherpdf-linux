@@ -54,4 +54,10 @@ public:
     // (QtPdf reports AES-256 files as an "unsupported scheme" until the right
     // password is set, so the viewer asks QPDF whether to prompt for one.)
     static bool isPasswordProtected(const QString& path);
+
+    // Write `inputPath` (opened with `password`) to `outputPath` with its
+    // encryption removed. Lossless. Temp file + atomic rename, so `outputPath`
+    // may equal `inputPath`. Returns true on success; fills *error otherwise.
+    static bool removeProtection(const QString& inputPath, const QString& outputPath,
+                                 const QString& password, QString* error);
 };

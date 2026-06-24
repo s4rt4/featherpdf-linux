@@ -107,6 +107,9 @@ void MainWindow::buildActions() {
     m_protectAct = new QAction(tr("Pro&tect with Password…"), this);
     connect(m_protectAct, &QAction::triggered, this, &MainWindow::protectDocument);
 
+    m_removeProtectionAct = new QAction(tr("&Remove Password…"), this);
+    connect(m_removeProtectionAct, &QAction::triggered, this, &MainWindow::removeProtection);
+
     m_printAct = new QAction(tr("&Print…"), this);
     m_printAct->setShortcut(QKeySequence::Print);
     connect(m_printAct, &QAction::triggered, this, &MainWindow::printActive);
@@ -200,6 +203,7 @@ void MainWindow::buildMenus() {
     file->addAction(m_saveAct);
     file->addAction(m_saveAsAct);
     file->addAction(m_protectAct);
+    file->addAction(m_removeProtectionAct);
     file->addSeparator();
     file->addAction(m_printAct);
     file->addSeparator();
@@ -723,6 +727,32 @@ void MainWindow::protectDocument() {
     m_toast->show(tr("Saved protected copy to %1").arg(QFileInfo(out).fileName()));
 }
 
+void MainWindow::removeProtection() {
+    if (!hasActiveDoc() || !m_doc->isEncrypted())
+        return;
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-unprotected.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save unprotected PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok =
+        PdfEditor::removeProtection(m_doc->filePath(), out, m_doc->password(), &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't remove password"), error);
+        return;
+    }
+    m_toast->show(tr("Saved unprotected copy to %1").arg(QFileInfo(out).fileName()));
+    openPath(out); // the result opens without a prompt
+}
+
 bool MainWindow::saveActive() {
     if (!hasActiveDoc())
         return false;
@@ -917,6 +947,7 @@ bool MainWindow::openPath(const QString& path) {
         doc->deleteLater();
         return false;
     }
+    doc->setEncrypted(!doc->password().isEmpty() || PdfEditor::isPasswordProtected(absolute));
 
     addRecentFile(absolute);
     rebuildRecentMenu();
@@ -1138,6 +1169,7 @@ void MainWindow::updateChromeState() {
     m_saveAct->setEnabled(loaded);
     m_saveAsAct->setEnabled(loaded);
     m_protectAct->setEnabled(loaded);
+    m_removeProtectionAct->setEnabled(loaded && m_doc && m_doc->isEncrypted());
     m_printAct->setEnabled(loaded);
     m_rotateLeftAct->setEnabled(loaded);
     m_rotateRightAct->setEnabled(loaded);

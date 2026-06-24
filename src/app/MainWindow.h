@@ -87,6 +87,7 @@ private:
     bool saveActive();        // write edits back to the current file (QPDF)
     void combineDocuments();  // merge several PDFs into one (QPDF)
     void protectDocument();   // write a password-encrypted copy (QPDF, AES-256)
+    void removeProtection();  // write a decrypted (password-free) copy (QPDF)
     void printActive();       // custom print dialog (async printers + preview)
     void printDocument(QPrinter& printer, const QList<int>& pages, bool grayscale);
 
@@ -166,6 +167,7 @@ private:
     QAction* m_saveAct = nullptr;
     QAction* m_saveAsAct = nullptr;
     QAction* m_protectAct = nullptr;
+    QAction* m_removeProtectionAct = nullptr;
     QAction* m_printAct = nullptr;
     QAction* m_closeAct = nullptr;
     QAction* m_quitAct = nullptr;

@@ -185,6 +185,39 @@ bool PdfEditor::protect(const QString& inputPath, const QString& outputPath,
     return true;
 }
 
+bool PdfEditor::removeProtection(const QString& inputPath, const QString& outputPath,
+                                 const QString& password, QString* error) {
+    const bool inPlace =
+        QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
+    const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
+
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData(), password.toUtf8().constData());
+
+        QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
+        writer.setPreserveEncryption(false); // drop the encryption layer
+        writer.write();
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        if (inPlace)
+            QFile::remove(target);
+        return false;
+    }
+
+    if (inPlace) {
+        QFile::remove(outputPath);
+        if (!QFile::rename(target, outputPath)) {
+            if (error)
+                *error = QStringLiteral("The unprotected file couldn't replace the original.");
+            QFile::remove(target);
+            return false;
+        }
+    }
+    return true;
+}
+
 bool PdfEditor::isPasswordProtected(const QString& path) {
     try {
         QPDF qpdf;
