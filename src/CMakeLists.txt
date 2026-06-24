@@ -46,6 +46,8 @@ qt_add_executable(feather-pdf
     ui/SignaturesDialog.h
     ui/OcrDialog.cpp
     ui/OcrDialog.h
+    ui/DocsDialog.cpp
+    ui/DocsDialog.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

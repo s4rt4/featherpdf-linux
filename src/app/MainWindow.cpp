@@ -29,6 +29,7 @@
 #include "ui/AttachmentsPanel.h"
 #include "ui/CombineDialog.h"
 #include "ui/CommandBar.h"
+#include "ui/DocsDialog.h"
 #include "ui/GoToPageDialog.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
@@ -278,6 +279,8 @@ void MainWindow::buildMenus() {
     }
 
     QMenu* help = menuBar()->addMenu(tr("&Help"));
+    QAction* docs = help->addAction(tr("&Documentation…"));
+    connect(docs, &QAction::triggered, this, [this] { DocsDialog(this).exec(); });
     help->addAction(m_aboutAct);
 }
 
