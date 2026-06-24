@@ -93,6 +93,7 @@ private:
     void applyRedactions();         // flatten marked pages, save, open the result
     void setHighlightMode(bool on); // enter/leave the annotation-authoring mode
     void applyAnnotations();        // write highlight + note annotations, save, open result
+    void activateTool(const QString& id); // route a Tools entry (pane or menu) to its action
     void createPdf();         // make a PDF from images (native) or an office doc (LibreOffice)
     void optimizeDocument();  // rewrite more compactly (QPDF)
     void compareDocuments();  // visual diff against another PDF

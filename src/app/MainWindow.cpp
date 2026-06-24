@@ -284,10 +284,27 @@ void MainWindow::buildMenus() {
     connect(compare, &QAction::triggered, this, &MainWindow::compareDocuments);
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
-    for (const QString& name : {tr("Export"), tr("Create"), tr("Edit"), tr("Comment"),
-                                tr("Combine"), tr("Organize"), tr("Redact"), tr("Sign")}) {
-        QAction* a = tools->addAction(name);
-        connect(a, &QAction::triggered, this, [this, name] { notImplemented(name); });
+    struct ToolEntry {
+        const char* id;
+        QString label;
+        bool sep; // a separator follows
+    };
+    const ToolEntry toolEntries[] = {
+        {"create", tr("Create PDF…"), false},  {"export", tr("Export…"), false},
+        {"combine", tr("Combine…"), false},    {"split", tr("Split…"), true},
+        {"comment", tr("Comment"), false},     {"redact", tr("Redact"), false},
+        {"watermark", tr("Watermark…"), false}, {"bates", tr("Bates Numbering…"), false},
+        {"organize", tr("Organize"), true},    {"compare", tr("Compare…"), false},
+        {"optimize", tr("Optimize…"), false},  {"flatten", tr("Flatten…"), false},
+        {"protect", tr("Protect…"), false},    {"sign", tr("Sign…"), true},
+        {"edit", tr("Edit Text"), false},
+    };
+    for (const ToolEntry& e : toolEntries) {
+        const QString id = QString::fromLatin1(e.id);
+        QAction* a = tools->addAction(e.label);
+        connect(a, &QAction::triggered, this, [this, id] { activateTool(id); });
+        if (e.sep)
+            tools->addSeparator();
     }
 
     QMenu* help = menuBar()->addMenu(tr("&Help"));
@@ -710,44 +727,7 @@ void MainWindow::wireSignals() {
     });
 
     // Tools pane.
-    connect(m_toolsPane, &ToolsPane::toolActivated, this, [this](const QString& id) {
-        // Wire the tools whose backends already exist; the rest await their
-        // milestones (Comment→M3, Redact→M2, Sign→M6, Edit→M8, Create→M7).
-        if (id == QLatin1String("export")) {
-            saveActiveAs();
-        } else if (id == QLatin1String("organize")) {
-            if (hasActiveDoc())
-                m_rail->setCurrentPanel(NavigationRail::Panel::Thumbnails);
-        } else if (id == QLatin1String("combine")) {
-            combineDocuments();
-        } else if (id == QLatin1String("redact")) {
-            if (hasActiveDoc())
-                setRedactionMode(!m_viewport->redactionMode());
-        } else if (id == QLatin1String("comment")) {
-            if (hasActiveDoc())
-                setHighlightMode(!m_viewport->highlightMode());
-        } else if (id == QLatin1String("sign")) {
-            signDocument();
-        } else if (id == QLatin1String("create")) {
-            createPdf();
-        } else if (id == QLatin1String("optimize")) {
-            optimizeDocument();
-        } else if (id == QLatin1String("compare")) {
-            compareDocuments();
-        } else if (id == QLatin1String("watermark")) {
-            watermarkDocument();
-        } else if (id == QLatin1String("bates")) {
-            batesNumber();
-        } else if (id == QLatin1String("protect")) {
-            protectDocument();
-        } else if (id == QLatin1String("flatten")) {
-            flattenDocument();
-        } else if (id == QLatin1String("split")) {
-            splitDocument();
-        } else {
-            notImplemented(id.left(1).toUpper() + id.mid(1));
-        }
-    });
+    connect(m_toolsPane, &ToolsPane::toolActivated, this, &MainWindow::activateTool);
     connect(m_toolsPane, &ToolsPane::customizeRequested, this, [this] { notImplemented(tr("Customize tools")); });
 
     // Tab strip.
@@ -1021,6 +1001,45 @@ void MainWindow::applyRedactions() {
     m_toast->show(tr("Saved redacted copy to %1").arg(QFileInfo(out).fileName()));
     setRedactionMode(false);
     openPath(out); // open the flattened result
+}
+
+void MainWindow::activateTool(const QString& id) {
+    // Route a Tools entry (from the pane or the Tools menu) to its action. Only
+    // "edit" (M8 text editing) is still a placeholder.
+    if (id == QLatin1String("export")) {
+        saveActiveAs();
+    } else if (id == QLatin1String("organize")) {
+        if (hasActiveDoc())
+            m_rail->setCurrentPanel(NavigationRail::Panel::Thumbnails);
+    } else if (id == QLatin1String("combine")) {
+        combineDocuments();
+    } else if (id == QLatin1String("split")) {
+        splitDocument();
+    } else if (id == QLatin1String("compare")) {
+        compareDocuments();
+    } else if (id == QLatin1String("optimize")) {
+        optimizeDocument();
+    } else if (id == QLatin1String("watermark")) {
+        watermarkDocument();
+    } else if (id == QLatin1String("bates")) {
+        batesNumber();
+    } else if (id == QLatin1String("protect")) {
+        protectDocument();
+    } else if (id == QLatin1String("flatten")) {
+        flattenDocument();
+    } else if (id == QLatin1String("redact")) {
+        if (hasActiveDoc())
+            setRedactionMode(!m_viewport->redactionMode());
+    } else if (id == QLatin1String("comment")) {
+        if (hasActiveDoc())
+            setHighlightMode(!m_viewport->highlightMode());
+    } else if (id == QLatin1String("sign")) {
+        signDocument();
+    } else if (id == QLatin1String("create")) {
+        createPdf();
+    } else {
+        notImplemented(id.left(1).toUpper() + id.mid(1));
+    }
 }
 
 void MainWindow::createPdf() {
