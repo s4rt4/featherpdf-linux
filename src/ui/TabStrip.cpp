@@ -42,7 +42,7 @@ class Tab : public QWidget {
     Q_OBJECT
 
 public:
-    enum class Kind { Home, Tools, Document, Add };
+    enum class Kind { Home, Tools, Docs, Document, Add };
 
     Tab(Kind kind, QString iconName, QString label, QWidget* parent)
         : QWidget(parent), m_kind(kind), m_iconName(std::move(iconName)),
@@ -71,14 +71,14 @@ public:
         updateGeometry();
         update();
     }
-    bool closable() const { return m_kind == Kind::Document; }
+    bool closable() const { return m_kind == Kind::Document || m_kind == Kind::Docs; }
 
     QSize sizeHint() const override {
         if (m_kind == Kind::Add)
             return {34, kTabHeight};
         const QFontMetrics fm(font());
         int w = kPadH;
-        if (m_kind == Kind::Home || m_kind == Kind::Tools)
+        if (m_kind == Kind::Home || m_kind == Kind::Tools || m_kind == Kind::Docs)
             w += kIcon + kGap;
         w += fm.horizontalAdvance(m_label);
         if (m_dirty)
@@ -157,7 +157,7 @@ protected:
             return;
         }
 
-        if (m_kind == Kind::Home || m_kind == Kind::Tools) {
+        if (m_kind == Kind::Home || m_kind == Kind::Tools || m_kind == Kind::Docs) {
             const QPixmap pm = Theme::instance().icon(m_iconName, fg).pixmap(kIcon, kIcon);
             p.drawPixmap(x, (height() - kIcon) / 2, pm);
             x += kIcon + kGap;
@@ -278,8 +278,35 @@ void TabStrip::setActiveHome() {
     m_home->setActive(true);
 }
 
+void TabStrip::showDocsTab() {
+    if (!m_docs) {
+        m_docs = new Tab(Tab::Kind::Docs, QStringLiteral("book"), tr("Docs"), this);
+        m_layout->insertWidget(m_layout->indexOf(m_home) + 1, m_docs); // right after Home
+        connect(m_docs, &Tab::clicked, this, &TabStrip::docsSelected);
+        connect(m_docs, &Tab::closeClicked, this, &TabStrip::docsCloseRequested);
+        refreshIcons();
+    }
+    setActiveDocs();
+}
+
+void TabStrip::closeDocsTab() {
+    if (m_docs) {
+        m_layout->removeWidget(m_docs);
+        m_docs->deleteLater();
+        m_docs = nullptr;
+    }
+}
+
+void TabStrip::setActiveDocs() {
+    clearActiveStates();
+    if (m_docs)
+        m_docs->setActive(true);
+}
+
 void TabStrip::clearActiveStates() {
     m_home->setActive(false);
+    if (m_docs)
+        m_docs->setActive(false);
     for (Tab* tab : std::as_const(m_docTabs))
         tab->setActive(false);
 }

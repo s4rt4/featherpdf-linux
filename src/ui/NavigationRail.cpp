@@ -43,6 +43,18 @@ NavigationRail::NavigationRail(QWidget* parent) : QWidget(parent) {
     col->addWidget(addButton(Panel::Layers, "layers", tr("Layers")), 0, Qt::AlignHCenter);
     col->addWidget(addButton(Panel::Forms, "form", tr("Forms")), 0, Qt::AlignHCenter);
 
+    // Documentation — a plain action (not a panel) that opens a Docs tab.
+    auto* docsBtn = new QToolButton(this);
+    docsBtn->setToolTip(tr("Documentation"));
+    docsBtn->setAccessibleName(tr("Documentation"));
+    docsBtn->setCursor(Qt::PointingHandCursor);
+    docsBtn->setFixedSize(34, 34);
+    docsBtn->setIconSize(QSize(19, 19));
+    docsBtn->setAutoRaise(true);
+    connect(docsBtn, &QToolButton::clicked, this, &NavigationRail::docsRequested);
+    m_iconButtons.append({docsBtn, QStringLiteral("book")});
+    col->addWidget(docsBtn, 0, Qt::AlignHCenter);
+
     refreshIcons();
     connect(&Theme::instance(), &Theme::changed, this, &NavigationRail::refreshIcons);
 }

@@ -16,22 +16,32 @@
 
 #pragma once
 
-#include <QDialog>
+#include <QString>
+#include <QWidget>
 
+class QTreeWidget;
+class QTreeWidgetItem;
 class QTextBrowser;
 class QPushButton;
 
-// In-app documentation, available in English and Indonesian via a toggle.
-class DocsDialog : public QDialog {
+// The full in-app documentation, shown as its own workspace tab: a table-of-
+// contents sidebar (grouped topics) beside the article for the selected topic.
+// Every topic covers what it is, its purpose, how it works, how to use it, and
+// troubleshooting — in English and Indonesian (toggle at the top of the TOC).
+class DocsView : public QWidget {
     Q_OBJECT
 
 public:
-    explicit DocsDialog(QWidget* parent = nullptr);
+    explicit DocsView(QWidget* parent = nullptr);
 
 private:
-    void showLanguage(const QString& lang); // "en" or "id"
+    void rebuildToc();
+    void setLanguage(const QString& lang);
 
+    QTreeWidget* m_toc = nullptr;
     QTextBrowser* m_browser = nullptr;
     QPushButton* m_en = nullptr;
     QPushButton* m_id = nullptr;
+    QString m_lang;        // "en" or "id"
+    QString m_currentId;   // currently shown topic id
 };

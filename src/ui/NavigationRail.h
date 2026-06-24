@@ -41,6 +41,7 @@ public:
 
 signals:
     void panelChanged(Panel panel); // Panel::None when collapsed
+    void docsRequested();           // the documentation button (opens a Docs tab)
 
 private:
     QToolButton* addButton(Panel panel, const QString& iconName, const QString& tip);

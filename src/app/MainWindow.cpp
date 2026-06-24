@@ -29,7 +29,7 @@
 #include "ui/AttachmentsPanel.h"
 #include "ui/CombineDialog.h"
 #include "ui/CommandBar.h"
-#include "ui/DocsDialog.h"
+#include "ui/DocsView.h"
 #include "ui/GoToPageDialog.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
@@ -279,8 +279,8 @@ void MainWindow::buildMenus() {
     }
 
     QMenu* help = menuBar()->addMenu(tr("&Help"));
-    QAction* docs = help->addAction(tr("&Documentation…"));
-    connect(docs, &QAction::triggered, this, [this] { DocsDialog(this).exec(); });
+    QAction* docs = help->addAction(tr("&Documentation"));
+    connect(docs, &QAction::triggered, this, &MainWindow::openDocs);
     help->addAction(m_aboutAct);
 }
 
@@ -345,9 +345,11 @@ void MainWindow::buildShell() {
     m_panelHost->setVisible(false);
 
     // The center swaps between the Home start screen and the document viewport.
+    m_docsView = new DocsView(body);
     m_centerStack = new QStackedWidget(body);
     m_centerStack->addWidget(m_home);     // index 0
     m_centerStack->addWidget(m_viewport); // index 1
+    m_centerStack->addWidget(m_docsView); // index 2
 
     bodyRow->addWidget(m_rail);
     bodyRow->addWidget(m_panelHost);
@@ -387,6 +389,34 @@ void MainWindow::showDocument() {
     m_commandBar->setVisible(true);
     m_pill->setVisible(true);
     // activateSession() owns which document tab is active.
+}
+
+void MainWindow::openDocs() {
+    m_tabStrip->showDocsTab();
+    showDocs();
+}
+
+void MainWindow::showDocs() {
+    if (m_immersive)
+        m_immersiveAct->setChecked(false);
+    m_findBar->hide();
+    m_centerStack->setCurrentWidget(m_docsView);
+    // Documentation is a full-page view, like Home — chrome recedes.
+    m_rail->setVisible(false);
+    m_panelHost->setVisible(false);
+    m_toolsPane->setVisible(false);
+    m_commandBar->setVisible(false);
+    m_pill->setVisible(false);
+    m_tabStrip->setActiveDocs();
+}
+
+void MainWindow::closeDocs() {
+    m_tabStrip->closeDocsTab();
+    // Return to the active document if one is open, else Home.
+    if (hasActiveDoc() && session(m_activeId))
+        activateSession(m_activeId);
+    else
+        showHome();
 }
 
 void MainWindow::setImmersive(bool on) {
@@ -553,6 +583,7 @@ void MainWindow::wireSignals() {
 
     // Navigation rail → expandable panel. Each panel owns its own content; the
     // semantic panels (annotations/attachments/layers) load lazily when shown.
+    connect(m_rail, &NavigationRail::docsRequested, this, &MainWindow::openDocs);
     connect(m_rail, &NavigationRail::panelChanged, this, [this](NavigationRail::Panel p) {
         switch (p) {
         case NavigationRail::Panel::None:
@@ -696,6 +727,8 @@ void MainWindow::wireSignals() {
     // Tab strip.
     connect(m_tabStrip, &TabStrip::homeSelected, this, &MainWindow::showHome);
     connect(m_tabStrip, &TabStrip::documentSelected, this, &MainWindow::activateSession);
+    connect(m_tabStrip, &TabStrip::docsSelected, this, &MainWindow::showDocs);
+    connect(m_tabStrip, &TabStrip::docsCloseRequested, this, &MainWindow::closeDocs);
     connect(m_tabStrip, &TabStrip::newTabRequested, this, &MainWindow::openFileDialog);
     connect(m_tabStrip, &TabStrip::closeDocumentRequested, this, &MainWindow::closeTab);
     connect(m_tabStrip, &TabStrip::searchRequested, this, &MainWindow::openFind);

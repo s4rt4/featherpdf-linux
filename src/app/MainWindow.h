@@ -25,6 +25,7 @@
 class FeatherDocument;
 class Viewport;
 class HomeView;
+class DocsView;
 class ThumbnailPanel;
 class OutlinePanel;
 class AnnotationsPanel;
@@ -125,6 +126,9 @@ private:
     // toggling the document-only chrome (rail · command bar · Tools pane · pill).
     void showHome();
     void showDocument();
+    void openDocs();  // open/activate the Documentation tab
+    void showDocs();   // switch the workspace to the docs view
+    void closeDocs();  // close the docs tab and return to home/document
 
     // Immersive reading: hide all chrome, leaving the page alone with its pill
     // (ui-guidelines §1 — the signature moment). F11 toggles, Esc exits.
@@ -153,6 +157,7 @@ private:
 
     Viewport* m_viewport = nullptr;
     HomeView* m_home = nullptr;
+    DocsView* m_docsView = nullptr;
     QStackedWidget* m_centerStack = nullptr;
     TabStrip* m_tabStrip = nullptr;
 

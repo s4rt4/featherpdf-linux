@@ -48,11 +48,18 @@ public:
     void setActiveHome(); // make the Home tab the active one
     int documentCount() const { return m_docTabs.size(); }
 
+    // The Documentation tab — a single special tab created on demand.
+    void showDocsTab();    // create (if needed) and make it active
+    void closeDocsTab();   // remove it
+    void setActiveDocs();  // mark it active without recreating
+
 signals:
     void homeSelected();
     void documentSelected(int id);
     void newTabRequested();
     void closeDocumentRequested(int id);
+    void docsSelected();
+    void docsCloseRequested();
     void searchRequested();
     void menuRequested();
 
@@ -66,6 +73,7 @@ private:
 
     QHBoxLayout* m_layout = nullptr;
     Tab* m_home = nullptr;
+    Tab* m_docs = nullptr;
     Tab* m_add = nullptr;
     QToolButton* m_search = nullptr;
     QToolButton* m_theme = nullptr;
