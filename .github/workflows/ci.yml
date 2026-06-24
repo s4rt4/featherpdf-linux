@@ -17,7 +17,7 @@ jobs:
         run: >
           dnf install -y
           gcc-c++ cmake ninja-build git
-          qt6-qtbase-devel qt6-qtpdf-devel qt6-qtsvg-devel qpdf-devel
+          qt6-qtbase-devel qt6-qtpdf-devel qt6-qtsvg-devel qpdf-devel poppler-qt6-devel
 
       - name: Check out the source
         uses: actions/checkout@v4
