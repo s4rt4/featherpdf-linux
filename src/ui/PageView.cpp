@@ -91,7 +91,7 @@ void PageView::setDocument(QPdfDocument* doc) {
     m_currentPage = 0;
     m_currentResult = -1;
     m_renderedCount = 0;
-    // Edit-mode marks are tied to this document's slots — reset for the new one.
+    // Edit-mode marks are tied to this document's slots - reset for the new one.
     m_dragging = false;
     m_dragSlot = -1;
     if (!m_redactions.isEmpty()) {
@@ -116,7 +116,7 @@ void PageView::setDocument(QPdfDocument* doc) {
     m_search->setSearchString(QString());
     m_search->setDocument(doc);
 
-    // Read every page size once (cheap — no rendering). This is what lets the
+    // Read every page size once (cheap - no rendering). This is what lets the
     // whole layout be arithmetic, so opening is instant at any page count.
     m_pageSizes.clear();
     m_maxPageWPoints = 1.0;
@@ -410,7 +410,7 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
             }
             m_currentStroke.clear();
         } else if (m_highlightMode && m_annotTool == AnnotTool::Note) {
-            // A note is a single point — drop it where the press landed.
+            // A note is a single point - drop it where the press landed.
             emit noteRequested(m_dragSlot, m_dragStart);
         } else if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004) {
             // Ignore accidental tiny marks (a click without a real drag).
@@ -501,7 +501,7 @@ void PageView::request(int slot) {
         return;
     m_pending.insert(slot);
     QPdfDocumentRenderOptions opts;
-    // PDFium hides annotations unless asked — render them so highlights, notes,
+    // PDFium hides annotations unless asked - render them so highlights, notes,
     // and any existing markup are visible in the viewer.
     opts.setRenderFlags(QPdfDocumentRenderOptions::RenderFlag::Annotations);
     switch (rotationOf(slot)) {
@@ -573,7 +573,7 @@ void PageView::paintEvent(QPaintEvent*) {
 
     auto drawPage = [&](const QRect& r, int slot) {
         const int page = originalOf(slot); // search/highlights are keyed by the original page
-        // The page's soft shadow — the only prominent shadow (ui-guidelines §4).
+        // The page's soft shadow - the only prominent shadow (ui-guidelines §4).
         p.setPen(Qt::NoPen);
         for (int s = 6; s >= 1; --s) {
             p.setBrush(QColor(0, 0, 0, 6));
@@ -618,7 +618,7 @@ void PageView::paintEvent(QPaintEvent*) {
                 fill.setAlpha(90);
                 drawMark(mark.first, fill, false);
             }
-        // Note markers — a small yellow card at each anchor point.
+        // Note markers - a small yellow card at each anchor point.
         if (auto it = m_notes.constFind(slot); it != m_notes.constEnd()) {
             for (const auto& note : *it) {
                 const QRectF box(r.x() + note.first.x() * r.width(),
@@ -628,7 +628,7 @@ void PageView::paintEvent(QPaintEvent*) {
                 p.drawRoundedRect(box, 3, 3);
             }
         }
-        // Ink strokes — freehand polylines in their colour.
+        // Ink strokes - freehand polylines in their colour.
         const auto drawStroke = [&](const QPolygonF& stroke, const QColor& c) {
             if (stroke.size() < 2)
                 return;
@@ -821,7 +821,7 @@ void PageView::setZoom(double zoom) {
     const double frac = rowHeightPx(r) > 0 ? (topY - m_rowTop[r]) / rowHeightPx(r) : 0.0;
 
     m_zoom = zoom;
-    // Keep the old pixmaps — drawn scaled as a preview — so zooming never flashes
+    // Keep the old pixmaps - drawn scaled as a preview - so zooming never flashes
     // white; the crisp render at the new size replaces them as it arrives.
     invalidateRenders(/*dropCache=*/false);
     relayout();

@@ -25,7 +25,7 @@
 // (ui-guidelines §2); widgets never hard-code a hex. Theme owns the two token
 // palettes (light/dark), generates the global Qt style sheet from them, follows
 // the system light/dark preference, and renders the symbolic (lucide) icons the
-// mockup uses — tinted to whatever color the caller asks for so they recolor
+// mockup uses - tinted to whatever color the caller asks for so they recolor
 // correctly across themes.
 //
 // Token values are taken verbatim from feather-mockup.html / ui-guidelines.md.
@@ -72,7 +72,7 @@ public:
     QIcon icon(const QString& name, QColor color = QColor()) const;
 
     // The full-colour brand logo (the prepared feather mark), rendered at `size`
-    // logical px without tinting — used on the Home screen, the window icon, and
+    // logical px without tinting - used on the Home screen, the window icon, and
     // the About box.
     QPixmap brandLogo(int size) const;
 

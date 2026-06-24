@@ -34,7 +34,7 @@ struct AnnotationEntry {
 // The Annotations rail panel: lists the annotations already present in the
 // document (highlights, notes, ink, stamps, …) via Poppler, with the page they
 // sit on; clicking one navigates the viewer there. Authoring new annotations is
-// a later milestone (M3) — this is read-only. The scan runs off the UI thread
+// a later milestone (M3) - this is read-only. The scan runs off the UI thread
 // so even a huge document stays responsive.
 class AnnotationsPanel : public QWidget {
     Q_OBJECT

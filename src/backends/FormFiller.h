@@ -25,7 +25,7 @@
 
 // The form-filling backend (Poppler-Qt6). Reads a document's AcroForm fields and
 // writes user-entered values back, saving so any viewer (including our QtPdf one
-// on reopen) shows the filled form — Poppler regenerates field appearances on save.
+// on reopen) shows the filled form - Poppler regenerates field appearances on save.
 class FormFiller {
 public:
     enum class Kind { Text, CheckBox, ComboBox, Radio, ListBox, Unsupported };

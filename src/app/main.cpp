@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     // UI thread); doing it before exec() leaves the process unresponsive to
     // Wayland before any window maps, which stalls the whole compositor on huge
     // documents. Queuing it lets the shell paint first, then go busy. The real
-    // fix — off-thread render — lands with the custom render pipeline.
+    // fix - off-thread render - lands with the custom render pipeline.
     if (argc > 1) {
         const QString path = QString::fromLocal8Bit(argv[1]);
         QTimer::singleShot(0, &window, [&window, path] { window.openPath(path); });

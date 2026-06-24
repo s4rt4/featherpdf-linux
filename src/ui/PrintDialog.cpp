@@ -233,7 +233,7 @@ QWidget* PrintDialog::buildOptionsPane(const QString& docName) {
     customRow->addWidget(m_rangeText, 1);
     opts->addLayout(customRow);
 
-    // Subset — print all / only odd / only even pages within the range.
+    // Subset - print all / only odd / only even pages within the range.
     auto* subsetRow = new QHBoxLayout;
     subsetRow->setSpacing(8);
     auto* subsetLabel = new QLabel(tr("Subset"), host);
@@ -460,7 +460,7 @@ QPixmap PrintDialog::renderSlot(int slot, int maxW, int maxH) const {
     default: break;
     }
     const QImage rendered = m_pdf->render(orig, px, opts);
-    // The render has a transparent background, so always flatten onto white —
+    // The render has a transparent background, so always flatten onto white -
     // the sheet looks like real paper, and grayscale won't turn it solid black.
     QImage img(rendered.size(), QImage::Format_RGB32);
     img.fill(Qt::white);

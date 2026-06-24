@@ -59,7 +59,7 @@ ProtectDialog::ProtectDialog(const QString& docName, QWidget* parent) : QDialog(
 
     auto* hint = new QLabel(
         tr("Protect “%1” with AES-256 encryption. Set a password to open it, restrict what "
-           "recipients may do, or both. Keep the password safe — it cannot be recovered.")
+           "recipients may do, or both. Keep the password safe - it cannot be recovered.")
             .arg(docName),
         this);
     hint->setObjectName(QStringLiteral("Hint"));

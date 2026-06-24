@@ -24,7 +24,7 @@ class FeatherDocument;
 
 // The document viewport: where the page floats on the canvas.
 //
-// A thin wrapper over PageView — the custom continuous render pipeline (off-UI-
+// A thin wrapper over PageView - the custom continuous render pipeline (off-UI-
 // thread render, LRU cache, arithmetic layout). Keeping that behind this stable
 // interface means MainWindow never sees the renderer change.
 class Viewport : public QWidget {
@@ -38,7 +38,7 @@ public:
     void clear();
     bool hasDocument() const;
 
-    // Zoom — every path (buttons, Ctrl+wheel, fit) funnels through here so the
+    // Zoom - every path (buttons, Ctrl+wheel, fit) funnels through here so the
     // reading position is preserved consistently, per the saran notes.
     void zoomIn();
     void zoomOut();

@@ -23,7 +23,7 @@ class Tab;
 class QHBoxLayout;
 class QToolButton;
 
-// The tab strip (ui-guidelines §6 / mockup .tabs) — the defining element. Two
+// The tab strip (ui-guidelines §6 / mockup .tabs) - the defining element. Two
 // fixed mode tabs (Home · Tools) are pinned left, then one document tab per open
 // PDF, then a "+". The active tab fills with `surface`, carries a 2px accent top
 // indicator, and connects seamlessly to the command toolbar below. Right of the
@@ -48,7 +48,7 @@ public:
     void setActiveHome(); // make the Home tab the active one
     int documentCount() const { return m_docTabs.size(); }
 
-    // The Documentation tab — a single special tab created on demand.
+    // The Documentation tab - a single special tab created on demand.
     void showDocsTab();    // create (if needed) and make it active
     void closeDocsTab();   // remove it
     void setActiveDocs();  // mark it active without recreating

@@ -32,7 +32,7 @@ QString statusText(Poppler::SignatureValidationInfo::SignatureStatus s, bool* va
     switch (s) {
     case Poppler::SignatureValidationInfo::SignatureValid:
         *valid = true;
-        return QObject::tr("Valid — the document is intact.");
+        return QObject::tr("Valid - the document is intact.");
     case Poppler::SignatureValidationInfo::SignatureDigestMismatch:
         return QObject::tr("The document was changed after it was signed.");
     case Poppler::SignatureValidationInfo::SignatureInvalid:

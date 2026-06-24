@@ -55,7 +55,7 @@ public:
 
     // Write `inputPath` to `outputPath` encrypted with AES-256 (the PDF 2.0 R6
     // scheme). `openPassword` (may be empty) is required to open the document;
-    // `perms` restrict what the opener may do. Lossless — the page content is
+    // `perms` restrict what the opener may do. Lossless - the page content is
     // copied, only an encryption layer is added. Temp file + atomic rename, so
     // `outputPath` may equal `inputPath`. Returns true on success; on failure
     // fills *error with a friendly message.
@@ -63,7 +63,7 @@ public:
                         const QString& openPassword, const Permissions& perms, QString* error);
 
     // Rewrite `inputPath` to `outputPath` more compactly: pack objects into
-    // object streams, (re)compress streams. Lossless — content is unchanged.
+    // object streams, (re)compress streams. Lossless - content is unchanged.
     // *beforeBytes/*afterBytes (optional) report the file sizes. Temp file +
     // atomic rename. Returns true on success; on failure fills *error.
     static bool optimize(const QString& inputPath, const QString& outputPath, qint64* beforeBytes,
@@ -93,7 +93,7 @@ public:
 
     // Save the arrangement (`order`/`rotations`, as saveArrangement) but replace
     // the display slots present in `redactedBySlot` with image-only pages built
-    // from the supplied flattened renders — so the redacted content is physically
+    // from the supplied flattened renders - so the redacted content is physically
     // gone, not merely covered. Non-redacted pages are copied losslessly. Temp
     // file + atomic rename. Returns true on success; fills *error otherwise.
     static bool saveRedacted(const QString& inputPath, const QString& outputPath,

@@ -26,7 +26,7 @@ class QPushButton;
 
 // Collects how to encrypt a document (AES-256): an optional open password and
 // per-recipient permissions (printing / copying / editing). At least a password
-// or one restriction is required. The dialog only gathers the choice — the
+// or one restriction is required. The dialog only gathers the choice - the
 // caller performs the encryption.
 class ProtectDialog : public QDialog {
     Q_OBJECT

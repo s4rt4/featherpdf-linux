@@ -1,4 +1,4 @@
-# Feather PDF — application target.
+# Feather PDF - application target.
 # Copyright (C) 2026 Feather PDF contributors. Licensed under GPLv3 (see LICENSE).
 
 qt_add_executable(feather-pdf
@@ -121,7 +121,7 @@ target_link_libraries(feather-pdf PRIVATE
 
 install(TARGETS feather-pdf RUNTIME DESTINATION bin)
 
-# Desktop integration — the .desktop file (app-id io.github.s4rt4.FeatherPDF) and
+# Desktop integration - the .desktop file (app-id io.github.s4rt4.FeatherPDF) and
 # the brand logo installed into the hicolor icon theme under that same id, so the
 # GNOME/Wayland shell shows the logo in the dash/dock and as the window icon.
 install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.desktop

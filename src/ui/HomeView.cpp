@@ -87,7 +87,7 @@ public:
         m_dir = new QLabel(m_fullDir, this);
         m_dir->setObjectName("CardDir");
         m_dir->setToolTip(path);
-        // Don't let the (possibly very long) path force the card wide — the labels
+        // Don't let the (possibly very long) path force the card wide - the labels
         // take whatever width the layout gives and elide to fit.
         for (QLabel* l : {m_name, m_dir})
             l->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);

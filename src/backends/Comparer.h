@@ -24,7 +24,7 @@
 class Comparer {
 public:
     // Compare `oldPath` (baseline) against `newPath` and write the diff to
-    // `outputPath`. Blocking and slow — run it off the UI thread. `*changedPages`
+    // `outputPath`. Blocking and slow - run it off the UI thread. `*changedPages`
     // (optional) receives how many pages differ. Returns true on success.
     static bool compare(const QString& oldPath, const QString& newPath, const QString& outputPath,
                         int* changedPages, QString* error);

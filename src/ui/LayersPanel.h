@@ -31,7 +31,7 @@ class QSortFilterProxyModel;
 
 // The Layers rail panel: lists the document's optional content groups (OCGs)
 // and their current visibility, via Poppler. The viewer renders through QtPdf,
-// which exposes no API to toggle OCGs, so this panel is read-only — the check
+// which exposes no API to toggle OCGs, so this panel is read-only - the check
 // state shows each layer's stored visibility but cannot be changed here.
 class LayersPanel : public QWidget {
     Q_OBJECT

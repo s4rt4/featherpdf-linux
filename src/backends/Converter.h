@@ -32,6 +32,6 @@ public:
     static bool imagesToPdf(const QStringList& images, const QString& outputPath, QString* error);
 
     // Convert one office document (docx/odt/xlsx/…) to `outputPath` via LibreOffice
-    // headless. Blocking — run it off the UI thread. Returns true on success.
+    // headless. Blocking - run it off the UI thread. Returns true on success.
     static bool officeToPdf(const QString& inputPath, const QString& outputPath, QString* error);
 };

@@ -53,7 +53,7 @@ CommandBar::CommandBar(QWidget* parent) : QWidget(parent) {
     connect(prev, &QToolButton::clicked, this, &CommandBar::prevPageRequested);
     row->addWidget(prev);
 
-    m_counter = new QLabel("— / —", this);
+    m_counter = new QLabel("- / -", this);
     m_counter->setObjectName("Counter");
     m_counter->setAlignment(Qt::AlignCenter);
     m_counter->setMinimumWidth(52);
@@ -74,7 +74,7 @@ CommandBar::CommandBar(QWidget* parent) : QWidget(parent) {
     connect(zoomOut, &QToolButton::clicked, this, &CommandBar::zoomOutRequested);
     row->addWidget(zoomOut);
 
-    m_zoom = new QLabel("—", this);
+    m_zoom = new QLabel("-", this);
     m_zoom->setObjectName("Zoom");
     m_zoom->setAlignment(Qt::AlignCenter);
     m_zoom->setMinimumWidth(46);
@@ -91,7 +91,7 @@ CommandBar::CommandBar(QWidget* parent) : QWidget(parent) {
 
     row->addStretch(1);
 
-    // 4. The one accent action — Share.
+    // 4. The one accent action - Share.
     m_share = new QPushButton(tr("Share"), this);
     m_share->setObjectName("Share");
     m_share->setCursor(Qt::PointingHandCursor);
@@ -153,7 +153,7 @@ void CommandBar::setDocumentLoaded(bool loaded) {
     for (auto* w : m_docScoped)
         w->setEnabled(loaded);
     if (!loaded) {
-        m_counter->setText("— / —");
-        m_zoom->setText("—");
+        m_counter->setText("- / -");
+        m_zoom->setText("-");
     }
 }

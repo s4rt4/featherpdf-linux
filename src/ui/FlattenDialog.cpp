@@ -55,7 +55,7 @@ FlattenDialog::FlattenDialog(QWidget* parent) : QDialog(parent) {
     root->addWidget(hint);
     root->addSpacing(6);
 
-    m_lossless = new QRadioButton(tr("Lossless — bake in, keep selectable text"), this);
+    m_lossless = new QRadioButton(tr("Lossless - bake in, keep selectable text"), this);
     m_lossless->setChecked(true);
     root->addWidget(m_lossless);
     auto* l1 = new QLabel(tr("Annotations and filled fields become part of the page; text stays "
@@ -66,7 +66,7 @@ FlattenDialog::FlattenDialog(QWidget* parent) : QDialog(parent) {
     l1->setContentsMargins(26, 0, 0, 6);
     root->addWidget(l1);
 
-    m_raster = new QRadioButton(tr("Raster — render every page to an image"), this);
+    m_raster = new QRadioButton(tr("Raster - render every page to an image"), this);
     root->addWidget(m_raster);
     auto* l2 = new QLabel(tr("Guarantees a flat result but loses selectable text."), this);
     l2->setObjectName(QStringLiteral("Hint"));

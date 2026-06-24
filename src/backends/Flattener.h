@@ -18,7 +18,7 @@
 
 #include <QString>
 
-// Flattens a PDF — making annotations and form fields non-interactive — in two
+// Flattens a PDF - making annotations and form fields non-interactive - in two
 // ways the caller can choose between.
 class Flattener {
 public:

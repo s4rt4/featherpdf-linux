@@ -27,7 +27,7 @@ class QToolButton;
 // The right Tools pane (ui-guidelines §8 / mockup .tools): a vertical list of
 // tool rows, each an accent-tinted icon chip + label, some expandable (chevron).
 // Default tools: Export · Create · Edit · Comment · Combine · Organize · Redact ·
-// Sign. No upsell — the footer is "Customize tools". Each tool's own panel
+// Sign. No upsell - the footer is "Customize tools". Each tool's own panel
 // replaces this list in a later increment; for now selecting a row announces it.
 class ToolsPane : public QWidget {
     Q_OBJECT

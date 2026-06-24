@@ -212,7 +212,7 @@ public:
             p->fillRect(thumb, pal.sunken);
         }
 
-        // Border — 2px accent for the current page, hairline otherwise.
+        // Border - 2px accent for the current page, hairline otherwise.
         QPen pen(current ? pal.accent : pal.hairline, current ? 2 : 1);
         p->setPen(pen);
         p->setBrush(Qt::NoBrush);
@@ -237,7 +237,7 @@ private:
 };
 
 // A list view that lets pages be dragged to reorder. The move is not performed
-// in the model — it is announced (moveRequested) so the façade can do it as an
+// in the model - it is announced (moveRequested) so the façade can do it as an
 // undoable command and propagate the new arrangement back.
 class ThumbnailListView : public QListView {
     Q_OBJECT

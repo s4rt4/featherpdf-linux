@@ -24,7 +24,7 @@ class QPushButton;
 
 // Collects an ordered list of PDF files to merge into one. The list is
 // reorderable (drag or the up/down buttons); files are combined top to bottom.
-// The dialog only gathers the choice — the caller runs the merge and opens the
+// The dialog only gathers the choice - the caller runs the merge and opens the
 // result.
 class CombineDialog : public QDialog {
     Q_OBJECT

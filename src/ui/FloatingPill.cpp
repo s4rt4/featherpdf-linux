@@ -38,7 +38,7 @@ FloatingPill::FloatingPill(QWidget* viewportParent) : QWidget(viewportParent) {
     connect(prev, &QToolButton::clicked, this, &FloatingPill::prevPageRequested);
     row->addWidget(prev);
 
-    m_page = new QLabel("— / —", this);
+    m_page = new QLabel("- / -", this);
     m_page->setObjectName("PillLabel");
     m_page->setAlignment(Qt::AlignCenter);
     row->addWidget(m_page);
@@ -53,7 +53,7 @@ FloatingPill::FloatingPill(QWidget* viewportParent) : QWidget(viewportParent) {
     connect(zoomOut, &QToolButton::clicked, this, &FloatingPill::zoomOutRequested);
     row->addWidget(zoomOut);
 
-    m_zoom = new QLabel("—", this);
+    m_zoom = new QLabel("-", this);
     m_zoom->setObjectName("PillLabel");
     m_zoom->setAlignment(Qt::AlignCenter);
     row->addWidget(m_zoom);
@@ -62,7 +62,7 @@ FloatingPill::FloatingPill(QWidget* viewportParent) : QWidget(viewportParent) {
     connect(zoomIn, &QToolButton::clicked, this, &FloatingPill::zoomInRequested);
     row->addWidget(zoomIn);
 
-    // The float shadow (ui-guidelines §4) — the pill is an overlay layer.
+    // The float shadow (ui-guidelines §4) - the pill is an overlay layer.
     auto* shadow = new QGraphicsDropShadowEffect(this);
     shadow->setBlurRadius(20);
     shadow->setOffset(0, 2);

@@ -30,7 +30,7 @@ public:
     static QStringList languages();   // installed Tesseract language codes (e.g. "eng")
 
     // OCR `inputPath` and write `outputPath` with the text layer added, using
-    // `language` (e.g. "eng" or "eng+ind"). Blocking and slow — run it off the
+    // `language` (e.g. "eng" or "eng+ind"). Blocking and slow - run it off the
     // UI thread. Returns true on success; on failure fills *error.
     static bool addTextLayer(const QString& inputPath, const QString& outputPath,
                              const QString& language, QString* error);

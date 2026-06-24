@@ -66,7 +66,7 @@ QVector<AnnotationEntry> scanAnnotations(const QString& path) {
             if (!ann)
                 continue;
             const Poppler::Annotation::SubType t = ann->subType();
-            // Skip links and form widgets — they're navigation/structure, not
+            // Skip links and form widgets - they're navigation/structure, not
             // the user-authored markup this panel is about.
             if (t == Poppler::Annotation::ALink || t == Poppler::Annotation::AWidget)
                 continue;

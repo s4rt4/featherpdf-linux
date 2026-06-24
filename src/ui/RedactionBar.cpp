@@ -84,7 +84,7 @@ RedactionBar::RedactionBar(QWidget* parent) : QWidget(parent) {
 
 void RedactionBar::setCount(int count) {
     m_label->setText(count == 0
-                         ? tr("Redaction mode — drag over anything you want permanently removed.")
+                         ? tr("Redaction mode - drag over anything you want permanently removed.")
                          : tr("%n area(s) marked for removal. Applying flattens those pages.", "",
                               count));
     m_apply->setEnabled(count > 0);

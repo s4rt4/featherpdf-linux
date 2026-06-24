@@ -22,7 +22,7 @@
 class QLabel;
 class QToolButton;
 
-// The floating page/zoom pill (ui-guidelines §1, §5.6 / mockup .pill) — the
+// The floating page/zoom pill (ui-guidelines §1, §5.6 / mockup .pill) - the
 // signature overlay control. It sits bottom-center over the viewport: ◀ page ▶,
 // then zoom out / % / zoom in, on a rounded `surface` pill with the float
 // shadow. Parented to the viewport widget; it keeps itself centered as that

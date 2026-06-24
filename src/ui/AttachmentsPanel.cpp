@@ -115,7 +115,7 @@ void AttachmentsPanel::rebuild() {
         item->setText(size.isEmpty() ? name : tr("%1\n%2").arg(name, size));
         item->setIcon(Theme::instance().icon(QStringLiteral("attachment"),
                                               Theme::instance().palette().dim));
-        QString tip = tr("%1 — double-click to save").arg(name);
+        QString tip = tr("%1 - double-click to save").arg(name);
         if (!f->description().isEmpty())
             tip += QStringLiteral("\n") + f->description();
         item->setToolTip(tip);

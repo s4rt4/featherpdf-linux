@@ -23,7 +23,7 @@
 class QPdfDocument;
 
 // FeatherDocument is the single façade over the PDF backends. Modules talk to
-// this object, never to a backend directly — so page indexing and (later)
+// this object, never to a backend directly - so page indexing and (later)
 // coordinate conversion live in exactly one place. For M0 it wraps the QtPdf /
 // PDFium document used for rendering; Poppler (semantic layer) and QPDF
 // (lossless writer) are folded in behind this same interface in later milestones.
@@ -54,7 +54,7 @@ public:
     // The password the file opened with (empty for an unencrypted document).
     QString password() const { return m_password; }
     // True if this document is encrypted (set by the opener after a successful
-    // load — QtPdf alone can't report this reliably, QPDF confirms it).
+    // load - QtPdf alone can't report this reliably, QPDF confirms it).
     bool isEncrypted() const { return m_encrypted; }
     void setEncrypted(bool encrypted) { m_encrypted = encrypted; }
     QString fileName() const;       // base name, e.g. "Annual-Report.pdf"
@@ -64,7 +64,7 @@ public:
 
     // The rendering backend handle. The viewport (QtPdf) renders from this.
     // This accessor is the *one* sanctioned exception to "modules never touch a
-    // backend" — only the render layer may use it.
+    // backend" - only the render layer may use it.
     QPdfDocument* pdf() const { return m_pdf; }
 
     // Human-readable message for a load failure, ready for a dialog/toast.

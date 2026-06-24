@@ -31,7 +31,7 @@
 
 namespace {
 
-// Blend `over` at `alpha` (0..1) on top of `base` — used to bake the
+// Blend `over` at `alpha` (0..1) on top of `base` - used to bake the
 // "color-mix(accent 12%, transparent)" soft fills the mockup uses for selected
 // rows into an opaque token, so they look right on any surface.
 QColor blend(const QColor& base, const QColor& over, double alpha) {
@@ -87,7 +87,7 @@ Theme::Palette Theme::paletteFor(Mode mode) {
         p.destructive = QColor(0xFF, 0x7B, 0x7B);
         p.success = QColor(0x7B, 0xE0, 0xB0);
     }
-    // 12% accent over the surface — the soft selected-row fill (mockup .rbtn.on / .tool .ic).
+    // 12% accent over the surface - the soft selected-row fill (mockup .rbtn.on / .tool .ic).
     p.accentTint = blend(p.surface, p.accent, 0.12);
     return p;
 }
@@ -170,7 +170,7 @@ QString Theme::styleSheet() const {
     qss += QStringLiteral(
                "QMainWindow, QWidget#Shell { background:%1; }"
                "QWidget { color:%2; font-size:13px; }"
-               // Dialogs are surface cards — set deterministically so dark mode
+               // Dialogs are surface cards - set deterministically so dark mode
                // doesn't fall back to a mismatched default window colour.
                "QDialog { background:%3; }"
                // Small uppercase section header used inside dialogs.
@@ -180,7 +180,7 @@ QString Theme::styleSheet() const {
                " border-radius:6px; padding:4px 7px; }")
                .arg(css(p.canvas), css(p.text), css(p.surface), css(p.hairline), css(p.dim));
 
-    // Menu bar — flat surface, hairline underline, soft hover (mockup .menu).
+    // Menu bar - flat surface, hairline underline, soft hover (mockup .menu).
     qss += QStringLiteral(
                "QMenuBar { background:%1; border-bottom:1px solid %2; padding:2px 6px; }"
                "QMenuBar::item { background:transparent; color:%3; padding:3px 9px;"
@@ -188,7 +188,7 @@ QString Theme::styleSheet() const {
                "QMenuBar::item:selected { background:%4; color:%5; }")
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.canvas), css(p.text));
 
-    // Menus / popovers — surface card, hairline, accent-tint selection.
+    // Menus / popovers - surface card, hairline, accent-tint selection.
     qss += QStringLiteral(
                "QMenu { background:%1; border:1px solid %2; border-radius:12px; padding:6px; }"
                "QMenu::item { padding:6px 28px 6px 12px; border-radius:8px; color:%3; }"
@@ -198,7 +198,7 @@ QString Theme::styleSheet() const {
                .arg(css(p.surface), css(p.hairline), css(p.text), css(p.accentTint),
                     css(p.text), css(p.dim));
 
-    // Slim, calm scrollbars — chrome recedes (ui-guidelines §1).
+    // Slim, calm scrollbars - chrome recedes (ui-guidelines §1).
     qss += QStringLiteral(
                "QScrollBar:vertical { background:transparent; width:12px; margin:0; }"
                "QScrollBar::handle:vertical { background:%1; border-radius:5px; min-height:32px;"
@@ -214,7 +214,7 @@ QString Theme::styleSheet() const {
 
     // ── Shell regions (object-name scoped) ───────────────────────────────────
 
-    // Command toolbar — surface, hairline underline, connects to the active tab.
+    // Command toolbar - surface, hairline underline, connects to the active tab.
     qss += QStringLiteral(
                "#CommandBar { background:%1; border-bottom:1px solid %2; }"
                "#CommandBar QToolButton { background:transparent; border:none;"
@@ -252,7 +252,7 @@ QString Theme::styleSheet() const {
                " QPushButton#GhostBtn:hover:enabled { background:%6; }"
                "QDialogButtonBox QPushButton:disabled, QPushButton#GhostBtn:disabled {"
                " color:%7; }"
-               // The accent-filled primary — listed AFTER and with an explicit
+               // The accent-filled primary - listed AFTER and with an explicit
                // button-box variant so it always beats the neutral rule above.
                "QPushButton#Share, QDialogButtonBox QPushButton#Share { background:%1;"
                " color:#FFFFFF; border:none; border-radius:8px; padding:7px 16px;"
@@ -262,7 +262,7 @@ QString Theme::styleSheet() const {
                .arg(css(p.accent), css(p.accentHover), css(p.surface), css(ctl), css(p.text),
                     css(p.canvas), css(p.dim));
 
-    // Left navigation rail — surface with hairline edge; active button is accent.
+    // Left navigation rail - surface with hairline edge; active button is accent.
     qss += QStringLiteral(
                "#NavigationRail { background:%1; border-right:1px solid %2; }"
                "#NavigationRail QToolButton { background:transparent; border:none;"
@@ -271,7 +271,7 @@ QString Theme::styleSheet() const {
                "#NavigationRail QToolButton:checked { background:%5; }")
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.canvas), css(p.accentTint));
 
-    // Right Tools pane — surface with hairline edge.
+    // Right Tools pane - surface with hairline edge.
     qss += QStringLiteral(
                "#ToolsPane { background:%1; border-left:1px solid %2; }"
                "#ToolsPane QLabel#PaneHead { color:%3; font-size:11px; font-weight:700; }"
@@ -286,7 +286,7 @@ QString Theme::styleSheet() const {
                "#ToolsPane QToolButton#ToolsCollapse:hover { background:%5; }")
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.text), css(p.canvas));
 
-    // Find bar — slim strip beneath the command toolbar.
+    // Find bar - slim strip beneath the command toolbar.
     qss += QStringLiteral(
                "#FindBar { background:%1; border-bottom:1px solid %2; }"
                "#FindBar QToolButton { background:transparent; border:none; border-radius:7px; }"
@@ -319,7 +319,7 @@ QString Theme::styleSheet() const {
                .arg(css(p.surface), css(p.hairline), css(p.dim), css(p.canvas))
                .arg(css(p.text), css(p.accentTint), css(p.accent));
 
-    // Annotations / Attachments list panels — soft rows with a hairline divider.
+    // Annotations / Attachments list panels - soft rows with a hairline divider.
     qss += QStringLiteral(
                "#AnnotationsList, #AttachmentsList { background:transparent; outline:0; }"
                "#AnnotationsList::item, #AttachmentsList::item { padding:8px 12px; color:%1;"
@@ -329,7 +329,7 @@ QString Theme::styleSheet() const {
                " background:%4; color:%1; }")
                .arg(css(p.text), css(p.hairline), css(p.canvas), css(p.accentTint));
 
-    // Home start screen — a left sidebar (brand + actions) over a canvas main
+    // Home start screen - a left sidebar (brand + actions) over a canvas main
     // area of recent-file cards.
     qss += QStringLiteral(
                "#HomeView { background:%1; }"

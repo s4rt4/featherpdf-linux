@@ -28,13 +28,13 @@ class QPdfDocument;
 class QPdfPageRenderer;
 class QPdfSearchModel;
 
-// The custom continuous page view — the render pipeline (saran notes; replaces
+// The custom continuous page view - the render pipeline (saran notes; replaces
 // QPdfView's internals).
 //
 // Why custom: QPdfView lays out *every* page synchronously on setDocument, which
 // freezes the UI (and the compositor) on a 4000-page document. PageView instead
-// computes the whole layout *arithmetically* from cached page sizes — opening is
-// instant regardless of page count — and renders only on-screen pages, off the
+// computes the whole layout *arithmetically* from cached page sizes - opening is
+// instant regardless of page count - and renders only on-screen pages, off the
 // UI thread (QPdfPageRenderer), into an LRU cache. Scrolling never blocks.
 //
 // It is a QAbstractScrollArea: geometry is points × zoom, the active page is
@@ -84,7 +84,7 @@ public:
 
     // Redaction: drag rectangles over content to mark it for removal. Marks are
     // stored as fractions of each DISPLAYED page (so rotation needs no special
-    // case — the apply step renders the page as shown and paints the fractions).
+    // case - the apply step renders the page as shown and paints the fractions).
     void setRedactionMode(bool on);
     bool redactionMode() const { return m_redactMode; }
     // slot → normalized rects (each in [0,1] of the displayed page).
@@ -92,7 +92,7 @@ public:
     int redactionCount() const; // total rectangles across all pages
     void clearRedactions();
 
-    // Annotation authoring — additive marks saved as real PDF annotations. The
+    // Annotation authoring - additive marks saved as real PDF annotations. The
     // Highlight tool drags rects; the Note tool clicks to drop a note (the click
     // emits noteRequested so the app can collect text, then calls addNote).
     // Marks are normalized to the displayed page.
@@ -132,7 +132,7 @@ protected:
     bool eventFilter(QObject* obj, QEvent* event) override; // viewport mouse in redact mode
 
 private:
-    // Layout (all in logical px unless noted). Pages are grouped into rows — one
+    // Layout (all in logical px unless noted). Pages are grouped into rows - one
     // slot per row for single/continuous, two per row for facing. Sizes are the
     // *effective* size, with width/height swapped for 90°/270° rotation. Indices
     // below are DISPLAY SLOTS; the page they render is m_order[slot].

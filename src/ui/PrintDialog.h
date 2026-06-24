@@ -30,8 +30,8 @@ class QSpinBox;
 class QWidget;
 class QPdfDocument;
 
-// A custom print dialog. Unlike Qt's native QPrintDialog — which enumerates CUPS
-// printers synchronously on the UI thread as it opens (freezing the app) — this
+// A custom print dialog. Unlike Qt's native QPrintDialog - which enumerates CUPS
+// printers synchronously on the UI thread as it opens (freezing the app) - this
 // opens instantly: "Print to File (PDF)" is available immediately and system
 // printers are discovered on a background thread and added when ready. It also
 // shows a live preview of exactly what will print (the current edit arrangement:

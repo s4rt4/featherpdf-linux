@@ -27,7 +27,7 @@ class QPushButton;
 // The full in-app documentation, shown as its own workspace tab: a table-of-
 // contents sidebar (grouped topics) beside the article for the selected topic.
 // Every topic covers what it is, its purpose, how it works, how to use it, and
-// troubleshooting — in English and Indonesian (toggle at the top of the TOC).
+// troubleshooting - in English and Indonesian (toggle at the top of the TOC).
 class DocsView : public QWidget {
     Q_OBJECT
 

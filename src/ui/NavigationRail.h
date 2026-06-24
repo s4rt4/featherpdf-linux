@@ -24,7 +24,7 @@ class QToolButton;
 class QButtonGroup;
 
 // The left navigation rail (ui-guidelines §5.5 / mockup .rail): a 48px column of
-// icon-only toggles — Thumbnails · Outline · Annotations · Attachments · Layers.
+// icon-only toggles - Thumbnails · Outline · Annotations · Attachments · Layers.
 // One panel at a time; clicking the active one again collapses it. The panels
 // themselves arrive in a later increment; for now the rail owns the selection
 // state and announces it.

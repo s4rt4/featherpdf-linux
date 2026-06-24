@@ -33,7 +33,7 @@ FormFiller::Kind kindOf(Poppler::FormField* f) {
         switch (static_cast<Poppler::FormFieldButton*>(f)->buttonType()) {
         case Poppler::FormFieldButton::CheckBox: return FormFiller::Kind::CheckBox;
         case Poppler::FormFieldButton::Radio: return FormFiller::Kind::Radio;
-        default: return FormFiller::Kind::Unsupported; // push button — nothing to fill
+        default: return FormFiller::Kind::Unsupported; // push button - nothing to fill
         }
     case Poppler::FormField::FormChoice:
         return static_cast<Poppler::FormFieldChoice*>(f)->choiceType() ==

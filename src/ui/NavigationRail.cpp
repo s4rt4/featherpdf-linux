@@ -43,7 +43,7 @@ NavigationRail::NavigationRail(QWidget* parent) : QWidget(parent) {
     col->addWidget(addButton(Panel::Layers, "layers", tr("Layers")), 0, Qt::AlignHCenter);
     col->addWidget(addButton(Panel::Forms, "form", tr("Forms")), 0, Qt::AlignHCenter);
 
-    // Documentation — a plain action (not a panel) that opens a Docs tab.
+    // Documentation - a plain action (not a panel) that opens a Docs tab.
     auto* docsBtn = new QToolButton(this);
     docsBtn->setToolTip(tr("Documentation"));
     docsBtn->setAccessibleName(tr("Documentation"));

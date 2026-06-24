@@ -36,7 +36,7 @@ bool PdfEditor::saveArrangement(const QString& inputPath, const QString& outputP
                                 QString* error) {
     const bool inPlace =
         QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
-    // Never write over the file we are reading — go through a sibling temp file.
+    // Never write over the file we are reading - go through a sibling temp file.
     const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
 
     try {
@@ -96,7 +96,7 @@ bool PdfEditor::combine(const QStringList& inputPaths, const QString& outputPath
         return false;
     }
 
-    // Always write to a sibling temp file, then rename over the target — this
+    // Always write to a sibling temp file, then rename over the target - this
     // keeps every input intact during the (lazy) read/write even when the output
     // path equals one of the inputs.
     const QString target = outputPath + QStringLiteral(".feather-tmp");

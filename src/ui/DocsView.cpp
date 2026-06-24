@@ -71,7 +71,7 @@ QList<Group> buildDocs() {
               "offline; OCR, conversion, and signing rely on external tools described in their "
               "sections.</p>"),
          sect("id",
-              "<p>Feather PDF adalah alat PDF native dan lengkap untuk Linux — ringan, ditenagai "
+              "<p>Feather PDF adalah alat PDF native dan lengkap untuk Linux - ringan, ditenagai "
               "pustaka matang (PDFium, Poppler, QPDF, Tesseract, LibreOffice).</p>",
               "<p>Satu aplikasi untuk membaca, menata, mengamankan, menganotasi, mengisi, "
               "menandatangani, mengenali teks, dan membuat PDF tanpa web engine.</p>",
@@ -96,7 +96,7 @@ QList<Group> buildDocs() {
               "buttons; <b>View ▸ Fit Width/Page</b>.</li><li><b>View ▸ Page Layout</b>: Single, "
               "Continuous, or Two Pages.</li><li><b>F11</b> toggles immersive reading; click the "
               "page counter to go to a page.</li></ul>",
-              "<p>If a file won't open, it may be damaged or password-protected — you'll be prompted "
+              "<p>If a file won't open, it may be damaged or password-protected - you'll be prompted "
               "for a password if it's encrypted (see Security).</p>"),
          sect("id",
               "<p>Penampil me-render halaman dengan PDFium dan menata tata letaknya seketika berapa "
@@ -109,7 +109,7 @@ QList<Group> buildDocs() {
               "Width/Page</b>.</li><li><b>View ▸ Page Layout</b>: Single, Continuous, atau Two "
               "Pages.</li><li><b>F11</b> mode baca imersif; klik penghitung halaman untuk lompat ke "
               "halaman.</li></ul>",
-              "<p>Jika berkas tak terbuka, mungkin rusak atau terproteksi password — kamu akan "
+              "<p>Jika berkas tak terbuka, mungkin rusak atau terproteksi password - kamu akan "
               "diminta password bila terenkripsi (lihat Keamanan).</p>")});
     start.topics.append(
         {"search", "Search", "Pencarian",
@@ -119,14 +119,14 @@ QList<Group> buildDocs() {
               "<ul><li>Press <b>Ctrl+F</b> (or the search icon in the tab strip).</li><li>Type your "
               "query; use <b>Enter</b>/<b>Shift+Enter</b> for next/previous. <b>Esc</b> closes "
               "it.</li></ul>",
-              "<p>If nothing is found in a scanned PDF, it has no text layer — run <b>Recognize Text "
+              "<p>If nothing is found in a scanned PDF, it has no text layer - run <b>Recognize Text "
               "(OCR)</b> first.</p>"),
          sect("id", "<p>Pencarian teks penuh di seluruh dokumen.</p>",
               "<p>Temukan setiap kemunculan kata/frasa dan lompat antar hasil.</p>",
               "<p>Hasil ditemukan dengan model teks Poppler dan disorot di halaman.</p>",
               "<ul><li>Tekan <b>Ctrl+F</b> (atau ikon cari di tab strip).</li><li>Ketik kueri; "
               "<b>Enter</b>/<b>Shift+Enter</b> untuk berikut/sebelumnya. <b>Esc</b> menutup.</li></ul>",
-              "<p>Jika tak ada hasil pada PDF hasil scan, berkas itu tak punya lapisan teks — "
+              "<p>Jika tak ada hasil pada PDF hasil scan, berkas itu tak punya lapisan teks - "
               "jalankan <b>Recognize Text (OCR)</b> dulu.</p>")});
     g.append(start);
 
@@ -156,11 +156,11 @@ QList<Group> buildDocs() {
               "<p>Jump to chapters and sections.</p>",
               "<p>Read from the PDF's bookmark structure (Poppler).</p>",
               "<ul><li>Open the <b>Outline</b> rail icon and click an entry.</li></ul>",
-              "<p>An empty outline means the PDF has no bookmarks — not all files include them.</p>"),
+              "<p>An empty outline means the PDF has no bookmarks - not all files include them.</p>"),
          sect("id", "<p>Pohon bookmark/heading dokumen.</p>",
               "<p>Lompat ke bab dan bagian.</p>", "<p>Dibaca dari struktur bookmark PDF (Poppler).</p>",
               "<ul><li>Buka ikon rail <b>Outline</b> lalu klik entri.</li></ul>",
-              "<p>Outline kosong berarti PDF tak punya bookmark — tak semua berkas menyertakannya.</p>")});
+              "<p>Outline kosong berarti PDF tak punya bookmark - tak semua berkas menyertakannya.</p>")});
     panels.topics.append(
         {"attachments", "Attachments", "Attachments",
          sect("en", "<p>Files embedded inside the PDF.</p>",
@@ -217,13 +217,13 @@ QList<Group> buildDocs() {
          sect("en", "<p>Merge several PDFs into one.</p>",
               "<p>Assemble multiple documents in any order.</p>",
               "<p>QPDF copies the pages losslessly (foreign-object copy) into a single file.</p>",
-              "<ul><li><b>Tools ▸ Combine</b>. Add files, drag to reorder, then Combine — the result "
+              "<ul><li><b>Tools ▸ Combine</b>. Add files, drag to reorder, then Combine - the result "
               "opens in a new tab.</li></ul>",
               "<p>Need at least two files. A file that fails to open is skipped.</p>"),
          sect("id", "<p>Gabungkan beberapa PDF jadi satu.</p>",
               "<p>Rakit beberapa dokumen dalam urutan bebas.</p>",
               "<p>QPDF menyalin halaman secara lossless (salin objek asing) ke satu berkas.</p>",
-              "<ul><li><b>Tools ▸ Combine</b>. Tambah berkas, seret untuk mengurutkan, lalu Combine — "
+              "<ul><li><b>Tools ▸ Combine</b>. Tambah berkas, seret untuk mengurutkan, lalu Combine - "
               "hasil terbuka di tab baru.</li></ul>",
               "<p>Butuh minimal dua berkas. Berkas yang gagal dibuka dilewati.</p>")});
     editing.topics.append(
@@ -274,7 +274,7 @@ QList<Group> buildDocs() {
               "separate owner password so the limit is enforced.</p>",
               "<ul><li><b>File ▸ Protect with Password</b>. Set an open password and/or untick "
               "permissions, then save the protected copy.</li></ul>",
-              "<p>The password can't be recovered — keep it safe. The encrypted copy can be reopened "
+              "<p>The password can't be recovered - keep it safe. The encrypted copy can be reopened "
               "in Feather PDF by entering the password.</p>"),
          sect("id", "<p>Enkripsi dokumen dan batasi yang boleh dilakukan penerima.</p>",
               "<p>Wajibkan password untuk membuka, dan/atau batasi cetak, salin, dan edit.</p>",
@@ -282,7 +282,7 @@ QList<Group> buildDocs() {
               "password terpisah agar batasan berlaku.</p>",
               "<ul><li><b>File ▸ Protect with Password</b>. Setel password buka dan/atau hilangkan "
               "centang izin, lalu simpan salinan terproteksi.</li></ul>",
-              "<p>Password tak bisa dipulihkan — simpan baik-baik. Salinan terenkripsi bisa dibuka "
+              "<p>Password tak bisa dipulihkan - simpan baik-baik. Salinan terenkripsi bisa dibuka "
               "lagi di Feather PDF dengan memasukkan password.</p>")});
     security.topics.append(
         {"remove-password", "Remove password", "Hapus password",
@@ -380,7 +380,7 @@ QList<Group> buildDocs() {
               "<p>Add a hidden text layer over page images without changing how they look.</p>",
               "<p>Each page is rendered to an image, Tesseract finds the words and their boxes, and "
               "the text is written invisibly at those positions via QPDF.</p>",
-              "<ul><li><b>Document ▸ Recognize Text (OCR)</b>. Pick a language, then save — the "
+              "<ul><li><b>Document ▸ Recognize Text (OCR)</b>. Pick a language, then save - the "
               "result opens with searchable text.</li></ul>",
               "<p>OCR needs Tesseract installed (with the language packs). It can be slow on long "
               "documents; accuracy depends on scan quality.</p>"),
@@ -389,7 +389,7 @@ QList<Group> buildDocs() {
               "tampilannya.</p>",
               "<p>Tiap halaman di-render jadi gambar, Tesseract menemukan kata dan kotaknya, lalu "
               "teks ditulis tak terlihat di posisi itu via QPDF.</p>",
-              "<ul><li><b>Document ▸ Recognize Text (OCR)</b>. Pilih bahasa, lalu simpan — hasilnya "
+              "<ul><li><b>Document ▸ Recognize Text (OCR)</b>. Pilih bahasa, lalu simpan - hasilnya "
               "terbuka dengan teks yang bisa dicari.</li></ul>",
               "<p>OCR butuh Tesseract terpasang (beserta paket bahasa). Bisa lambat pada dokumen "
               "panjang; akurasi tergantung kualitas scan.</p>")});
@@ -478,7 +478,7 @@ DocsView::DocsView(QWidget* parent) : QWidget(parent) {
         if (!it)
             return;
         const QString id = it->data(0, Qt::UserRole).toString();
-        if (id.isEmpty()) { // a group header — open it
+        if (id.isEmpty()) { // a group header - open it
             it->setExpanded(true);
             return;
         }
