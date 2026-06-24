@@ -23,12 +23,14 @@
 #include "ui/AttachmentsPanel.h"
 #include "ui/CombineDialog.h"
 #include "ui/CommandBar.h"
+#include "ui/GoToPageDialog.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
 #include "ui/HomeView.h"
 #include "ui/LayersPanel.h"
 #include "ui/NavigationRail.h"
 #include "ui/OutlinePanel.h"
+#include "ui/PasswordDialog.h"
 #include "ui/PrintDialog.h"
 #include "ui/ProtectDialog.h"
 #include "ui/TabStrip.h"
@@ -52,8 +54,6 @@
 #include <QFormLayout>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
-#include <QInputDialog>
-#include <QLineEdit>
 #include <QLocale>
 #include <QPainter>
 #include <QPdfDocument>
@@ -488,12 +488,9 @@ void MainWindow::wireSignals() {
         if (!hasActiveDoc())
             return;
         const int n = m_doc->pageCount();
-        bool ok = false;
-        const int page = QInputDialog::getInt(this, tr("Go to page"),
-                                              tr("Page (1–%1):").arg(n),
-                                              m_viewport->currentPage() + 1, 1, n, 1, &ok);
-        if (ok)
-            m_viewport->goToPage(page - 1);
+        GoToPageDialog dialog(n, m_viewport->currentPage() + 1, this);
+        if (dialog.exec() == QDialog::Accepted)
+            m_viewport->goToPage(dialog.selectedPage() - 1);
     });
 
     // Floating pill.
@@ -899,23 +896,17 @@ bool MainWindow::openPath(const QString& path) {
     };
     bool cancelled = false;
     if (needsPassword(result) && PdfEditor::isPasswordProtected(absolute)) {
-        bool firstTry = true;
+        PasswordDialog dialog(QFileInfo(absolute).fileName(), this);
         while (needsPassword(result)) {
-            bool ok = false;
-            const QString prompt =
-                firstTry ? tr("“%1” is password-protected. Enter its password:")
-                               .arg(QFileInfo(absolute).fileName())
-                         : tr("Incorrect password. Try again:");
-            const QString password = QInputDialog::getText(this, tr("Password required"), prompt,
-                                                           QLineEdit::Password, QString(), &ok);
-            if (!ok) {
+            if (dialog.exec() != QDialog::Accepted) {
                 cancelled = true;
                 break;
             }
-            firstTry = false;
             QApplication::setOverrideCursor(Qt::WaitCursor);
-            result = doc->load(absolute, password);
+            result = doc->load(absolute, dialog.password());
             QApplication::restoreOverrideCursor();
+            if (needsPassword(result))
+                dialog.setError(tr("Incorrect password. Try again."));
         }
     }
 

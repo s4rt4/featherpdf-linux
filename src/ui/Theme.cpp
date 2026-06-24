@@ -17,8 +17,11 @@
 #include "ui/Theme.h"
 
 #include <QApplication>
+#include <QDir>
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QHash>
+#include <QStandardPaths>
 #include <QPainter>
 #include <QPixmap>
 #include <QScreen>
@@ -142,6 +145,9 @@ QString Theme::styleSheet() const {
     qss += QStringLiteral(
                "QMainWindow, QWidget#Shell { background:%1; }"
                "QWidget { color:%2; font-size:13px; }"
+               // Dialogs are surface cards — set deterministically so dark mode
+               // doesn't fall back to a mismatched default window colour.
+               "QDialog { background:%3; }"
                "QToolTip { background:%3; color:%2; border:1px solid %4;"
                " border-radius:6px; padding:4px 7px; }")
                .arg(css(p.canvas), css(p.text), css(p.surface), css(p.hairline));
@@ -203,12 +209,30 @@ QString Theme::styleSheet() const {
                           " background:%1; border:none; }")
                .arg(css(p.hairline));
 
-    // The single accent-filled action — Share (ui-guidelines §7).
+    // Button hierarchy (ui-guidelines §7). The prominent action is accent-filled
+    // (#Share / #HomePrimary); every other dialog button is a plain neutral
+    // (white-on-light) button with a quiet border. Id selectors keep the primary
+    // accent even inside a QDialogButtonBox. One subtle control outline (`ctl`).
+    QColor ctl = p.text;
+    ctl.setAlpha(46);
     qss += QStringLiteral(
-               "QPushButton#Share { background:%1; color:#FFFFFF; border:none;"
-               " border-radius:8px; padding:7px 15px; font-weight:600; }"
-               "QPushButton#Share:hover { background:%2; }")
-               .arg(css(p.accent), css(p.accentHover));
+               // Neutral/secondary buttons: dialog button boxes + opt-in #GhostBtn.
+               "QDialogButtonBox QPushButton, QPushButton#GhostBtn { background:%3;"
+               " border:1px solid %4; border-radius:8px; color:%5; padding:7px 16px;"
+               " min-width:64px; }"
+               "QDialogButtonBox QPushButton:hover:enabled,"
+               " QPushButton#GhostBtn:hover:enabled { background:%6; }"
+               "QDialogButtonBox QPushButton:disabled, QPushButton#GhostBtn:disabled {"
+               " color:%7; }"
+               // The accent-filled primary — listed AFTER and with an explicit
+               // button-box variant so it always beats the neutral rule above.
+               "QPushButton#Share, QDialogButtonBox QPushButton#Share { background:%1;"
+               " color:#FFFFFF; border:none; border-radius:8px; padding:7px 16px;"
+               " min-width:64px; font-weight:600; }"
+               "QPushButton#Share:hover, QDialogButtonBox QPushButton#Share:hover {"
+               " background:%2; }")
+               .arg(css(p.accent), css(p.accentHover), css(p.surface), css(ctl), css(p.text),
+                    css(p.canvas), css(p.dim));
 
     // Left navigation rail — surface with hairline edge; active button is accent.
     qss += QStringLiteral(
@@ -322,6 +346,21 @@ QIcon Theme::icon(const QString& name, QColor color) const {
     QIcon ic(pm);
     cache.insert(key, ic);
     return ic;
+}
+
+QString Theme::symbolicIconPath(const QString& name, QColor color) const {
+    if (!color.isValid())
+        color = m_palette.dim;
+    const QString dir =
+        QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/ctl-icons";
+    QDir().mkpath(dir);
+    const QString path = dir + '/' + name + '-' + color.name(QColor::HexArgb).mid(1) + ".png";
+    if (!QFileInfo::exists(path)) {
+        const qreal dpr = qApp ? qApp->devicePixelRatio() : 1.0;
+        const QPixmap pm = icon(name, color).pixmap(QSize(28, 28) * dpr);
+        pm.save(path, "PNG");
+    }
+    return path;
 }
 
 QPixmap Theme::brandLogo(int size) const {

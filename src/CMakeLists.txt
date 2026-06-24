@@ -40,6 +40,10 @@ qt_add_executable(feather-pdf
     ui/CombineDialog.h
     ui/ProtectDialog.cpp
     ui/ProtectDialog.h
+    ui/PasswordDialog.cpp
+    ui/PasswordDialog.h
+    ui/GoToPageDialog.cpp
+    ui/GoToPageDialog.h
     ui/NavigationRail.cpp
     ui/NavigationRail.h
     ui/ToolsPane.cpp

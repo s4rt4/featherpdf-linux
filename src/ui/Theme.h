@@ -76,6 +76,12 @@ public:
     // the About box.
     QPixmap brandLogo(int size) const;
 
+    // Bake a tinted copy of symbolic icon `name` to the cache dir and return a
+    // filesystem path usable in a QSS `url(...)`. QSS can't tint an SVG, so combo
+    // and spin-box arrows reference these baked PNGs. When color is invalid the
+    // current `dim` token is used. Cached per (name,color).
+    QString symbolicIconPath(const QString& name, QColor color = QColor()) const;
+
 signals:
     // Emitted whenever the active palette changes (system flip or manual toggle)
     // so chrome that paints tokens itself can repaint.

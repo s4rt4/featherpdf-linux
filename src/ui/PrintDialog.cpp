@@ -128,15 +128,9 @@ PrintDialog::PrintDialog(QPdfDocument* pdf, QVector<int> order, QVector<int> rot
             "QCheckBox::indicator { width:16px; height:16px; border:1px solid %4;"
             " border-radius:5px; background:%1; }"
             "QCheckBox::indicator:checked { border:1px solid %5; background:%5; }"
-            // Ghost buttons (browse, preview nav).
-            "QPushButton#GhostBtn { background:%1; border:1px solid %4; border-radius:8px;"
-            " color:%3; padding:5px; }"
-            "QPushButton#GhostBtn:hover:enabled { border:1px solid %5; color:%5; }"
-            "QPushButton#GhostBtn:disabled { color:%2; }"
-            // Cancel (the secondary button box action).
-            "QDialogButtonBox QPushButton { background:%1; border:1px solid %4; border-radius:8px;"
-            " color:%3; padding:7px 16px; min-width:64px; }"
-            "QDialogButtonBox QPushButton:hover { border:1px solid %5; }"
+            // Small ghost buttons (browse, preview nav) inherit the neutral look
+            // from the global sheet; only make them compact here.
+            "QPushButton#GhostBtn { padding:3px; min-width:0; }"
             "QLabel#PreviewCounter { color:%3; font-family:'Source Code Pro',monospace;"
             " font-size:12px; }")
             .arg(css(p.surface), css(p.dim), css(p.text), css(ctlBorder), css(p.accent),

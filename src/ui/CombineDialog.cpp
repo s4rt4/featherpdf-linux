@@ -43,19 +43,13 @@ CombineDialog::CombineDialog(const QString& initialPath, QWidget* parent) : QDia
     };
     setStyleSheet(
         QStringLiteral(
+            // Buttons (#GhostBtn, button box) inherit the neutral hierarchy from
+            // the global sheet; only the list needs dialog-local styling.
             "QLabel#Hint { color:%2; }"
             "#CombineList { background:%1; border:1px solid %3; border-radius:8px; outline:0; }"
             "#CombineList::item { padding:7px 10px; color:%4; border-radius:6px; }"
-            "#CombineList::item:selected { background:%5; color:%4; }"
-            "QPushButton#GhostBtn { background:%1; border:1px solid %3; border-radius:8px;"
-            " color:%4; padding:6px 12px; }"
-            "QPushButton#GhostBtn:hover:enabled { border:1px solid %6; color:%6; }"
-            "QPushButton#GhostBtn:disabled { color:%2; }"
-            "QDialogButtonBox QPushButton { background:%1; border:1px solid %3; border-radius:8px;"
-            " color:%4; padding:7px 16px; min-width:64px; }"
-            "QDialogButtonBox QPushButton:hover { border:1px solid %6; }")
-            .arg(css(p.surface), css(p.dim), css(ctlBorder), css(p.text), css(p.accentTint),
-                 css(p.accent)));
+            "#CombineList::item:selected { background:%5; color:%4; }")
+            .arg(css(p.surface), css(p.dim), css(ctlBorder), css(p.text), css(p.accentTint)));
 
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(22, 20, 22, 18);

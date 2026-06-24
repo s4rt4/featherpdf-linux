@@ -14,20 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include "ui/ProtectDialog.h"
+#include "ui/PasswordDialog.h"
 
 #include "ui/Theme.h"
 
 #include <QCheckBox>
 #include <QDialogButtonBox>
-#include <QFormLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
 
-ProtectDialog::ProtectDialog(const QString& docName, QWidget* parent) : QDialog(parent) {
-    setWindowTitle(tr("Protect with Password"));
+PasswordDialog::PasswordDialog(const QString& fileName, QWidget* parent) : QDialog(parent) {
+    setWindowTitle(tr("Password Required"));
 
     const Theme::Palette& p = Theme::instance().palette();
     QColor ctlBorder = p.text;
@@ -43,7 +42,7 @@ ProtectDialog::ProtectDialog(const QString& docName, QWidget* parent) : QDialog(
     setStyleSheet(
         QStringLiteral(
             "QLabel#Hint { color:%2; }"
-            "QLabel#Status { color:%2; font-size:12px; }"
+            "QLabel#Error { color:%6; font-size:12px; }"
             "QLineEdit { background:%1; border:1px solid %3; border-radius:8px; padding:6px 9px;"
             " color:%4; selection-background-color:%5; selection-color:#FFFFFF; }"
             "QLineEdit:focus { border:1px solid %5; }"
@@ -51,81 +50,64 @@ ProtectDialog::ProtectDialog(const QString& docName, QWidget* parent) : QDialog(
             "QCheckBox::indicator { width:16px; height:16px; border:1px solid %3; border-radius:5px;"
             " background:%1; }"
             "QCheckBox::indicator:checked { border:1px solid %5; background:%5; }")
-            .arg(css(p.surface), css(p.dim), css(ctlBorder), css(p.text), css(p.accent)));
+            .arg(css(p.surface), css(p.dim), css(ctlBorder), css(p.text), css(p.accent),
+                 css(p.destructive)));
 
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(22, 20, 22, 18);
-    root->setSpacing(14);
+    root->setSpacing(12);
 
     auto* hint = new QLabel(
-        tr("Anyone opening “%1” will need this password. Encryption is AES-256 — keep the "
-           "password safe, as it cannot be recovered.")
-            .arg(docName),
-        this);
+        tr("“%1” is protected. Enter its password to open it.").arg(fileName), this);
     hint->setObjectName(QStringLiteral("Hint"));
     hint->setWordWrap(true);
     root->addWidget(hint);
 
-    auto* form = new QFormLayout;
-    form->setSpacing(10);
-    form->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     m_password = new QLineEdit(this);
     m_password->setEchoMode(QLineEdit::Password);
-    m_confirm = new QLineEdit(this);
-    m_confirm->setEchoMode(QLineEdit::Password);
-    m_password->setMinimumWidth(240);
-    form->addRow(tr("Password"), m_password);
-    form->addRow(tr("Confirm"), m_confirm);
-    root->addLayout(form);
+    m_password->setPlaceholderText(tr("Password"));
+    m_password->setMinimumWidth(280);
+    root->addWidget(m_password);
 
     auto* show = new QCheckBox(tr("Show password"), this);
     root->addWidget(show);
 
-    m_status = new QLabel(this);
-    m_status->setObjectName(QStringLiteral("Status"));
-    m_status->setWordWrap(true);
-    root->addWidget(m_status);
-
-    root->addStretch(1);
+    m_error = new QLabel(this);
+    m_error->setObjectName(QStringLiteral("Error"));
+    m_error->setWordWrap(true);
+    m_error->hide();
+    root->addWidget(m_error);
 
     auto* buttons = new QDialogButtonBox(this);
-    m_protect = buttons->addButton(tr("Protect"), QDialogButtonBox::AcceptRole);
+    m_open = buttons->addButton(tr("Open"), QDialogButtonBox::AcceptRole);
     buttons->addButton(QDialogButtonBox::Cancel);
-    m_protect->setObjectName(QStringLiteral("Share")); // accent-filled primary
-    m_protect->setCursor(Qt::PointingHandCursor);
+    m_open->setObjectName(QStringLiteral("Share")); // accent-filled primary
+    m_open->setCursor(Qt::PointingHandCursor);
+    m_open->setEnabled(false);
     root->addWidget(buttons);
 
     connect(show, &QCheckBox::toggled, this, [this](bool on) {
-        const QLineEdit::EchoMode mode = on ? QLineEdit::Normal : QLineEdit::Password;
-        m_password->setEchoMode(mode);
-        m_confirm->setEchoMode(mode);
+        m_password->setEchoMode(on ? QLineEdit::Normal : QLineEdit::Password);
     });
-    connect(m_password, &QLineEdit::textChanged, this, &ProtectDialog::validate);
-    connect(m_confirm, &QLineEdit::textChanged, this, &ProtectDialog::validate);
+    connect(m_password, &QLineEdit::textChanged, this,
+            [this](const QString& t) { m_open->setEnabled(!t.isEmpty()); });
+    connect(m_password, &QLineEdit::returnPressed, m_open, [this] {
+        if (m_open->isEnabled())
+            accept();
+    });
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
-    validate();
-    resize(420, 0);
+    resize(380, 0);
 }
 
-void ProtectDialog::validate() {
-    const QString pw = m_password->text();
-    const QString cf = m_confirm->text();
-    bool ok = false;
-    if (pw.isEmpty()) {
-        m_status->clear();
-    } else if (cf.isEmpty()) {
-        m_status->setText(tr("Re-enter the password to confirm."));
-    } else if (pw != cf) {
-        m_status->setText(tr("The passwords don’t match."));
-    } else {
-        m_status->setText(tr("Passwords match."));
-        ok = true;
-    }
-    m_protect->setEnabled(ok);
-}
-
-QString ProtectDialog::password() const {
+QString PasswordDialog::password() const {
     return m_password->text();
+}
+
+void PasswordDialog::setError(const QString& message) {
+    m_error->setText(message);
+    m_error->setVisible(!message.isEmpty());
+    m_password->clear();
+    m_password->setFocus();
 }
