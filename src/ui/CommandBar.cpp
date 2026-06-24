@@ -91,14 +91,6 @@ CommandBar::CommandBar(QWidget* parent) : QWidget(parent) {
 
     row->addStretch(1);
 
-    // 4. The one accent action - Share.
-    m_share = new QPushButton(tr("Share"), this);
-    m_share->setObjectName("Share");
-    m_share->setCursor(Qt::PointingHandCursor);
-    connect(m_share, &QPushButton::clicked, this, &CommandBar::shareRequested);
-    m_docScoped += m_share;
-    row->addWidget(m_share);
-
     refreshIcons();
     connect(&Theme::instance(), &Theme::changed, this, &CommandBar::refreshIcons);
     setDocumentLoaded(false);
@@ -127,11 +119,6 @@ void CommandBar::refreshIcons() {
     const QColor c = Theme::instance().palette().text;
     for (const auto& [btn, name] : m_iconButtons)
         btn->setIcon(Theme::instance().icon(name, c));
-    // Share carries a white icon on the accent fill.
-    if (m_share) {
-        m_share->setIcon(Theme::instance().icon("share", QColor(Qt::white)));
-        m_share->setIconSize(QSize(15, 15));
-    }
 }
 
 bool CommandBar::eventFilter(QObject* watched, QEvent* event) {

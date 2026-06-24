@@ -18,6 +18,7 @@
 
 #include "backends/PdfEditor.h"
 #include "backends/Annotator.h"
+#include "backends/CmykConverter.h"
 #include "backends/Comparer.h"
 #include "backends/Converter.h"
 #include "backends/Flattener.h"
@@ -89,6 +90,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QProcess>
 #include <QSettings>
 #include <QStackedWidget>
 #include <QStandardPaths>
@@ -295,7 +297,8 @@ void MainWindow::buildMenus() {
         {"comment", tr("Comment"), false},     {"redact", tr("Redact"), false},
         {"watermark", tr("Watermark…"), false}, {"bates", tr("Bates Numbering…"), false},
         {"organize", tr("Organize"), true},    {"compare", tr("Compare…"), false},
-        {"optimize", tr("Optimize…"), false},  {"flatten", tr("Flatten…"), false},
+        {"optimize", tr("Optimize…"), false},  {"cmyk", tr("RGB to CMYK…"), false},
+        {"flatten", tr("Flatten…"), false},
         {"protect", tr("Protect…"), false},    {"sign", tr("Sign…"), true},
         {"edit", tr("Edit Text"), false},
     };
@@ -555,7 +558,19 @@ void MainWindow::wireSignals() {
     connect(m_commandBar, &CommandBar::saveRequested, this, [this] { saveActive(); });
     connect(m_commandBar, &CommandBar::exportRequested, this, [this] { saveActiveAs(); });
     connect(m_commandBar, &CommandBar::printRequested, this, &MainWindow::printActive);
-    connect(m_commandBar, &CommandBar::emailRequested, this, [this] { notImplemented(tr("Email")); });
+    connect(m_commandBar, &CommandBar::emailRequested, this, [this] {
+        if (!hasActiveDoc())
+            return;
+        // Hand the saved file to the system email client as an attachment.
+        if (QStandardPaths::findExecutable(QStringLiteral("xdg-email")).isEmpty() ||
+            !QProcess::startDetached(QStringLiteral("xdg-email"),
+                                     {QStringLiteral("--attach"), m_doc->filePath()})) {
+            QMessageBox::information(
+                this, tr("Email"),
+                tr("Couldn't reach an email client. Install xdg-utils, or attach the "
+                   "file manually from your mail app."));
+        }
+    });
     connect(m_commandBar, &CommandBar::moreRequested, this, [this] {
         QMenu menu(this);
         menu.addAction(m_rotateLeftAct);
@@ -587,7 +602,6 @@ void MainWindow::wireSignals() {
         else
             m_continuousAct->setChecked(true);
     });
-    connect(m_commandBar, &CommandBar::shareRequested, this, [this] { notImplemented(tr("Share")); });
     connect(m_commandBar, &CommandBar::counterClicked, this, [this] {
         if (!hasActiveDoc())
             return;
@@ -1019,6 +1033,8 @@ void MainWindow::activateTool(const QString& id) {
         compareDocuments();
     } else if (id == QLatin1String("optimize")) {
         optimizeDocument();
+    } else if (id == QLatin1String("cmyk")) {
+        convertToCmyk();
     } else if (id == QLatin1String("watermark")) {
         watermarkDocument();
     } else if (id == QLatin1String("bates")) {
@@ -1141,6 +1157,45 @@ void MainWindow::optimizeDocument() {
                            locale().formattedDataSize(after))
                       .arg(pct, 0, 'f', 1));
     openPath(out);
+}
+
+void MainWindow::convertToCmyk() {
+    if (!hasActiveDoc())
+        return;
+    if (!CmykConverter::isAvailable()) {
+        QMessageBox::information(
+            this, tr("RGB to CMYK"),
+            tr("This needs Ghostscript, which isn't installed. Install the 'ghostscript' "
+               "package and try again."));
+        return;
+    }
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-cmyk.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save CMYK PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    const QString input = m_doc->filePath();
+    m_toast->show(tr("Converting to CMYK…"));
+    auto* watcher = new QFutureWatcher<bool>(this);
+    auto* err = new QString;
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [this, watcher, out, err] {
+        const bool ok = watcher->result();
+        const QString message = *err;
+        watcher->deleteLater();
+        delete err;
+        if (!ok) {
+            QMessageBox::warning(this, tr("Couldn't convert to CMYK"), message);
+            return;
+        }
+        m_toast->show(tr("Converted to CMYK"));
+        openPath(out);
+    });
+    watcher->setFuture(QtConcurrent::run([input, out, err] {
+        return CmykConverter::toCmyk(input, out, err);
+    }));
 }
 
 void MainWindow::compareDocuments() {

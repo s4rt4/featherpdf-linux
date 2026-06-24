@@ -11,6 +11,7 @@
   <file alias="watermark.svg">icons/watermark.svg</file>
   <file alias="bates.svg">icons/bates.svg</file>
   <file alias="optimize.svg">icons/optimize.svg</file>
+  <file alias="cmyk.svg">icons/cmyk.svg</file>
   <file alias="comment.svg">icons/comment.svg</file>
   <file alias="create.svg">icons/create.svg</file>
   <file alias="dots-horizontal.svg">icons/dots-horizontal.svg</file>

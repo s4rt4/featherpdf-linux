@@ -28,6 +28,8 @@ qt_add_executable(feather-pdf
     backends/Flattener.h
     backends/Splitter.cpp
     backends/Splitter.h
+    backends/CmykConverter.cpp
+    backends/CmykConverter.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp

@@ -96,6 +96,7 @@ private:
     void activateTool(const QString& id); // route a Tools entry (pane or menu) to its action
     void createPdf();         // make a PDF from images (native) or an office doc (LibreOffice)
     void optimizeDocument();  // rewrite more compactly (QPDF)
+    void convertToCmyk();     // convert all colors to process CMYK (Ghostscript)
     void compareDocuments();  // visual diff against another PDF
     void watermarkDocument(); // stamp a text watermark on every page
     void batesNumber();       // stamp sequential Bates numbers

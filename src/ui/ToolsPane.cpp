@@ -141,6 +141,7 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
         {"split", QT_TR_NOOP("Split"), "split", false},
         {"compare", QT_TR_NOOP("Compare"), "compare", false},
         {"optimize", QT_TR_NOOP("Optimize"), "optimize", false},
+        {"cmyk", QT_TR_NOOP("RGB to CMYK"), "cmyk", false},
         {"watermark", QT_TR_NOOP("Watermark"), "watermark", false},
         {"bates", QT_TR_NOOP("Bates numbering"), "bates", false},
         {"protect", QT_TR_NOOP("Protect"), "lock", false},

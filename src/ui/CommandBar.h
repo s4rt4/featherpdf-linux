@@ -27,9 +27,9 @@ class QToolButton;
 // The command toolbar (ui-guidelines §7 / mockup .toolbar): a single row scoped
 // to the active document. Groups, left to right, separated by hairlines:
 //   File actions (Save · Export · Print · Email) │ Find · ◀ counter ▶ │
-//   zoom out · % · zoom in │ ⋯ │ ── │ [ Share ]
-// The page counter and zoom % are mono (the precise-value signal, §3). Share is
-// the single accent-filled action. Doc-scoped buttons disable with no document.
+//   zoom out · % · zoom in │ ⋯
+// The page counter and zoom % are mono (the precise-value signal, §3).
+// Doc-scoped buttons disable with no document.
 class CommandBar : public QWidget {
     Q_OBJECT
 
@@ -50,7 +50,6 @@ signals:
     void zoomOutRequested();
     void zoomInRequested();
     void moreRequested();
-    void shareRequested();
     void counterClicked(); // the page counter was clicked (go to page)
 
 protected:
@@ -63,7 +62,6 @@ private:
 
     QLabel* m_counter = nullptr;
     QLabel* m_zoom = nullptr;
-    QPushButton* m_share = nullptr;
 
     // (button, icon name) pairs so icons can be re-tinted on a theme change.
     QVector<QPair<QToolButton*, QString>> m_iconButtons;
