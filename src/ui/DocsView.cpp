@@ -480,7 +480,12 @@ DocsView::DocsView(QWidget* parent) : QWidget(parent) {
             "#DocsTitle { color:%4; font-size:15px; font-weight:700; }"
             "QTreeWidget#DocsToc { background:transparent; border:none; outline:0; }"
             "QTreeWidget#DocsToc::item { padding:5px 4px; color:%4; }"
-            "QTreeWidget#DocsToc::item:selected { background:%5; color:%6; border-radius:6px; }"
+            // Flat full-row highlight: the item AND the branch (arrow) cell share
+            // one colour, so no stray box sits beside the text (same as Outline).
+            "QTreeWidget#DocsToc::item:hover, QTreeWidget#DocsToc::branch:hover { background:%1; }"
+            "QTreeWidget#DocsToc::item:selected, QTreeWidget#DocsToc::branch:selected"
+            " { background:%5; }"
+            "QTreeWidget#DocsToc::item:selected { color:%6; }"
             "QPushButton#DocsLang { background:transparent; border:1px solid %3; border-radius:7px;"
             " padding:4px 10px; color:%4; }"
             "QPushButton#DocsLang:checked { background:%5; border:1px solid %6; color:%6; }"
