@@ -805,9 +805,8 @@ void MainWindow::wireSignals() {
             m_viewport->goToPage(slot);
     });
 
-    // Tools pane.
+    // Tools pane. (Customize is handled inside the pane and persisted.)
     connect(m_toolsPane, &ToolsPane::toolActivated, this, &MainWindow::activateTool);
-    connect(m_toolsPane, &ToolsPane::customizeRequested, this, [this] { notImplemented(tr("Customize tools")); });
 
     // Tab strip.
     connect(m_tabStrip, &TabStrip::homeSelected, this, &MainWindow::showHome);

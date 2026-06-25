@@ -16,12 +16,15 @@
 
 #include "ui/ToolsPane.h"
 
+#include "ui/CustomizeToolsDialog.h"
 #include "ui/Theme.h"
 
 #include <QHBoxLayout>
+#include <QHash>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPushButton>
+#include <QSettings>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -106,6 +109,7 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
     auto* col = new QVBoxLayout(this);
     col->setContentsMargins(0, 0, 0, 0);
     col->setSpacing(0);
+    m_col = col;
 
     // Header: the TOOLS label and a collapse/expand toggle.
     auto* header = new QWidget(this);
@@ -153,6 +157,8 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
         {"sign", QT_TR_NOOP("Sign"), "sign", false},
     };
     for (const Def& d : defs) {
+        m_catalog.append({QString::fromLatin1(d.id), tr(d.label), QString::fromLatin1(d.icon),
+                          d.expandable});
         auto* r = new ToolRow(d.id, tr(d.label), d.icon, d.expandable, this);
         connect(r, &ToolRow::activated, this, &ToolsPane::toolActivated);
         m_rows.append(r);
@@ -164,15 +170,76 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
     m_customize = new QPushButton(tr("Customize tools"), this);
     m_customize->setObjectName("CustomizeTools");
     m_customize->setCursor(Qt::PointingHandCursor);
-    connect(m_customize, &QPushButton::clicked, this, &ToolsPane::customizeRequested);
+    connect(m_customize, &QPushButton::clicked, this, &ToolsPane::openCustomize);
     col->addWidget(m_customize);
 
+    loadOrder();
+    applyOrder();
+    if (QSettings().value(QStringLiteral("toolsPane/collapsed"), false).toBool())
+        setCollapsed(true);
     refreshIcons();
     connect(&Theme::instance(), &Theme::changed, this, &ToolsPane::refreshIcons);
 }
 
+QStringList ToolsPane::defaultOrder() const {
+    QStringList ids;
+    for (const ToolDef& d : m_catalog)
+        ids << d.id;
+    return ids;
+}
+
+void ToolsPane::loadOrder() {
+    const QStringList saved = QSettings().value(QStringLiteral("toolsPane/visible")).toStringList();
+    // Keep only known ids; fall back to showing everything when nothing is saved.
+    QStringList valid;
+    const QStringList all = defaultOrder();
+    for (const QString& id : saved)
+        if (all.contains(id) && !valid.contains(id))
+            valid << id;
+    m_order = saved.isEmpty() ? all : valid;
+}
+
+void ToolsPane::saveOrder() const {
+    QSettings().setValue(QStringLiteral("toolsPane/visible"), m_order);
+}
+
+void ToolsPane::applyOrder() {
+    QHash<QString, ToolRow*> byId;
+    for (ToolRow* r : m_rows)
+        byId.insert(r->id(), r);
+
+    // Detach every row, then re-insert the visible ones in order after the header.
+    for (ToolRow* r : m_rows) {
+        m_col->removeWidget(r);
+        r->hide();
+    }
+    int idx = 1; // 0 is the header widget
+    for (const QString& id : m_order) {
+        ToolRow* r = byId.value(id, nullptr);
+        if (!r)
+            continue;
+        m_col->insertWidget(idx++, r);
+        r->show();
+        r->setCompact(m_collapsed);
+    }
+}
+
+void ToolsPane::openCustomize() {
+    QVector<CustomizeToolsDialog::Tool> catalog;
+    for (const ToolDef& d : m_catalog)
+        catalog.append({d.id, d.label, d.icon});
+
+    CustomizeToolsDialog dialog(catalog, m_order, defaultOrder(), this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    m_order = dialog.visibleOrderedIds();
+    applyOrder();
+    saveOrder();
+}
+
 void ToolsPane::setCollapsed(bool collapsed) {
     m_collapsed = collapsed;
+    QSettings().setValue(QStringLiteral("toolsPane/collapsed"), collapsed);
     setFixedWidth(collapsed ? 52 : 232);
     m_head->setVisible(!collapsed);
     for (ToolRow* r : m_rows)

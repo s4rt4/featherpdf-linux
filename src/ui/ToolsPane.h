@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <QString>
+#include <QStringList>
 #include <QVector>
 #include <QWidget>
 
@@ -23,6 +25,7 @@ class ToolRow;
 class QLabel;
 class QPushButton;
 class QToolButton;
+class QVBoxLayout;
 
 // The right Tools pane (ui-guidelines §8 / mockup .tools): a vertical list of
 // tool rows, each an accent-tinted icon chip + label, some expandable (chevron).
@@ -37,13 +40,27 @@ public:
 
 signals:
     void toolActivated(const QString& id);
-    void customizeRequested();
 
 private:
+    struct ToolDef {
+        QString id;
+        QString label;
+        QString icon;
+        bool expandable;
+    };
+
     void refreshIcons();
     void setCollapsed(bool collapsed); // icon-only when collapsed
+    void openCustomize();              // the "Customize tools" dialog
+    void applyOrder();                 // show/hide + reorder rows per m_order
+    void loadOrder();                  // read m_order from QSettings (or default)
+    void saveOrder() const;            // persist m_order to QSettings
+    QStringList defaultOrder() const;  // every tool id in catalog order
 
+    QVector<ToolDef> m_catalog;
+    QStringList m_order; // visible tool ids, in display order
     QVector<ToolRow*> m_rows;
+    QVBoxLayout* m_col = nullptr;
     QLabel* m_head = nullptr;
     QToolButton* m_toggle = nullptr;
     QPushButton* m_customize = nullptr;
