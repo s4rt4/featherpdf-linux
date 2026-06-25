@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <exception>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -83,6 +84,113 @@ bool PdfEditor::saveArrangement(const QString& inputPath, const QString& outputP
         if (!QFile::rename(target, outputPath)) {
             if (error)
                 *error = QStringLiteral("The edited file couldn't replace the original.");
+            QFile::remove(target);
+            return false;
+        }
+    }
+    return true;
+}
+
+bool PdfEditor::setOutline(const QString& inputPath, const QString& outputPath,
+                           const QVector<OutlineItem>& items, QString* error) {
+    const bool inPlace =
+        QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
+    const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
+
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData());
+
+        QPDFPageDocumentHelper dh(qpdf);
+        std::vector<QPDFPageObjectHelper> pages = dh.getAllPages();
+        const int n = static_cast<int>(pages.size());
+        QPDFObjectHandle root = qpdf.getRoot();
+
+        if (items.isEmpty()) {
+            root.removeKey("/Outlines");
+            QPDFObjectHandle pm = root.getKey("/PageMode");
+            if (pm.isName() && pm.getName() == "/UseOutlines")
+                root.removeKey("/PageMode");
+        } else {
+            QPDFObjectHandle outlines = qpdf.makeIndirectObject(QPDFObjectHandle::newDictionary());
+            outlines.replaceKey("/Type", QPDFObjectHandle::newName("/Outlines"));
+
+            // Build a sibling chain under `parent`, recursing into children. Returns
+            // the number of items in the whole subtree (every level is left open, so
+            // that count is what each /Count should report). firstOut/lastOut receive
+            // the chain's end nodes for the parent's /First and /Last.
+            std::function<int(const QVector<OutlineItem>&, QPDFObjectHandle, QPDFObjectHandle&,
+                              QPDFObjectHandle&)>
+                build = [&](const QVector<OutlineItem>& list, QPDFObjectHandle parent,
+                            QPDFObjectHandle& firstOut, QPDFObjectHandle& lastOut) -> int {
+                bool havePrev = false;
+                QPDFObjectHandle prev, firstItem, lastItem;
+                int visible = 0;
+                for (const OutlineItem& it : list) {
+                    QPDFObjectHandle node =
+                        qpdf.makeIndirectObject(QPDFObjectHandle::newDictionary());
+                    node.replaceKey("/Title",
+                                    QPDFObjectHandle::newUnicodeString(it.title.toStdString()));
+                    node.replaceKey("/Parent", parent);
+                    if (n > 0) {
+                        const int pg = std::max(0, std::min(it.page, n - 1));
+                        QPDFObjectHandle dest = QPDFObjectHandle::newArray();
+                        dest.appendItem(pages[pg].getObjectHandle());
+                        dest.appendItem(QPDFObjectHandle::newName("/Fit"));
+                        node.replaceKey("/Dest", dest);
+                    }
+
+                    QPDFObjectHandle cFirst, cLast;
+                    const int childCount = build(it.children, node, cFirst, cLast);
+                    if (childCount > 0) {
+                        node.replaceKey("/First", cFirst);
+                        node.replaceKey("/Last", cLast);
+                        node.replaceKey("/Count", QPDFObjectHandle::newInteger(childCount));
+                    }
+
+                    if (havePrev) {
+                        prev.replaceKey("/Next", node);
+                        node.replaceKey("/Prev", prev);
+                    } else {
+                        firstItem = node;
+                    }
+                    lastItem = node;
+                    prev = node;
+                    havePrev = true;
+                    visible += 1 + childCount;
+                }
+                firstOut = firstItem;
+                lastOut = lastItem;
+                return visible;
+            };
+
+            QPDFObjectHandle first, last;
+            const int total = build(items, outlines, first, last);
+            if (total > 0) {
+                outlines.replaceKey("/First", first);
+                outlines.replaceKey("/Last", last);
+                outlines.replaceKey("/Count", QPDFObjectHandle::newInteger(total));
+            }
+            root.replaceKey("/Outlines", outlines);
+            root.replaceKey("/PageMode", QPDFObjectHandle::newName("/UseOutlines"));
+        }
+
+        QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
+        writer.write();
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        if (inPlace)
+            QFile::remove(target);
+        return false;
+    }
+
+    if (inPlace) {
+        QFile::remove(outputPath);
+        if (!QFile::rename(target, outputPath)) {
+            if (error)
+                *error = QStringLiteral("The file with the new outline couldn't replace the "
+                                        "original.");
             QFile::remove(target);
             return false;
         }

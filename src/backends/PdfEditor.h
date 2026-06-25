@@ -37,6 +37,22 @@ public:
                                 const QVector<int>& order, const QVector<int>& rotations,
                                 QString* error);
 
+    // One bookmark in the document outline: a title, the 0-based page it jumps
+    // to, and any nested children (sub-bookmarks).
+    struct OutlineItem {
+        QString title;
+        int page = 0;
+        QVector<OutlineItem> children;
+    };
+
+    // Replace the document's outline (/Outlines) with `items`, then write to
+    // `outputPath`. An empty list removes the outline entirely. Destinations use
+    // /Fit (whole page). Lossless apart from the outline; page content is copied
+    // untouched. Temp file + atomic rename, so `outputPath` may equal `inputPath`.
+    // Returns true on success; on failure fills *error with a friendly message.
+    static bool setOutline(const QString& inputPath, const QString& outputPath,
+                           const QVector<OutlineItem>& items, QString* error);
+
     // Margins to trim off each edge of a page, in points, expressed in the
     // page's *displayed* orientation (what the user sees, after rotation).
     struct CropMargins {

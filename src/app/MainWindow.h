@@ -22,6 +22,8 @@
 #include <QStringList>
 #include <QVector>
 
+#include "backends/PdfEditor.h"
+
 class FeatherDocument;
 class Viewport;
 class HomeView;
@@ -90,6 +92,7 @@ private:
     void extractActivePages(); // save a chosen page subset to a new PDF (QPDF)
     void insertPagesIntoActive(); // splice pages from another PDF, open the result
     void cropActivePages();       // trim page margins (/CropBox), open the result
+    void saveOutline(const QVector<PdfEditor::OutlineItem>& items); // write /Outlines, open result
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode

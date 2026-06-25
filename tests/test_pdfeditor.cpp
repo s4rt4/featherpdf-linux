@@ -14,8 +14,13 @@
 
 #include <qpdf/QPDF.hh>
 #include <qpdf/QPDFObjectHandle.hh>
+#include <qpdf/QPDFOutlineDocumentHelper.hh>
+#include <qpdf/QPDFOutlineObjectHelper.hh>
 #include <qpdf/QPDFPageDocumentHelper.hh>
 #include <qpdf/QPDFPageObjectHelper.hh>
+
+#include <functional>
+#include <vector>
 
 class TestPdfEditor : public QObject {
     Q_OBJECT
@@ -74,6 +79,39 @@ private:
         out[2] = qMax(v[0], v[2]);
         out[3] = qMax(v[1], v[3]);
         return true;
+    }
+
+    // A flattened view of a written outline for assertions.
+    struct OL {
+        QString title;
+        int page;
+        QVector<OL> kids;
+    };
+    QVector<OL> readOutline(const QString& path) {
+        QPDF q;
+        q.processFile(path.toLocal8Bit().constData());
+        QPDFPageDocumentHelper pdh(q);
+        std::vector<QPDFPageObjectHelper> pages = pdh.getAllPages();
+        const auto destIndex = [&](QPDFOutlineObjectHelper& o) -> int {
+            QPDFObjectHandle dest = o.getObjectHandle().getKey("/Dest");
+            if (!dest.isArray() || dest.getArrayNItems() < 1)
+                return -1;
+            QPDFObjGen g = dest.getArrayItem(0).getObjGen();
+            for (size_t i = 0; i < pages.size(); ++i)
+                if (pages[i].getObjectHandle().getObjGen() == g)
+                    return static_cast<int>(i);
+            return -1;
+        };
+        std::function<QVector<OL>(std::vector<QPDFOutlineObjectHelper>)> conv =
+            [&](std::vector<QPDFOutlineObjectHelper> items) {
+                QVector<OL> out;
+                for (auto& it : items)
+                    out.push_back(OL{QString::fromStdString(it.getTitle()), destIndex(it),
+                                     conv(it.getKids())});
+                return out;
+            };
+        QPDFOutlineDocumentHelper odh(q);
+        return conv(odh.getTopLevelOutlines());
     }
 
 private slots:
@@ -196,6 +234,46 @@ private slots:
         QVERIFY(qAbs(cb[1] - (mb[1] + 10)) < 0.01); // bottom inset by 10
         QVERIFY(qAbs(cb[2] - mb[2]) < 0.01);        // right edge unchanged
         QVERIFY(qAbs(cb[3] - mb[3]) < 0.01);        // top edge unchanged
+    }
+
+    void outlineWritesFlatBookmarks() {
+        const QString out = m_dir.filePath("ol-flat.pdf");
+        QString err;
+        QVector<PdfEditor::OutlineItem> items{{"Intro", 0, {}}, {"Body", 1, {}}, {"End", 2, {}}};
+        QVERIFY2(PdfEditor::setOutline(m_input, out, items, &err), qPrintable(err));
+        const QVector<OL> got = readOutline(out);
+        QCOMPARE(got.size(), 3);
+        QCOMPARE(got[0].title, QStringLiteral("Intro"));
+        QCOMPARE(got[0].page, 0);
+        QCOMPARE(got[1].title, QStringLiteral("Body"));
+        QCOMPARE(got[1].page, 1);
+        QCOMPARE(got[2].title, QStringLiteral("End"));
+        QCOMPARE(got[2].page, 2);
+    }
+
+    void outlineWritesNestedBookmarks() {
+        const QString out = m_dir.filePath("ol-nested.pdf");
+        QString err;
+        QVector<PdfEditor::OutlineItem> items{
+            {"Chapter 1", 0, {{"Section 1.1", 1, {}}, {"Section 1.2", 2, {}}}}};
+        QVERIFY2(PdfEditor::setOutline(m_input, out, items, &err), qPrintable(err));
+        const QVector<OL> got = readOutline(out);
+        QCOMPARE(got.size(), 1);
+        QCOMPARE(got[0].title, QStringLiteral("Chapter 1"));
+        QCOMPARE(got[0].kids.size(), 2);
+        QCOMPARE(got[0].kids[0].title, QStringLiteral("Section 1.1"));
+        QCOMPARE(got[0].kids[0].page, 1);
+        QCOMPARE(got[0].kids[1].page, 2);
+    }
+
+    void outlineEmptyRemovesIt() {
+        const QString seeded = m_dir.filePath("ol-seeded.pdf");
+        const QString cleared = m_dir.filePath("ol-cleared.pdf");
+        QString err;
+        QVERIFY2(PdfEditor::setOutline(m_input, seeded, {{"A", 0, {}}}, &err), qPrintable(err));
+        QCOMPARE(readOutline(seeded).size(), 1);
+        QVERIFY2(PdfEditor::setOutline(seeded, cleared, {}, &err), qPrintable(err));
+        QCOMPARE(readOutline(cleared).size(), 0);
     }
 };
 

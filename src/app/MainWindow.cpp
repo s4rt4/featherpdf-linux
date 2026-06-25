@@ -687,8 +687,10 @@ void MainWindow::wireSignals() {
             s->undo->push(new MovePageCommand(s->doc, from, to));
     });
 
-    // Outline → viewport navigation.
+    // Outline → viewport navigation; viewport → outline (where "Add" points).
     connect(m_outline, &OutlinePanel::pageActivated, m_viewport, &Viewport::goToPage);
+    connect(m_viewport, &Viewport::currentPageChanged, m_outline, &OutlinePanel::setCurrentPage);
+    connect(m_outline, &OutlinePanel::saveRequested, this, &MainWindow::saveOutline);
 
     // Redaction bar ↔ viewport.
     connect(m_viewport, &Viewport::redactionsChanged, this,
@@ -954,6 +956,30 @@ void MainWindow::cropActivePages() {
     }
     m_toast->show(tr("Saved cropped copy to %1").arg(QFileInfo(out).fileName()));
     openPath(out); // open the cropped result
+}
+
+void MainWindow::saveOutline(const QVector<PdfEditor::OutlineItem>& items) {
+    if (!hasActiveDoc())
+        return;
+
+    // Default to the current file so the common action is "overwrite in place";
+    // choosing a new name writes a copy that opens in its own tab.
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save outline"), m_doc->filePath(),
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = PdfEditor::setOutline(m_doc->filePath(), out, items, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't save outline"), error);
+        return;
+    }
+    m_toast->show(tr("Outline saved to %1").arg(QFileInfo(out).fileName()));
+    openPath(out); // surface the saved result
 }
 
 bool MainWindow::saveActiveAs() {

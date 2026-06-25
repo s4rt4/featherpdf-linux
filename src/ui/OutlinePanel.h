@@ -16,17 +16,24 @@
 
 #pragma once
 
+#include <QVector>
 #include <QWidget>
 
+#include "backends/PdfEditor.h"
+
 class QPdfDocument;
-class QPdfBookmarkModel;
+class QStandardItemModel;
+class QStandardItem;
+class QModelIndex;
 class QTreeView;
 class QStackedWidget;
 class QLabel;
+class QPushButton;
 
-// The Outline rail panel (ui-guidelines §5.5): the document's bookmark tree
-// (QPdfBookmarkModel). Clicking an entry navigates the viewport to its page.
-// Documents without bookmarks show a quiet empty state rather than a blank.
+// The Outline rail panel (ui-guidelines §5.5): the document's bookmark tree,
+// now editable. Bookmarks can be added (to the current page), renamed in place,
+// and deleted; "Save" writes the new outline back through PdfEditor. Clicking an
+// entry still navigates the viewport to its page. Existing nesting is preserved.
 class OutlinePanel : public QWidget {
     Q_OBJECT
 
@@ -35,15 +42,30 @@ public:
 
     void setDocument(QPdfDocument* doc);
     void clear();
+    void setCurrentPage(int page); // 0-based; where "Add bookmark" points
 
 signals:
-    void pageActivated(int page); // 0-based
+    void pageActivated(int page);                              // 0-based
+    void saveRequested(const QVector<PdfEditor::OutlineItem>& items);
 
 private:
+    void addBookmark();
+    void renameSelected();
+    void deleteSelected();
+    void requestSave();
+    void updateButtons();
     void updateEmptyState();
+    void populateFrom(QPdfDocument* doc);
 
-    QPdfBookmarkModel* m_model = nullptr;
+    QStandardItemModel* m_model = nullptr;
     QTreeView* m_tree = nullptr;
     QStackedWidget* m_stack = nullptr;
     QLabel* m_empty = nullptr;
+    QPushButton* m_addBtn = nullptr;
+    QPushButton* m_renameBtn = nullptr;
+    QPushButton* m_deleteBtn = nullptr;
+    QPushButton* m_saveBtn = nullptr;
+    int m_currentPage = 0;
+    int m_pageCount = 0;
+    bool m_loaded = false;
 };
