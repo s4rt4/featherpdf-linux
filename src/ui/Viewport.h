@@ -83,9 +83,11 @@ public:
     QHash<int, QList<QPair<QRectF, QColor>>> highlightMarks() const;
     QHash<int, QList<QPair<QPointF, QString>>> noteMarks() const;
     QHash<int, QList<QPair<QPolygonF, QColor>>> inkMarks() const;
+    QHash<int, QList<PageView::ShapeMark>> shapeMarks() const;
     int highlightCount() const;
     int noteCount() const;
     int inkCount() const;
+    int shapeCount() const;
     void addNote(int slot, const QPointF& pos, const QString& text);
     void clearAnnotations();
 
@@ -99,6 +101,7 @@ signals:
     void highlightsChanged(int count);
     void notesChanged(int count);
     void inksChanged(int count);
+    void shapesChanged(int count);
     void noteRequested(int slot, QPointF normPos);
     void fieldRectDrawn(int slot, QRectF normRect); // form field placement finished
 

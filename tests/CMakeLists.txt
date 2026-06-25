@@ -36,6 +36,21 @@ target_link_libraries(test_formeditor PRIVATE
 add_test(NAME formeditor COMMAND test_formeditor)
 set_tests_properties(formeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_annotator
+    test_annotator.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Annotator.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Annotator.h
+)
+target_include_directories(test_annotator PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_annotator PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::QPDF
+)
+add_test(NAME annotator COMMAND test_annotator)
+set_tests_properties(annotator PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_formroundtrip
     test_formroundtrip.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/FormEditor.cpp

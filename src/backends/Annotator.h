@@ -47,10 +47,20 @@ public:
         QColor color;             // the pen colour
     };
 
-    // Add `highlights`, `notes`, and `inks` to `inputPath` and write the result
-    // to `outputPath`. Temp file + atomic rename, so `outputPath` may equal
+    // A vector annotation drawn over a rectangle: a text-markup line (underline /
+    // strike-through) or a stroked rectangle.
+    struct Shape {
+        enum class Kind { Underline, StrikeOut, Rectangle };
+        int page = 0;  // original 0-based page index
+        Kind kind = Kind::Rectangle;
+        QRectF rect;   // normalized [0,1] page rect (top-left origin, unrotated)
+        QColor color;  // the stroke colour
+    };
+
+    // Add `highlights`, `notes`, `inks`, and `shapes` to `inputPath` and write the
+    // result to `outputPath`. Temp file + atomic rename, so `outputPath` may equal
     // `inputPath`. Returns true on success; on failure fills *error.
     static bool saveAnnotations(const QString& inputPath, const QString& outputPath,
                                 const QList<Highlight>& highlights, const QList<Note>& notes,
-                                const QList<Ink>& inks, QString* error);
+                                const QList<Ink>& inks, const QList<Shape>& shapes, QString* error);
 };

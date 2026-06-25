@@ -32,7 +32,11 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     m_highlightTool = new QPushButton(tr("Highlight"), this);
     m_noteTool = new QPushButton(tr("Note"), this);
     m_inkTool = new QPushButton(tr("Draw"), this);
-    for (QPushButton* b : {m_highlightTool, m_noteTool, m_inkTool}) {
+    m_underlineTool = new QPushButton(tr("Underline"), this);
+    m_strikeTool = new QPushButton(tr("Strikeout"), this);
+    m_rectTool = new QPushButton(tr("Rectangle"), this);
+    for (QPushButton* b :
+         {m_highlightTool, m_noteTool, m_inkTool, m_underlineTool, m_strikeTool, m_rectTool}) {
         b->setObjectName(QStringLiteral("GhostBtn"));
         b->setCheckable(true);
         b->setCursor(Qt::PointingHandCursor);
@@ -71,6 +75,9 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     row->addWidget(m_highlightTool);
     row->addWidget(m_noteTool);
     row->addWidget(m_inkTool);
+    row->addWidget(m_underlineTool);
+    row->addWidget(m_strikeTool);
+    row->addWidget(m_rectTool);
     row->addSpacing(8);
     for (QPushButton* sw : m_swatches)
         row->addWidget(sw);
@@ -84,7 +91,8 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     connect(m_save, &QPushButton::clicked, this, &AnnotationBar::saveRequested);
     connect(m_clear, &QPushButton::clicked, this, &AnnotationBar::clearRequested);
     connect(done, &QPushButton::clicked, this, &AnnotationBar::doneRequested);
-    const QVector<QPushButton*> tools{m_highlightTool, m_noteTool, m_inkTool};
+    const QVector<QPushButton*> tools{m_highlightTool, m_noteTool,     m_inkTool,
+                                      m_underlineTool, m_strikeTool, m_rectTool};
     for (int i = 0; i < tools.size(); ++i)
         connect(tools[i], &QPushButton::clicked, this, [this, tools, i] {
             for (int j = 0; j < tools.size(); ++j)

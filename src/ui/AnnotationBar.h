@@ -48,6 +48,9 @@ private:
     QPushButton* m_highlightTool = nullptr;
     QPushButton* m_noteTool = nullptr;
     QPushButton* m_inkTool = nullptr;
+    QPushButton* m_underlineTool = nullptr;
+    QPushButton* m_strikeTool = nullptr;
+    QPushButton* m_rectTool = nullptr;
     QPushButton* m_save = nullptr;
     QPushButton* m_clear = nullptr;
     QVector<QPushButton*> m_swatches;

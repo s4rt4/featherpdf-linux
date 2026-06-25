@@ -331,6 +331,13 @@ int PageView::inkCount() const {
     return n;
 }
 
+int PageView::shapeCount() const {
+    int n = 0;
+    for (const auto& list : m_shapes)
+        n += list.size();
+    return n;
+}
+
 void PageView::setAnnotationTool(AnnotTool tool) {
     m_annotTool = tool;
 }
@@ -357,9 +364,11 @@ void PageView::clearAnnotations() {
     const bool hadHi = !m_highlights.isEmpty();
     const bool hadNotes = !m_notes.isEmpty();
     const bool hadInk = !m_inks.isEmpty();
+    const bool hadShapes = !m_shapes.isEmpty();
     m_highlights.clear();
     m_notes.clear();
     m_inks.clear();
+    m_shapes.clear();
     m_currentStroke.clear();
     m_dragging = false;
     m_dragSlot = -1;
@@ -369,6 +378,8 @@ void PageView::clearAnnotations() {
         emit notesChanged(0);
     if (hadInk)
         emit inksChanged(0);
+    if (hadShapes)
+        emit shapesChanged(0);
     viewport()->update();
 }
 
@@ -439,6 +450,11 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
             if (m_redactMode) {
                 m_redactions[m_dragSlot].append(m_dragNorm);
                 emit redactionsChanged(redactionCount());
+            } else if (m_highlightMode && (m_annotTool == AnnotTool::Underline ||
+                                           m_annotTool == AnnotTool::StrikeOut ||
+                                           m_annotTool == AnnotTool::Rectangle)) {
+                m_shapes[m_dragSlot].append(ShapeMark{m_annotTool, m_dragNorm, m_highlightColor});
+                emit shapesChanged(shapeCount());
             } else if (m_highlightMode) {
                 m_highlights[m_dragSlot].append(qMakePair(m_dragNorm, m_highlightColor));
                 emit highlightsChanged(highlightCount());
@@ -490,6 +506,19 @@ bool PageView::deleteMarkAt(int slot, const QPointF& norm) {
                 if (it->isEmpty())
                     m_highlights.erase(it);
                 emit highlightsChanged(highlightCount());
+                viewport()->update();
+                return true;
+            }
+        }
+    }
+    if (auto it = m_shapes.find(slot); it != m_shapes.end()) {
+        for (int i = it->size() - 1; i >= 0; --i) {
+            // Markup lines are thin, so match a slightly grown rect.
+            if ((*it)[i].rect.adjusted(-0.005, -0.005, 0.005, 0.005).contains(norm)) {
+                it->removeAt(i);
+                if (it->isEmpty())
+                    m_shapes.erase(it);
+                emit shapesChanged(shapeCount());
                 viewport()->update();
                 return true;
             }
@@ -665,6 +694,21 @@ void PageView::paintEvent(QPaintEvent*) {
         if (auto it = m_inks.constFind(slot); it != m_inks.constEnd())
             for (const auto& ink : *it)
                 drawStroke(ink.first, ink.second);
+        // Vector markup/shapes: underline, strike-through, and stroked rectangles.
+        if (auto it = m_shapes.constFind(slot); it != m_shapes.constEnd())
+            for (const ShapeMark& sm : *it) {
+                const QRectF box(r.x() + sm.rect.x() * r.width(), r.y() + sm.rect.y() * r.height(),
+                                 sm.rect.width() * r.width(), sm.rect.height() * r.height());
+                p.setBrush(Qt::NoBrush);
+                p.setPen(QPen(sm.color, 1.6));
+                if (sm.kind == AnnotTool::Underline)
+                    p.drawLine(QPointF(box.left(), box.bottom()), box.bottomRight());
+                else if (sm.kind == AnnotTool::StrikeOut)
+                    p.drawLine(QPointF(box.left(), box.center().y()),
+                               QPointF(box.right(), box.center().y()));
+                else // Rectangle
+                    p.drawRect(box);
+            }
         if (m_dragging && slot == m_dragSlot && !m_currentStroke.isEmpty())
             drawStroke(m_currentStroke, m_highlightColor);
         const bool dragRect =

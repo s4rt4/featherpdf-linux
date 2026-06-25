@@ -96,7 +96,14 @@ public:
     // Highlight tool drags rects; the Note tool clicks to drop a note (the click
     // emits noteRequested so the app can collect text, then calls addNote).
     // Marks are normalized to the displayed page.
-    enum class AnnotTool { Highlight, Note, Ink };
+    enum class AnnotTool { Highlight, Note, Ink, Underline, StrikeOut, Rectangle };
+
+    // A vector annotation drawn over a rectangle (markup line or stroked box).
+    struct ShapeMark {
+        AnnotTool kind = AnnotTool::Rectangle;
+        QRectF rect;  // normalized, displayed-page fractions
+        QColor color;
+    };
     void setHighlightMode(bool on);  // really "annotation mode"; name kept for callers
     bool highlightMode() const { return m_highlightMode; }
     void setAnnotationTool(AnnotTool tool);
@@ -106,9 +113,11 @@ public:
     QHash<int, QList<QPair<QRectF, QColor>>> highlightMarks() const { return m_highlights; }
     QHash<int, QList<QPair<QPointF, QString>>> noteMarks() const { return m_notes; }
     QHash<int, QList<QPair<QPolygonF, QColor>>> inkMarks() const { return m_inks; }
+    QHash<int, QList<ShapeMark>> shapeMarks() const { return m_shapes; }
     int highlightCount() const;
     int noteCount() const;
     int inkCount() const;
+    int shapeCount() const;
     void addNote(int slot, const QPointF& pos, const QString& text);
     void clearAnnotations(); // clears highlights, notes, and ink
 
@@ -127,6 +136,7 @@ signals:
     void highlightsChanged(int count);
     void notesChanged(int count);
     void inksChanged(int count);
+    void shapesChanged(int count);
     void noteRequested(int slot, QPointF normPos); // Note tool clicked at a point
     void fieldRectDrawn(int slot, QRectF normRect); // form field placement finished
 
@@ -221,6 +231,7 @@ private:
     QHash<int, QList<QPair<QRectF, QColor>>> m_highlights; // slot → [(rect, colour)]
     QHash<int, QList<QPair<QPointF, QString>>> m_notes; // slot → [(pos, text)]
     QHash<int, QList<QPair<QPolygonF, QColor>>> m_inks; // slot → [(stroke, colour)]
+    QHash<int, QList<ShapeMark>> m_shapes;              // slot → markup/shape marks
     QPolygonF m_currentStroke;   // in-progress ink stroke (normalized points)
     AnnotTool m_annotTool = AnnotTool::Highlight;
     QColor m_highlightColor = QColor(255, 214, 0);

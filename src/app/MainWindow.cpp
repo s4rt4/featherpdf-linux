@@ -712,23 +712,28 @@ void MainWindow::wireSignals() {
     connect(m_redactionBar, &RedactionBar::clearRequested, m_viewport, &Viewport::clearRedactions);
     connect(m_redactionBar, &RedactionBar::doneRequested, this, [this] { setRedactionMode(false); });
 
-    // Annotation bar ↔ viewport. The bar's count is highlights + notes.
+    // Annotation bar ↔ viewport. The bar's count is every kind of mark.
     const auto refreshAnnotCount = [this] {
         m_annotationBar->setCount(m_viewport->highlightCount() + m_viewport->noteCount() +
-                                  m_viewport->inkCount());
+                                  m_viewport->inkCount() + m_viewport->shapeCount());
     };
     connect(m_viewport, &Viewport::highlightsChanged, this, refreshAnnotCount);
     connect(m_viewport, &Viewport::notesChanged, this, refreshAnnotCount);
     connect(m_viewport, &Viewport::inksChanged, this, refreshAnnotCount);
+    connect(m_viewport, &Viewport::shapesChanged, this, refreshAnnotCount);
     connect(m_annotationBar, &AnnotationBar::saveRequested, this, &MainWindow::applyAnnotations);
     connect(m_annotationBar, &AnnotationBar::clearRequested, m_viewport,
             &Viewport::clearAnnotations);
     connect(m_annotationBar, &AnnotationBar::doneRequested, this,
             [this] { setHighlightMode(false); });
     connect(m_annotationBar, &AnnotationBar::toolChanged, this, [this](int tool) {
-        const PageView::AnnotTool t = tool == 1 ? PageView::AnnotTool::Note
-                                      : tool == 2 ? PageView::AnnotTool::Ink
-                                                  : PageView::AnnotTool::Highlight;
+        using T = PageView::AnnotTool;
+        const T t = tool == 1   ? T::Note
+                    : tool == 2 ? T::Ink
+                    : tool == 3 ? T::Underline
+                    : tool == 4 ? T::StrikeOut
+                    : tool == 5 ? T::Rectangle
+                                : T::Highlight;
         m_viewport->setAnnotationTool(t);
     });
     connect(m_annotationBar, &AnnotationBar::colorChanged, this,
@@ -1170,7 +1175,8 @@ void MainWindow::applyAnnotations() {
     const QHash<int, QList<QPair<QRectF, QColor>>> hiMarks = m_viewport->highlightMarks();
     const QHash<int, QList<QPair<QPointF, QString>>> noteMarks = m_viewport->noteMarks();
     const QHash<int, QList<QPair<QPolygonF, QColor>>> inkMarks = m_viewport->inkMarks();
-    if (hiMarks.isEmpty() && noteMarks.isEmpty() && inkMarks.isEmpty())
+    const QHash<int, QList<PageView::ShapeMark>> shapeMarks = m_viewport->shapeMarks();
+    if (hiMarks.isEmpty() && noteMarks.isEmpty() && inkMarks.isEmpty() && shapeMarks.isEmpty())
         return;
 
     // Map a normalized point from displayed (rotated) page space back to the
@@ -1223,7 +1229,24 @@ void MainWindow::applyAnnotations() {
             inks.append(Annotator::Ink{orig, {mapped}, stroke.second});
         }
     }
-    if (highlights.isEmpty() && notes.isEmpty() && inks.isEmpty())
+    QList<Annotator::Shape> shapes;
+    const auto toShapeKind = [](PageView::AnnotTool t) {
+        switch (t) {
+        case PageView::AnnotTool::Underline: return Annotator::Shape::Kind::Underline;
+        case PageView::AnnotTool::StrikeOut: return Annotator::Shape::Kind::StrikeOut;
+        default: return Annotator::Shape::Kind::Rectangle;
+        }
+    };
+    for (auto it = shapeMarks.constBegin(); it != shapeMarks.constEnd(); ++it) {
+        const int orig = m_doc->originalPageAt(it.key());
+        if (orig < 0)
+            continue;
+        const int rot = m_doc->rotation(it.key());
+        for (const PageView::ShapeMark& sm : it.value())
+            shapes.append(Annotator::Shape{orig, toShapeKind(sm.kind), toPageRect(sm.rect, rot),
+                                           sm.color});
+    }
+    if (highlights.isEmpty() && notes.isEmpty() && inks.isEmpty() && shapes.isEmpty())
         return;
 
     const QFileInfo info(m_doc->filePath());
@@ -1236,8 +1259,8 @@ void MainWindow::applyAnnotations() {
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
-    const bool ok =
-        Annotator::saveAnnotations(m_doc->filePath(), out, highlights, notes, inks, &error);
+    const bool ok = Annotator::saveAnnotations(m_doc->filePath(), out, highlights, notes, inks,
+                                               shapes, &error);
     QApplication::restoreOverrideCursor();
 
     if (!ok) {
