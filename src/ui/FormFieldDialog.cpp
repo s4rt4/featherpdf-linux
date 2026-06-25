@@ -68,6 +68,7 @@ FormFieldDialog::FormFieldDialog(QWidget* parent) : QDialog(parent) {
     m_type->addItem(tr("Text"), int(FormEditor::Type::Text));
     m_type->addItem(tr("Check box"), int(FormEditor::Type::CheckBox));
     m_type->addItem(tr("Dropdown"), int(FormEditor::Type::Dropdown));
+    m_type->addItem(tr("Radio group"), int(FormEditor::Type::Radio));
     m_type->addItem(tr("Push button"), int(FormEditor::Type::PushButton));
     form->addRow(tr("Type"), m_type);
 
@@ -110,6 +111,7 @@ void FormFieldDialog::syncRows() {
     const FormEditor::Type t = fieldType();
     const bool isCheck = t == FormEditor::Type::CheckBox;
     const bool isDrop = t == FormEditor::Type::Dropdown;
+    const bool isRadio = t == FormEditor::Type::Radio;
     const bool isButton = t == FormEditor::Type::PushButton;
 
     // Default value applies to Text (initial text) and Push button (caption).
@@ -118,8 +120,10 @@ void FormFieldDialog::syncRows() {
     m_default->setVisible(showDefault);
     m_defaultLabel->setText(isButton ? tr("Caption") : tr("Default"));
 
-    m_optionsLabel->setVisible(isDrop);
-    m_options->setVisible(isDrop);
+    // Options drive both a dropdown's choices and a radio group's buttons.
+    m_optionsLabel->setVisible(isDrop || isRadio);
+    m_options->setVisible(isDrop || isRadio);
+    m_optionsLabel->setText(isRadio ? tr("Buttons") : tr("Options"));
 
     m_checked->setVisible(isCheck);
 }

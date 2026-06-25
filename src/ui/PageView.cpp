@@ -265,8 +265,10 @@ void PageView::setRedactionMode(bool on) {
     if (m_redactMode == on)
         return;
     m_redactMode = on;
-    if (on)
-        m_highlightMode = false; // the two drag modes are mutually exclusive
+    if (on) {
+        m_highlightMode = false; // the drag modes are mutually exclusive
+        m_fieldMode = false;
+    }
     m_dragging = false;
     m_dragSlot = -1;
     viewport()->setCursor(dragModeActive() ? Qt::CrossCursor : Qt::ArrowCursor);
@@ -277,8 +279,24 @@ void PageView::setHighlightMode(bool on) {
     if (m_highlightMode == on)
         return;
     m_highlightMode = on;
-    if (on)
+    if (on) {
         m_redactMode = false;
+        m_fieldMode = false;
+    }
+    m_dragging = false;
+    m_dragSlot = -1;
+    viewport()->setCursor(dragModeActive() ? Qt::CrossCursor : Qt::ArrowCursor);
+    viewport()->update();
+}
+
+void PageView::setFieldPlacementMode(bool on) {
+    if (m_fieldMode == on)
+        return;
+    m_fieldMode = on;
+    if (on) {
+        m_redactMode = false;
+        m_highlightMode = false;
+    }
     m_dragging = false;
     m_dragSlot = -1;
     viewport()->setCursor(dragModeActive() ? Qt::CrossCursor : Qt::ArrowCursor);
@@ -412,6 +430,10 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
         } else if (m_highlightMode && m_annotTool == AnnotTool::Note) {
             // A note is a single point - drop it where the press landed.
             emit noteRequested(m_dragSlot, m_dragStart);
+        } else if (m_fieldMode) {
+            // A field placement is one-shot: report the rect, don't store it.
+            if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004)
+                emit fieldRectDrawn(m_dragSlot, m_dragNorm);
         } else if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004) {
             // Ignore accidental tiny marks (a click without a real drag).
             if (m_redactMode) {
@@ -649,7 +671,9 @@ void PageView::paintEvent(QPaintEvent*) {
             m_dragging && slot == m_dragSlot && m_dragNorm.isValid() &&
             !(m_highlightMode && (m_annotTool == AnnotTool::Note || m_annotTool == AnnotTool::Ink));
         if (dragRect) {
-            QColor dragFill = m_highlightMode ? m_highlightColor : QColor(200, 30, 30);
+            QColor dragFill = m_fieldMode      ? QColor(17, 124, 111) // feather teal
+                              : m_highlightMode ? m_highlightColor
+                                                : QColor(200, 30, 30);
             dragFill.setAlpha(110);
             drawMark(m_dragNorm, dragFill, true);
         }

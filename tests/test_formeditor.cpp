@@ -144,6 +144,47 @@ private slots:
         QCOMPARE(acroFields(q).getArrayNItems(), 2);
     }
 
+    void addsRadioGroup() {
+        const QString out = m_dir.filePath("radio.pdf");
+        QString err;
+        QVERIFY2(FormEditor::addRadioGroup(m_input, out, "plan", {"Basic", "Pro", "Max"}, 0,
+                                           QRectF(0.1, 0.1, 0.03, 0.02), &err),
+                 qPrintable(err));
+
+        QPDF q;
+        q.processFile(out.toLocal8Bit().constData());
+        QPDFObjectHandle fields = acroFields(q);
+        QCOMPARE(fields.getArrayNItems(), 1); // the parent only
+        QPDFObjectHandle parent = fields.getArrayItem(0);
+        QCOMPARE(QString::fromStdString(parent.getKey("/FT").getName()), QStringLiteral("/Btn"));
+        QVERIFY(parent.getKey("/Ff").getIntValueAsInt() & (1 << 15)); // radio flag
+        QPDFObjectHandle kids = parent.getKey("/Kids");
+        QVERIFY(kids.isArray());
+        QCOMPARE(kids.getArrayNItems(), 3);
+
+        QPDFObjectHandle kid = kids.getArrayItem(0);
+        QCOMPARE(QString::fromStdString(kid.getKey("/Subtype").getName()),
+                 QStringLiteral("/Widget"));
+        QVERIFY(kid.getKey("/Parent").getObjGen() == parent.getObjGen());
+        QCOMPARE(QString::fromStdString(kid.getKey("/AS").getName()), QStringLiteral("/Off"));
+        // /AP /N defines two states: the export value and /Off.
+        QPDFObjectHandle apN = kid.getKey("/AP").getKey("/N");
+        QVERIFY(apN.isDictionary());
+        QCOMPARE(static_cast<int>(apN.getKeys().size()), 2);
+
+        // All three buttons are on the page.
+        auto pages = QPDFPageDocumentHelper(q).getAllPages();
+        QCOMPARE(pages.at(0).getObjectHandle().getKey("/Annots").getArrayNItems(), 3);
+    }
+
+    void rejectsTooFewRadioOptions() {
+        const QString out = m_dir.filePath("radio-bad.pdf");
+        QString err;
+        QVERIFY(!FormEditor::addRadioGroup(m_input, out, "x", {"only"}, 0,
+                                           QRectF(0.1, 0.1, 0.03, 0.02), &err));
+        QVERIFY(!err.isEmpty());
+    }
+
     void rejectsEmptyName() {
         const QString out = m_dir.filePath("noname.pdf");
         FormEditor::NewField f;

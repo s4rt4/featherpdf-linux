@@ -44,12 +44,16 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)
             [this](int count) { emit inksChanged(count); });
     connect(m_view, &PageView::noteRequested, this,
             [this](int slot, QPointF pos) { emit noteRequested(slot, pos); });
+    connect(m_view, &PageView::fieldRectDrawn, this,
+            [this](int slot, QRectF rect) { emit fieldRectDrawn(slot, rect); });
 }
 
 Viewport::~Viewport() = default;
 
 void Viewport::setRedactionMode(bool on) { m_view->setRedactionMode(on); }
 bool Viewport::redactionMode() const { return m_view->redactionMode(); }
+void Viewport::setFieldPlacementMode(bool on) { m_view->setFieldPlacementMode(on); }
+bool Viewport::fieldPlacementMode() const { return m_view->fieldPlacementMode(); }
 QHash<int, QList<QRectF>> Viewport::redactionMarks() const { return m_view->redactionMarks(); }
 int Viewport::redactionCount() const { return m_view->redactionCount(); }
 void Viewport::clearRedactions() { m_view->clearRedactions(); }

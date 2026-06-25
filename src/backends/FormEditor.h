@@ -26,7 +26,7 @@
 // /NeedAppearances is set so any viewer regenerates the field's appearance.
 class FormEditor {
 public:
-    enum class Type { Text, CheckBox, Dropdown, PushButton };
+    enum class Type { Text, CheckBox, Dropdown, PushButton, Radio };
 
     struct NewField {
         Type type = Type::Text;
@@ -41,6 +41,17 @@ public:
     // Add `field` to `inputPath` and write `outputPath`. Lossless apart from the
     // new field. Temp file + atomic rename, so `outputPath` may equal `inputPath`.
     // Returns true on success; on failure fills *error with a friendly message.
+    // (For Type::Radio use addRadioGroup instead — a radio set needs one widget
+    // per option.)
     static bool addField(const QString& inputPath, const QString& outputPath,
                          const NewField& field, QString* error);
+
+    // Add a radio-button group named `name` with one button per entry in
+    // `options`, all on page `page`. `firstRect` (normalized [0,1], top-left
+    // origin) positions the first button; the rest tile downward at the same
+    // size. Written as a parent /Btn field with a widget kid per option. Temp
+    // file + atomic rename. Returns true on success; on failure fills *error.
+    static bool addRadioGroup(const QString& inputPath, const QString& outputPath,
+                              const QString& name, const QStringList& options, int page,
+                              const QRectF& firstRect, QString* error);
 };

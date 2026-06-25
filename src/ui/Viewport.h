@@ -70,6 +70,11 @@ public:
     int redactionCount() const;
     void clearRedactions();
 
+    // Form-field placement (forwarded to PageView): drag a rectangle to place a
+    // new field; the drawn rect arrives via fieldRectDrawn.
+    void setFieldPlacementMode(bool on);
+    bool fieldPlacementMode() const;
+
     // Annotation authoring (forwarded to PageView).
     void setHighlightMode(bool on);
     bool highlightMode() const;
@@ -95,6 +100,7 @@ signals:
     void notesChanged(int count);
     void inksChanged(int count);
     void noteRequested(int slot, QPointF normPos);
+    void fieldRectDrawn(int slot, QRectF normRect); // form field placement finished
 
 private:
     FeatherDocument* m_doc = nullptr;

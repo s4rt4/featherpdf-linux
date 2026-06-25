@@ -112,6 +112,12 @@ public:
     void addNote(int slot, const QPointF& pos, const QString& text);
     void clearAnnotations(); // clears highlights, notes, and ink
 
+    // Form-field placement: drag one rectangle to say where a new field goes.
+    // Unlike the other drag modes nothing is stored - the drawn rect (normalized
+    // to the displayed page) is emitted via fieldRectDrawn and the mode ends.
+    void setFieldPlacementMode(bool on);
+    bool fieldPlacementMode() const { return m_fieldMode; }
+
 signals:
     void currentPageChanged(int page);
     void zoomChanged(double zoom);
@@ -122,6 +128,7 @@ signals:
     void notesChanged(int count);
     void inksChanged(int count);
     void noteRequested(int slot, QPointF normPos); // Note tool clicked at a point
+    void fieldRectDrawn(int slot, QRectF normRect); // form field placement finished
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -206,9 +213,10 @@ private:
     // active at a time). normInSlot maps a viewport point to page fractions.
     QPointF normInSlot(int slot, const QPoint& vpPt) const;
     bool deleteMarkAt(int slot, const QPointF& norm); // remove the topmost mark under a point
-    bool dragModeActive() const { return m_redactMode || m_highlightMode; }
+    bool dragModeActive() const { return m_redactMode || m_highlightMode || m_fieldMode; }
     bool m_redactMode = false;
     bool m_highlightMode = false;
+    bool m_fieldMode = false;
     QHash<int, QList<QRectF>> m_redactions;             // slot → normalized rects
     QHash<int, QList<QPair<QRectF, QColor>>> m_highlights; // slot → [(rect, colour)]
     QHash<int, QList<QPair<QPointF, QString>>> m_notes; // slot → [(pos, text)]

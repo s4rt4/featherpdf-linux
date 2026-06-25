@@ -19,9 +19,11 @@
 #include <QHash>
 #include <QMainWindow>
 #include <QPair>
+#include <QRectF>
 #include <QStringList>
 #include <QVector>
 
+#include "backends/FormEditor.h"
 #include "backends/PdfEditor.h"
 
 class FeatherDocument;
@@ -93,7 +95,8 @@ private:
     void insertPagesIntoActive(); // splice pages from another PDF, open the result
     void cropActivePages();       // trim page margins (/CropBox), open the result
     void saveOutline(const QVector<PdfEditor::OutlineItem>& items); // write /Outlines, open result
-    void addFormField(); // author a new AcroForm field, open the result
+    void addFormField(); // author a new AcroForm field: configure, then place
+    void placeFormField(int slot, const QRectF& normRect); // drawn rect → create field
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
@@ -214,6 +217,8 @@ private:
     QAction* m_insertPagesAct = nullptr;
     QAction* m_cropPagesAct = nullptr;
     QAction* m_addFieldAct = nullptr;
+    FormEditor::NewField m_pendingField; // field being placed (after the dialog)
+    bool m_placingField = false;         // viewport is in field-placement mode
     QUndoGroup* m_undoGroup = nullptr;
     QAction* m_zoomInAct = nullptr;
     QAction* m_zoomOutAct = nullptr;

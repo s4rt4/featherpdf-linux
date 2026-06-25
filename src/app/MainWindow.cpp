@@ -699,6 +699,9 @@ void MainWindow::wireSignals() {
     connect(m_viewport, &Viewport::currentPageChanged, m_outline, &OutlinePanel::setCurrentPage);
     connect(m_outline, &OutlinePanel::saveRequested, this, &MainWindow::saveOutline);
 
+    // Form-field placement: a drawn rectangle becomes a new field.
+    connect(m_viewport, &Viewport::fieldRectDrawn, this, &MainWindow::placeFormField);
+
     // Redaction bar ↔ viewport.
     connect(m_viewport, &Viewport::redactionsChanged, this,
             [this](int count) { m_redactionBar->setCount(count); });
@@ -1000,29 +1003,39 @@ void MainWindow::addFormField() {
         m_toast->show(tr("Give the field a name."));
         return;
     }
-
-    FormEditor::NewField nf;
-    nf.type = dialog.fieldType();
-    nf.name = dialog.fieldName();
-    nf.defaultValue = dialog.defaultValue();
-    nf.checked = dialog.checked();
-    nf.options = dialog.options();
-    // Land on the page being viewed (its original index, so any in-session
-    // reorder still points at the right page on disk).
-    nf.page = std::max(0, m_doc->originalPageAt(m_viewport->currentPage()));
-    // A sensible default box near the top-left; size depends on the field type.
-    switch (nf.type) {
-    case FormEditor::Type::CheckBox:
-        nf.rect = QRectF(0.12, 0.12, 0.03, 0.02);
-        break;
-    case FormEditor::Type::PushButton:
-        nf.rect = QRectF(0.12, 0.12, 0.20, 0.04);
-        break;
-    case FormEditor::Type::Text:
-    case FormEditor::Type::Dropdown:
-        nf.rect = QRectF(0.12, 0.12, 0.32, 0.035);
-        break;
+    const bool isRadio = dialog.fieldType() == FormEditor::Type::Radio;
+    if (isRadio && dialog.options().size() < 2) {
+        m_toast->show(tr("A radio group needs at least two buttons."));
+        return;
     }
+
+    // Remember the field's properties, then let the user draw where it goes.
+    m_pendingField = FormEditor::NewField{};
+    m_pendingField.type = dialog.fieldType();
+    m_pendingField.name = dialog.fieldName();
+    m_pendingField.defaultValue = dialog.defaultValue();
+    m_pendingField.checked = dialog.checked();
+    m_pendingField.options = dialog.options();
+    m_placingField = true;
+
+    setRedactionMode(false); // the edit modes are mutually exclusive
+    setHighlightMode(false);
+    m_viewport->setFieldPlacementMode(true);
+    m_toast->show(isRadio ? tr("Draw where the first button goes.")
+                          : tr("Draw where the field goes."));
+}
+
+void MainWindow::placeFormField(int slot, const QRectF& normRect) {
+    if (!m_placingField || !hasActiveDoc())
+        return;
+    m_placingField = false;
+    m_viewport->setFieldPlacementMode(false);
+
+    // The drawn rect is normalized to the displayed page; the field lands on that
+    // page's original index so an in-session reorder still points at the right
+    // page on disk.
+    const int page = std::max(0, m_doc->originalPageAt(slot));
+    const bool isRadio = m_pendingField.type == FormEditor::Type::Radio;
 
     const QString out = QFileDialog::getSaveFileName(this, tr("Save form"), m_doc->filePath(),
                                                      tr("PDF documents (*.pdf)"));
@@ -1031,14 +1044,22 @@ void MainWindow::addFormField() {
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
-    const bool ok = FormEditor::addField(m_doc->filePath(), out, nf, &error);
+    bool ok;
+    if (isRadio) {
+        ok = FormEditor::addRadioGroup(m_doc->filePath(), out, m_pendingField.name,
+                                       m_pendingField.options, page, normRect, &error);
+    } else {
+        m_pendingField.page = page;
+        m_pendingField.rect = normRect;
+        ok = FormEditor::addField(m_doc->filePath(), out, m_pendingField, &error);
+    }
     QApplication::restoreOverrideCursor();
 
     if (!ok) {
         QMessageBox::warning(this, tr("Couldn't add field"), error);
         return;
     }
-    m_toast->show(tr("Added “%1” to %2").arg(nf.name, QFileInfo(out).fileName()));
+    m_toast->show(tr("Added “%1” to %2").arg(m_pendingField.name, QFileInfo(out).fileName()));
     openPath(out); // surface the document with its new field
 }
 
