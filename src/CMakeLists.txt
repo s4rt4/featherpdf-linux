@@ -14,6 +14,8 @@ qt_add_executable(feather-pdf
     backends/Annotator.h
     backends/FormFiller.cpp
     backends/FormFiller.h
+    backends/FormEditor.cpp
+    backends/FormEditor.h
     backends/Signer.cpp
     backends/Signer.h
     backends/Converter.cpp
@@ -72,6 +74,8 @@ qt_add_executable(feather-pdf
     ui/InsertDialog.h
     ui/CropDialog.cpp
     ui/CropDialog.h
+    ui/FormFieldDialog.cpp
+    ui/FormFieldDialog.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

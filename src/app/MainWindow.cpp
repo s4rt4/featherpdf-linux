@@ -22,6 +22,7 @@
 #include "backends/Comparer.h"
 #include "backends/Converter.h"
 #include "backends/Flattener.h"
+#include "backends/FormEditor.h"
 #include "backends/FormFiller.h"
 #include "backends/Splitter.h"
 #include "backends/Ocr.h"
@@ -39,6 +40,7 @@
 #include "ui/DocsView.h"
 #include "ui/ExtractDialog.h"
 #include "ui/FlattenDialog.h"
+#include "ui/FormFieldDialog.h"
 #include "ui/GoToPageDialog.h"
 #include "ui/InsertDialog.h"
 #include "ui/FindBar.h"
@@ -171,6 +173,9 @@ void MainWindow::buildActions() {
     m_cropPagesAct = new QAction(tr("&Crop Pages…"), this);
     connect(m_cropPagesAct, &QAction::triggered, this, &MainWindow::cropActivePages);
 
+    m_addFieldAct = new QAction(tr("Add Form &Field…"), this);
+    connect(m_addFieldAct, &QAction::triggered, this, &MainWindow::addFormField);
+
     m_closeAct = new QAction(tr("&Close"), this);
     m_closeAct->setShortcut(QKeySequence::Close);
     connect(m_closeAct, &QAction::triggered, this, &MainWindow::closeDocument);
@@ -284,6 +289,8 @@ void MainWindow::buildMenus() {
     document->addAction(m_insertPagesAct);
     document->addAction(m_extractPagesAct);
     document->addAction(m_cropPagesAct);
+    document->addSeparator();
+    document->addAction(m_addFieldAct);
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
     connect(props, &QAction::triggered, this, &MainWindow::showProperties);
@@ -980,6 +987,59 @@ void MainWindow::saveOutline(const QVector<PdfEditor::OutlineItem>& items) {
     }
     m_toast->show(tr("Outline saved to %1").arg(QFileInfo(out).fileName()));
     openPath(out); // surface the saved result
+}
+
+void MainWindow::addFormField() {
+    if (!hasActiveDoc())
+        return;
+
+    FormFieldDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    if (dialog.fieldName().isEmpty()) {
+        m_toast->show(tr("Give the field a name."));
+        return;
+    }
+
+    FormEditor::NewField nf;
+    nf.type = dialog.fieldType();
+    nf.name = dialog.fieldName();
+    nf.defaultValue = dialog.defaultValue();
+    nf.checked = dialog.checked();
+    nf.options = dialog.options();
+    // Land on the page being viewed (its original index, so any in-session
+    // reorder still points at the right page on disk).
+    nf.page = std::max(0, m_doc->originalPageAt(m_viewport->currentPage()));
+    // A sensible default box near the top-left; size depends on the field type.
+    switch (nf.type) {
+    case FormEditor::Type::CheckBox:
+        nf.rect = QRectF(0.12, 0.12, 0.03, 0.02);
+        break;
+    case FormEditor::Type::PushButton:
+        nf.rect = QRectF(0.12, 0.12, 0.20, 0.04);
+        break;
+    case FormEditor::Type::Text:
+    case FormEditor::Type::Dropdown:
+        nf.rect = QRectF(0.12, 0.12, 0.32, 0.035);
+        break;
+    }
+
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save form"), m_doc->filePath(),
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = FormEditor::addField(m_doc->filePath(), out, nf, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't add field"), error);
+        return;
+    }
+    m_toast->show(tr("Added “%1” to %2").arg(nf.name, QFileInfo(out).fileName()));
+    openPath(out); // surface the document with its new field
 }
 
 bool MainWindow::saveActiveAs() {
@@ -2178,6 +2238,7 @@ void MainWindow::updateChromeState() {
     m_extractPagesAct->setEnabled(loaded);
     m_insertPagesAct->setEnabled(loaded);
     m_cropPagesAct->setEnabled(loaded);
+    m_addFieldAct->setEnabled(loaded);
     m_closeAct->setEnabled(loaded);
     m_zoomInAct->setEnabled(loaded);
     m_zoomOutAct->setEnabled(loaded);

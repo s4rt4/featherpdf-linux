@@ -93,6 +93,7 @@ private:
     void insertPagesIntoActive(); // splice pages from another PDF, open the result
     void cropActivePages();       // trim page margins (/CropBox), open the result
     void saveOutline(const QVector<PdfEditor::OutlineItem>& items); // write /Outlines, open result
+    void addFormField(); // author a new AcroForm field, open the result
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
@@ -212,6 +213,7 @@ private:
     QAction* m_extractPagesAct = nullptr;
     QAction* m_insertPagesAct = nullptr;
     QAction* m_cropPagesAct = nullptr;
+    QAction* m_addFieldAct = nullptr;
     QUndoGroup* m_undoGroup = nullptr;
     QAction* m_zoomInAct = nullptr;
     QAction* m_zoomOutAct = nullptr;

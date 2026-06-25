@@ -21,6 +21,21 @@ target_link_libraries(test_pdfeditor PRIVATE
 add_test(NAME pdfeditor COMMAND test_pdfeditor)
 set_tests_properties(pdfeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_formeditor
+    test_formeditor.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/FormEditor.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/FormEditor.h
+)
+target_include_directories(test_formeditor PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_formeditor PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::QPDF
+)
+add_test(NAME formeditor COMMAND test_formeditor)
+set_tests_properties(formeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_document
     test_document.cpp
     ${CMAKE_SOURCE_DIR}/src/core/FeatherDocument.cpp
