@@ -46,6 +46,19 @@ public:
     static bool addField(const QString& inputPath, const QString& outputPath,
                          const NewField& field, QString* error);
 
+    // Remove the top-level field named `name` (and its widget annotations, incl.
+    // every kid of a radio group) from `inputPath`, writing `outputPath`. Temp
+    // file + atomic rename. Returns true on success (false if no such field).
+    static bool deleteField(const QString& inputPath, const QString& outputPath,
+                            const QString& name, QString* error);
+
+    // Reposition the single-widget field named `name` to `normRect` (normalized
+    // [0,1], top-left origin, on the field's own page) and regenerate its
+    // appearance at the new size. Radio groups (multiple widgets) are rejected.
+    // Temp file + atomic rename. Returns true on success.
+    static bool setFieldRect(const QString& inputPath, const QString& outputPath,
+                             const QString& name, const QRectF& normRect, QString* error);
+
     // Add a radio-button group named `name` with one button per entry in
     // `options`, all on page `page`. `firstRect` (normalized [0,1], top-left
     // origin) positions the first button; the rest tile downward at the same

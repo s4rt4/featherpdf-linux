@@ -17,6 +17,7 @@
 #include <qpdf/QPDFObjectHandle.hh>
 #include <qpdf/QPDFPageDocumentHelper.hh>
 #include <qpdf/QPDFPageObjectHelper.hh>
+#include <qpdf/QPDFWriter.hh>
 
 class TestFormEditor : public QObject {
     Q_OBJECT
@@ -39,6 +40,29 @@ private:
 
     QPDFObjectHandle acroFields(QPDF& q) {
         return q.getRoot().getKey("/AcroForm").getKey("/Fields");
+    }
+
+    // Read box `key` of page `index` into [x0,y0,x1,y1]; false if absent.
+    bool boxOf(const QString& path, int index, const char* key, double out[4]) {
+        QPDF q;
+        q.processFile(path.toLocal8Bit().constData());
+        auto pages = QPDFPageDocumentHelper(q).getAllPages();
+        QPDFObjectHandle b = pages.at(index).getObjectHandle().getKey(key);
+        if (!b.isArray() || b.getArrayNItems() != 4)
+            return false;
+        for (int i = 0; i < 4; ++i)
+            out[i] = b.getArrayItem(i).getNumericValue();
+        return true;
+    }
+
+    // Copy `in` to `out` with page 0 marked /Rotate 90.
+    void rotatePage0(const QString& in, const QString& out) {
+        QPDF q;
+        q.processFile(in.toLocal8Bit().constData());
+        auto pages = QPDFPageDocumentHelper(q).getAllPages();
+        pages.at(0).getObjectHandle().replaceKey("/Rotate", QPDFObjectHandle::newInteger(90));
+        QPDFWriter w(q, out.toLocal8Bit().constData());
+        w.write();
     }
 
 private slots:
@@ -183,6 +207,108 @@ private slots:
         QVERIFY(!FormEditor::addRadioGroup(m_input, out, "x", {"only"}, 0,
                                            QRectF(0.1, 0.1, 0.03, 0.02), &err));
         QVERIFY(!err.isEmpty());
+    }
+
+    void generatesAppearances() {
+        const QString out = m_dir.filePath("appear.pdf");
+        FormEditor::NewField f;
+        f.type = FormEditor::Type::Text;
+        f.name = "ap";
+        f.defaultValue = "x";
+        f.page = 0;
+        f.rect = QRectF(0.1, 0.1, 0.3, 0.04);
+        QString err;
+        QVERIFY2(FormEditor::addField(m_input, out, f, &err), qPrintable(err));
+        QPDF q;
+        q.processFile(out.toLocal8Bit().constData());
+        QPDFObjectHandle ap = acroFields(q).getArrayItem(0).getKey("/AP");
+        QVERIFY(ap.isDictionary());
+        QVERIFY(ap.getKey("/N").isStream()); // a single appearance stream
+
+        const QString out2 = m_dir.filePath("appear-check.pdf");
+        FormEditor::NewField c;
+        c.type = FormEditor::Type::CheckBox;
+        c.name = "ac";
+        c.page = 0;
+        c.rect = QRectF(0.1, 0.1, 0.03, 0.02);
+        QVERIFY2(FormEditor::addField(m_input, out2, c, &err), qPrintable(err));
+        QPDF q2;
+        q2.processFile(out2.toLocal8Bit().constData());
+        QPDFObjectHandle apN = acroFields(q2).getArrayItem(0).getKey("/AP").getKey("/N");
+        QVERIFY(apN.isDictionary());
+        QCOMPARE(static_cast<int>(apN.getKeys().size()), 2); // /Yes + /Off
+    }
+
+    void mapsRectThroughPageRotation() {
+        const QString rotated = m_dir.filePath("rot-input.pdf");
+        rotatePage0(m_input, rotated);
+        const QString out = m_dir.filePath("rot-field.pdf");
+        FormEditor::NewField f;
+        f.type = FormEditor::Type::Text;
+        f.name = "r";
+        f.page = 0;
+        f.rect = QRectF(0.0, 0.0, 0.5, 0.5); // displayed top-left quadrant
+        QString err;
+        QVERIFY2(FormEditor::addField(rotated, out, f, &err), qPrintable(err));
+
+        QPDF q;
+        q.processFile(out.toLocal8Bit().constData());
+        QPDFObjectHandle field = acroFields(q).getArrayItem(0);
+        QPDFObjectHandle rect = field.getKey("/Rect");
+        double mb[4];
+        QVERIFY(boxOf(out, 0, "/MediaBox", mb));
+        const double W = mb[2] - mb[0], H = mb[3] - mb[1];
+        // For /Rotate 90 the displayed top-left quadrant maps to the page's
+        // unrotated bottom-left quadrant: x in [0, W/2], y in [0, H/2].
+        QVERIFY(qAbs(rect.getArrayItem(0).getNumericValue() - 0.0) < 1.0);
+        QVERIFY(qAbs(rect.getArrayItem(1).getNumericValue() - 0.0) < 1.0);
+        QVERIFY(qAbs(rect.getArrayItem(2).getNumericValue() - W / 2) < 1.0);
+        QVERIFY(qAbs(rect.getArrayItem(3).getNumericValue() - H / 2) < 1.0);
+    }
+
+    void deletesField() {
+        const QString seeded = m_dir.filePath("del-seed.pdf");
+        const QString out = m_dir.filePath("del-out.pdf");
+        FormEditor::NewField f;
+        f.type = FormEditor::Type::Text;
+        f.name = "gone";
+        f.page = 0;
+        f.rect = QRectF(0.1, 0.1, 0.3, 0.04);
+        QString err;
+        QVERIFY2(FormEditor::addField(m_input, seeded, f, &err), qPrintable(err));
+        QVERIFY2(FormEditor::deleteField(seeded, out, "gone", &err), qPrintable(err));
+
+        QPDF q;
+        q.processFile(out.toLocal8Bit().constData());
+        QCOMPARE(acroFields(q).getArrayNItems(), 0);
+        QPDFObjectHandle annots =
+            QPDFPageDocumentHelper(q).getAllPages().at(0).getObjectHandle().getKey("/Annots");
+        QVERIFY(!annots.isArray() || annots.getArrayNItems() == 0);
+
+        QVERIFY(!FormEditor::deleteField(out, m_dir.filePath("x.pdf"), "missing", &err));
+    }
+
+    void movesField() {
+        const QString seeded = m_dir.filePath("mv-seed.pdf");
+        const QString out = m_dir.filePath("mv-out.pdf");
+        FormEditor::NewField f;
+        f.type = FormEditor::Type::Text;
+        f.name = "mv";
+        f.page = 0;
+        f.rect = QRectF(0.1, 0.1, 0.2, 0.04);
+        QString err;
+        QVERIFY2(FormEditor::addField(m_input, seeded, f, &err), qPrintable(err));
+        QVERIFY2(FormEditor::setFieldRect(seeded, out, "mv", QRectF(0.5, 0.5, 0.3, 0.05), &err),
+                 qPrintable(err));
+
+        QPDF q;
+        q.processFile(out.toLocal8Bit().constData());
+        QPDFObjectHandle rect = acroFields(q).getArrayItem(0).getKey("/Rect");
+        double mb[4];
+        QVERIFY(boxOf(out, 0, "/MediaBox", mb));
+        const double W = mb[2] - mb[0];
+        // New left edge ~ 0.5 * page width (upright page, no rotation).
+        QVERIFY(qAbs(rect.getArrayItem(0).getNumericValue() - 0.5 * W) < 1.5);
     }
 
     void rejectsEmptyName() {
