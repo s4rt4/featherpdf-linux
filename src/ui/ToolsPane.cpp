@@ -135,7 +135,9 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
     const Def defs[] = {
         {"export", QT_TR_NOOP("Export"), "export", true},
         {"create", QT_TR_NOOP("Create"), "create", true},
-        {"edit", QT_TR_NOOP("Edit"), "edit", false},
+        {"ocr", QT_TR_NOOP("Recognize text"), "search", false},
+        {"edit", QT_TR_NOOP("Edit text"), "edit", false},
+        {"forms", QT_TR_NOOP("Forms"), "form", false},
         {"comment", QT_TR_NOOP("Comment"), "comment", false},
         {"combine", QT_TR_NOOP("Combine"), "combine", true},
         {"split", QT_TR_NOOP("Split"), "split", false},

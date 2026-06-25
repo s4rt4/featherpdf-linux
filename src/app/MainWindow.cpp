@@ -328,6 +328,8 @@ void MainWindow::buildMenus() {
     };
     const ToolEntry toolEntries[] = {
         {"create", tr("Create PDF…"), false},  {"export", tr("Export…"), false},
+        {"ocr", tr("Recognize Text (OCR)…"), false}, {"edit", tr("Edit Text…"), false},
+        {"forms", tr("Forms"), true},
         {"combine", tr("Combine…"), false},    {"split", tr("Split…"), true},
         {"comment", tr("Comment"), false},     {"redact", tr("Redact"), false},
         {"watermark", tr("Watermark…"), false}, {"bates", tr("Bates Numbering…"), false},
@@ -335,7 +337,6 @@ void MainWindow::buildMenus() {
         {"optimize", tr("Optimize…"), false},  {"cmyk", tr("RGB to CMYK…"), false},
         {"flatten", tr("Flatten…"), false},
         {"protect", tr("Protect…"), false},    {"sign", tr("Sign…"), true},
-        {"edit", tr("Edit Text"), false},
     };
     for (const ToolEntry& e : toolEntries) {
         const QString id = QString::fromLatin1(e.id);
@@ -1540,6 +1541,11 @@ void MainWindow::activateTool(const QString& id) {
         signDocument();
     } else if (id == QLatin1String("edit")) {
         editTextBoxes();
+    } else if (id == QLatin1String("forms")) {
+        if (hasActiveDoc())
+            m_rail->setCurrentPanel(NavigationRail::Panel::Forms);
+    } else if (id == QLatin1String("ocr")) {
+        recognizeText();
     } else if (id == QLatin1String("create")) {
         createPdf();
     } else {
