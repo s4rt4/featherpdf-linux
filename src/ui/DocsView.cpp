@@ -130,6 +130,47 @@ QList<Group> buildDocs() {
               "<b>Enter</b>/<b>Shift+Enter</b> untuk berikut/sebelumnya. <b>Esc</b> menutup.</li></ul>",
               "<p>Jika tak ada hasil pada PDF hasil scan, berkas itu tak punya lapisan teks - "
               "jalankan <b>Recognize Text (OCR)</b> dulu.</p>")});
+    start.topics.append(
+        {"reading-mode", "Reading mode", "Mode baca",
+         sect("en", "<p>An immersive, distraction-free view of the page.</p>",
+              "<p>Hide every toolbar and panel to read with just the page and a floating pill.</p>",
+              "<p>The chrome slides away; the floating pill (bottom-centre) keeps page navigation, "
+              "zoom, and a reading-mode toggle within reach.</p>",
+              "<ul><li>Press <b>F11</b>, pick <b>View ▸ Immersive Reading</b>, or click the book icon "
+              "on the floating pill.</li><li>Leave with <b>Esc</b>, <b>F11</b>, or the pill's exit "
+              "icon. Click the page number on the pill to jump to a page.</li></ul>",
+              "<p>The pill stays on top of the page; if it ever hides, move the mouse to the bottom "
+              "of the window.</p>"),
+         sect("id", "<p>Tampilan membaca yang imersif tanpa gangguan.</p>",
+              "<p>Sembunyikan semua toolbar dan panel agar hanya ada halaman dan pill melayang.</p>",
+              "<p>Chrome menyingkir; pill melayang (tengah-bawah) tetap menyediakan navigasi halaman, "
+              "zoom, dan tombol mode baca.</p>",
+              "<ul><li>Tekan <b>F11</b>, pilih <b>View ▸ Immersive Reading</b>, atau klik ikon buku di "
+              "pill.</li><li>Keluar dengan <b>Esc</b>, <b>F11</b>, atau ikon keluar di pill. Klik nomor "
+              "halaman di pill untuk melompat.</li></ul>",
+              "<p>Pill tetap di atas halaman; jika tersembunyi, arahkan mouse ke bawah jendela.</p>")});
+    start.topics.append(
+        {"preferences", "Preferences", "Preferensi",
+         sect("en", "<p>App-wide settings, in one place.</p>",
+              "<p>Set the appearance and how new documents open, once.</p>",
+              "<p>Choices are saved and restored on the next launch (theme, default layout/zoom, the "
+              "Tools-pane contents, and recent files all persist).</p>",
+              "<ul><li>Open <b>Edit ▸ Preferences…</b> (<b>Ctrl+,</b>).</li>"
+              "<li><b>Appearance</b>: follow the system theme, or force Light / Dark.</li>"
+              "<li><b>Default page layout</b> and <b>Default zoom</b> apply to documents you open "
+              "next.</li></ul>",
+              "<p>The default layout/zoom only take effect once you set them, so the out-of-the-box "
+              "behaviour is unchanged until you choose.</p>"),
+         sect("id", "<p>Pengaturan aplikasi, dalam satu tempat.</p>",
+              "<p>Atur tampilan dan cara dokumen baru dibuka, sekali saja.</p>",
+              "<p>Pilihan disimpan dan dipulihkan saat membuka lagi (tema, layout/zoom default, isi "
+              "Tools pane, dan berkas terbaru semua persisten).</p>",
+              "<ul><li>Buka <b>Edit ▸ Preferences…</b> (<b>Ctrl+,</b>).</li>"
+              "<li><b>Appearance</b>: ikuti tema sistem, atau paksa Light / Dark.</li>"
+              "<li><b>Default page layout</b> dan <b>Default zoom</b> berlaku untuk dokumen yang "
+              "dibuka berikutnya.</li></ul>",
+              "<p>Default layout/zoom baru berlaku setelah kamu mengaturnya, jadi perilaku bawaan tak "
+              "berubah sampai kamu memilih.</p>")});
     g.append(start);
 
     // ── Panels ───────────────────────────────────────────────────────────────
@@ -310,7 +351,148 @@ QList<Group> buildDocs() {
               "halaman, subset ganjil/genap, salinan, dan grayscale.</li></ul>",
               "<p>Jika printer asli lambat muncul, ia masih ditemukan. Mencetak ke printer asli "
               "sebentar memuat driver-nya saat pertama kali.</p>")});
+    editing.topics.append(
+        {"export", "Save &amp; export", "Simpan &amp; ekspor",
+         sect("en", "<p>Write your edits to disk, in place or as a copy.</p>",
+              "<p>Keep your changes - page edits, and the structural results other tools produce.</p>",
+              "<p>Page edits (rotate/delete/reorder) are saved losslessly by QPDF. Most other tools "
+              "write a new file and open it, leaving the original untouched until you save.</p>",
+              "<ul><li><b>Save</b> (Ctrl+S) writes back to the current file; <b>Save As</b> "
+              "(Ctrl+Shift+S), or the <b>Export</b> tool, writes a copy.</li>"
+              "<li>A dot on the tab marks unsaved page edits.</li></ul>",
+              "<p>If Save is disabled, no document is open. Encrypted originals are re-saved without "
+              "their password unless you protect the copy again.</p>"),
+         sect("id", "<p>Tulis suntinganmu ke disk, di tempat atau sebagai salinan.</p>",
+              "<p>Simpan perubahan - suntingan halaman, dan hasil struktural dari tool lain.</p>",
+              "<p>Suntingan halaman (putar/hapus/susun) disimpan lossless oleh QPDF. Kebanyakan tool "
+              "lain menulis berkas baru lalu membukanya, membiarkan aslinya utuh sampai kamu "
+              "menyimpan.</p>",
+              "<ul><li><b>Save</b> (Ctrl+S) menulis ke berkas saat ini; <b>Save As</b> "
+              "(Ctrl+Shift+S), atau tool <b>Export</b>, menulis salinan.</li>"
+              "<li>Titik di tab menandai suntingan halaman yang belum disimpan.</li></ul>",
+              "<p>Jika Save nonaktif, tak ada dokumen terbuka.</p>")});
+    editing.topics.append(
+        {"split", "Split", "Pisah",
+         sect("en", "<p>Break one PDF into several files.</p>",
+              "<p>Produce separate files - one per page, every N pages, or by page ranges.</p>",
+              "<p>Pages are copied losslessly by QPDF into the chosen pieces, named after the source "
+              "in an output folder.</p>",
+              "<ul><li>Open the <b>Split</b> tool, pick a mode (each page / every N / ranges like "
+              "<i>1-3, 5, 8-10</i>), and choose an output folder.</li></ul>",
+              "<p>To pull out just a few pages without making many files, use <b>Extract Pages</b> "
+              "(Organize pages) instead.</p>"),
+         sect("id", "<p>Pecah satu PDF menjadi beberapa berkas.</p>",
+              "<p>Hasilkan berkas terpisah - per halaman, tiap N halaman, atau per rentang.</p>",
+              "<p>Halaman disalin lossless oleh QPDF ke potongan terpilih, dinamai sesuai sumber di "
+              "folder keluaran.</p>",
+              "<ul><li>Buka tool <b>Split</b>, pilih mode (per halaman / tiap N / rentang seperti "
+              "<i>1-3, 5, 8-10</i>), lalu pilih folder keluaran.</li></ul>",
+              "<p>Untuk mengambil beberapa halaman saja tanpa banyak berkas, pakai <b>Extract "
+              "Pages</b> (Menata halaman).</p>")});
+    editing.topics.append(
+        {"properties", "Document properties", "Properti dokumen",
+         sect("en", "<p>View and edit the document's metadata.</p>",
+              "<p>See the title, author, subject, keywords, and producer, and change them.</p>",
+              "<p>Metadata is read and written in the document's info dictionary; page and file "
+              "statistics are shown read-only.</p>",
+              "<ul><li>Open <b>Document ▸ Properties…</b>, edit the fields, and save.</li></ul>",
+              "<p>Some viewers cache metadata; reopen the file to confirm changes.</p>"),
+         sect("id", "<p>Lihat dan ubah metadata dokumen.</p>",
+              "<p>Lihat judul, penulis, subjek, kata kunci, dan produser, lalu ubah.</p>",
+              "<p>Metadata dibaca dan ditulis di info dictionary dokumen; statistik halaman dan "
+              "berkas ditampilkan hanya-baca.</p>",
+              "<ul><li>Buka <b>Document ▸ Properties…</b>, sunting field, lalu simpan.</li></ul>",
+              "<p>Beberapa penampil menyimpan metadata di cache; buka ulang berkas untuk "
+              "memastikan.</p>")});
     g.append(editing);
+
+    // ── Output &amp; optimization ────────────────────────────────────────────
+    Group output{"Output &amp; optimization", "Keluaran &amp; optimasi", {}};
+    output.topics.append(
+        {"watermark", "Watermark", "Watermark",
+         sect("en", "<p>Stamp a text or image watermark across the pages.</p>",
+              "<p>Mark a document as Draft/Confidential, or brand it with a logo.</p>",
+              "<p>The mark is drawn on each page with an adjustable opacity, rotation, and position; "
+              "the result is written to a new file.</p>",
+              "<ul><li>Open the <b>Watermark</b> tool, choose text or an image, set opacity and "
+              "placement, and save.</li></ul>",
+              "<p>For an irreversible mark, <b>Flatten</b> the result so the watermark can't be "
+              "removed as a layer.</p>"),
+         sect("id", "<p>Bubuhkan watermark teks atau gambar di seluruh halaman.</p>",
+              "<p>Tandai dokumen sebagai Draft/Rahasia, atau beri logo.</p>",
+              "<p>Tanda digambar di tiap halaman dengan opasitas, rotasi, dan posisi yang bisa diatur; "
+              "hasilnya ditulis ke berkas baru.</p>",
+              "<ul><li>Buka tool <b>Watermark</b>, pilih teks atau gambar, atur opasitas dan posisi, "
+              "lalu simpan.</li></ul>",
+              "<p>Untuk tanda permanen, <b>Flatten</b> hasilnya agar watermark tak bisa dilepas "
+              "sebagai lapisan.</p>")});
+    output.topics.append(
+        {"bates", "Bates numbering", "Penomoran Bates",
+         sect("en", "<p>Stamp sequential identifiers on every page.</p>",
+              "<p>Number pages for legal or archival sets, with an optional prefix and suffix.</p>",
+              "<p>Each page gets a running number at a chosen corner; the numbered copy is written to "
+              "a new file.</p>",
+              "<ul><li>Open the <b>Bates numbering</b> tool, set the start number, digits, prefix/"
+              "suffix, and position, then save.</li></ul>",
+              "<p>Run it on the final assembled document so the numbering stays continuous.</p>"),
+         sect("id", "<p>Bubuhkan penanda berurut di tiap halaman.</p>",
+              "<p>Nomori halaman untuk berkas hukum/arsip, dengan awalan dan akhiran opsional.</p>",
+              "<p>Tiap halaman mendapat nomor berjalan di sudut pilihan; salinan bernomor ditulis ke "
+              "berkas baru.</p>",
+              "<ul><li>Buka tool <b>Bates numbering</b>, atur nomor awal, jumlah digit, awalan/"
+              "akhiran, dan posisi, lalu simpan.</li></ul>",
+              "<p>Jalankan pada dokumen final agar penomoran tetap kontinu.</p>")});
+    output.topics.append(
+        {"optimize", "Optimize", "Optimasi",
+         sect("en", "<p>Rewrite the file more compactly.</p>",
+              "<p>Shrink the file size without changing how it looks.</p>",
+              "<p>QPDF packs objects into object streams and recompresses streams losslessly; the "
+              "before/after sizes are reported.</p>",
+              "<ul><li>Open the <b>Optimize</b> tool (or Document ▸ Optimize…) and save the result."
+              "</li></ul>",
+              "<p>Savings vary - already-compressed or image-heavy PDFs may barely shrink. For scans, "
+              "OCR doesn't reduce size.</p>"),
+         sect("id", "<p>Tulis ulang berkas lebih ringkas.</p>",
+              "<p>Perkecil ukuran berkas tanpa mengubah tampilannya.</p>",
+              "<p>QPDF mengemas objek ke object stream dan mengompres ulang stream secara lossless; "
+              "ukuran sebelum/sesudah dilaporkan.</p>",
+              "<ul><li>Buka tool <b>Optimize</b> (atau Document ▸ Optimize…) lalu simpan hasilnya."
+              "</li></ul>",
+              "<p>Penghematan bervariasi - PDF yang sudah terkompres atau penuh gambar mungkin nyaris "
+              "tak menyusut.</p>")});
+    output.topics.append(
+        {"cmyk", "RGB to CMYK", "RGB ke CMYK",
+         sect("en", "<p>Convert the document's colours to CMYK for print.</p>",
+              "<p>Prepare a file for a commercial press that expects CMYK separations.</p>",
+              "<p>Conversion runs through Ghostscript with a CMYK colour profile; the converted copy "
+              "is written to a new file.</p>",
+              "<ul><li>Open the <b>RGB to CMYK</b> tool and save the result.</li></ul>",
+              "<p>This needs Ghostscript installed. Colours can shift, as CMYK has a smaller gamut "
+              "than RGB - check a proof.</p>"),
+         sect("id", "<p>Ubah warna dokumen ke CMYK untuk cetak.</p>",
+              "<p>Siapkan berkas untuk percetakan komersial yang memerlukan separasi CMYK.</p>",
+              "<p>Konversi lewat Ghostscript dengan profil warna CMYK; salinan terkonversi ditulis ke "
+              "berkas baru.</p>",
+              "<ul><li>Buka tool <b>RGB to CMYK</b> lalu simpan hasilnya.</li></ul>",
+              "<p>Butuh Ghostscript terpasang. Warna bisa bergeser karena gamut CMYK lebih kecil dari "
+              "RGB - periksa proof.</p>")});
+    output.topics.append(
+        {"flatten", "Flatten", "Ratakan",
+         sect("en", "<p>Merge annotations, form fields, and layers into the page.</p>",
+              "<p>Make markup and filled fields permanent so they can't be edited or removed.</p>",
+              "<p>Lossless flattening bakes the appearances into the page content; a raster option "
+              "renders each page to an image for the strongest guarantee.</p>",
+              "<ul><li>Open the <b>Flatten</b> tool, choose lossless or raster, and save.</li></ul>",
+              "<p>Flattening is one-way - keep the original if you might need to edit again. Raster "
+              "flattening makes text unselectable.</p>"),
+         sect("id", "<p>Gabungkan anotasi, field formulir, dan layer ke halaman.</p>",
+              "<p>Jadikan markup dan field terisi permanen agar tak bisa diedit atau dihapus.</p>",
+              "<p>Perataan lossless membakukan tampilan ke konten halaman; opsi raster me-render tiap "
+              "halaman ke gambar untuk jaminan terkuat.</p>",
+              "<ul><li>Buka tool <b>Flatten</b>, pilih lossless atau raster, lalu simpan.</li></ul>",
+              "<p>Perataan satu arah - simpan aslinya bila mungkin perlu diedit lagi. Perataan raster "
+              "membuat teks tak bisa diseleksi.</p>")});
+    g.append(output);
 
     // ── Security ─────────────────────────────────────────────────────────────
     Group security{"Security", "Keamanan", {}};
@@ -457,6 +639,24 @@ QList<Group> buildDocs() {
               "terbuka dengan teks yang bisa dicari.</li></ul>",
               "<p>OCR butuh Tesseract terpasang (beserta paket bahasa). Bisa lambat pada dokumen "
               "panjang; akurasi tergantung kualitas scan.</p>")});
+    review.topics.append(
+        {"compare", "Compare", "Bandingkan",
+         sect("en", "<p>See what changed between two PDFs.</p>",
+              "<p>Spot added, removed, or moved content across two versions of a document.</p>",
+              "<p>Both files are rendered and their pages compared; differences are highlighted "
+              "side by side.</p>",
+              "<ul><li>Open the <b>Compare</b> tool (or Document ▸ Compare with…) and pick the other "
+              "PDF.</li></ul>",
+              "<p>Comparison is visual - heavily reflowed documents show many differences even for "
+              "small edits.</p>"),
+         sect("id", "<p>Lihat apa yang berubah antara dua PDF.</p>",
+              "<p>Temukan konten yang ditambah, dihapus, atau dipindah pada dua versi dokumen.</p>",
+              "<p>Kedua berkas di-render dan halamannya dibandingkan; perbedaan disorot "
+              "berdampingan.</p>",
+              "<ul><li>Buka tool <b>Compare</b> (atau Document ▸ Compare with…) lalu pilih PDF "
+              "lainnya.</li></ul>",
+              "<p>Perbandingan bersifat visual - dokumen yang banyak reflow akan menampilkan banyak "
+              "perbedaan walau suntingannya kecil.</p>")});
     g.append(review);
 
     return g;
