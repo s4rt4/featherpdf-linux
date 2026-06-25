@@ -37,10 +37,14 @@ public:
 
     void setDocumentPath(const QString& path);
     void clear();
+    void reload(); // re-read fields from the current path (after an authoring edit)
 
 signals:
     // Emitted when Save is pressed; values are keyed by Poppler field id.
     void saveRequested(const QHash<int, QVariant>& values);
+    void addFieldRequested();                       // "Add field…" pressed
+    void moveFieldRequested(const QString& name);    // reposition an existing field
+    void deleteFieldRequested(const QString& name);  // remove an existing field
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -57,4 +61,5 @@ private:
     QWidget* m_fieldHost = nullptr;   // re-created each rebuild
     QLabel* m_empty = nullptr;
     QPushButton* m_save = nullptr;
+    QPushButton* m_add = nullptr;
 };

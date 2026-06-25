@@ -21,12 +21,14 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QShowEvent>
 #include <QStackedWidget>
+#include <QToolButton>
 #include <QVBoxLayout>
 
 FormPanel::FormPanel(QWidget* parent) : QWidget(parent) {
@@ -80,16 +82,21 @@ FormPanel::FormPanel(QWidget* parent) : QWidget(parent) {
     m_stack->addWidget(m_empty);  // 1
     col->addWidget(m_stack, 1);
 
+    m_add = new QPushButton(tr("Add field…"), this);
+    m_add->setCursor(Qt::PointingHandCursor);
     m_save = new QPushButton(tr("Save Form"), this);
     m_save->setObjectName(QStringLiteral("Share"));
     m_save->setCursor(Qt::PointingHandCursor);
-    m_save->setContentsMargins(0, 0, 0, 0);
-    auto* footer = new QVBoxLayout;
+    auto* footer = new QHBoxLayout;
     footer->setContentsMargins(12, 8, 12, 12);
+    footer->setSpacing(8);
+    footer->addWidget(m_add);
+    footer->addStretch(1);
     footer->addWidget(m_save);
     col->addLayout(footer);
 
     connect(m_save, &QPushButton::clicked, this, [this] { emit saveRequested(m_values); });
+    connect(m_add, &QPushButton::clicked, this, [this] { emit addFieldRequested(); });
 }
 
 void FormPanel::setDocumentPath(const QString& path) {
@@ -106,6 +113,12 @@ void FormPanel::clear() {
     m_dirty = false;
     m_values.clear();
     rebuild();
+}
+
+void FormPanel::reload() {
+    m_dirty = true;
+    if (isVisible())
+        rebuild();
 }
 
 void FormPanel::showEvent(QShowEvent* event) {
@@ -132,6 +145,8 @@ void FormPanel::rebuild() {
     layout->addWidget(m_fieldHost);
     layout->addStretch(1);
 
+    m_add->setEnabled(!m_path.isEmpty()); // can author even on an empty form
+
     const QList<FormFiller::Field> fields = m_path.isEmpty() ? QList<FormFiller::Field>()
                                                              : FormFiller::read(m_path);
     if (fields.isEmpty()) {
@@ -140,25 +155,53 @@ void FormPanel::rebuild() {
         return;
     }
 
+    // Per-field authoring controls: Move repositions, ✕ deletes. Only shown for
+    // named fields (we address fields by their fully-qualified name).
+    const auto addAuthorButtons = [this](QHBoxLayout* head, const QString& fieldName) {
+        if (fieldName.isEmpty())
+            return;
+        auto* move = new QToolButton(m_fieldHost);
+        move->setText(tr("Move"));
+        move->setCursor(Qt::PointingHandCursor);
+        move->setToolTip(tr("Draw a new position for this field"));
+        auto* del = new QToolButton(m_fieldHost);
+        del->setText(QStringLiteral("✕"));
+        del->setCursor(Qt::PointingHandCursor);
+        del->setToolTip(tr("Delete this field"));
+        head->addWidget(move);
+        head->addWidget(del);
+        connect(move, &QToolButton::clicked, this,
+                [this, fieldName] { emit moveFieldRequested(fieldName); });
+        connect(del, &QToolButton::clicked, this,
+                [this, fieldName] { emit deleteFieldRequested(fieldName); });
+    };
+
     for (const FormFiller::Field& f : fields) {
         const int id = f.id;
         const QString label = f.name.isEmpty() ? tr("(unnamed field)") : f.name;
 
         if (f.kind == FormFiller::Kind::CheckBox || f.kind == FormFiller::Kind::Radio) {
+            auto* head = new QHBoxLayout;
+            head->setSpacing(6);
             auto* cb = new QCheckBox(label, m_fieldHost);
             cb->setChecked(f.checked);
             cb->setEnabled(!f.readOnly);
             m_values.insert(id, f.checked);
-            connect(cb, &QCheckBox::toggled, this,
-                    [this, id](bool on) { m_values[id] = on; });
-            fl->addWidget(cb);
+            connect(cb, &QCheckBox::toggled, this, [this, id](bool on) { m_values[id] = on; });
+            head->addWidget(cb, 1);
+            addAuthorButtons(head, f.name);
+            fl->addLayout(head);
             continue;
         }
 
+        auto* head = new QHBoxLayout;
+        head->setSpacing(6);
         auto* name = new QLabel(label, m_fieldHost);
         name->setObjectName(QStringLiteral("FieldName"));
         name->setWordWrap(true);
-        fl->addWidget(name);
+        head->addWidget(name, 1);
+        addAuthorButtons(head, f.name);
+        fl->addLayout(head);
 
         if (f.kind == FormFiller::Kind::ComboBox) {
             auto* combo = new QComboBox(m_fieldHost);

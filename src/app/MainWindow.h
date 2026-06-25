@@ -96,7 +96,9 @@ private:
     void cropActivePages();       // trim page margins (/CropBox), open the result
     void saveOutline(const QVector<PdfEditor::OutlineItem>& items); // write /Outlines, open result
     void addFormField(); // author a new AcroForm field: configure, then place
-    void placeFormField(int slot, const QRectF& normRect); // drawn rect → create field
+    void placeFormField(int slot, const QRectF& normRect); // drawn rect → create/move field
+    void moveFormField(const QString& name);   // start repositioning an existing field
+    void deleteFormField(const QString& name); // remove an existing field
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
@@ -219,6 +221,7 @@ private:
     QAction* m_addFieldAct = nullptr;
     FormEditor::NewField m_pendingField; // field being placed (after the dialog)
     bool m_placingField = false;         // viewport is in field-placement mode
+    QString m_movingField;               // non-empty: placing repositions this field
     QUndoGroup* m_undoGroup = nullptr;
     QAction* m_zoomInAct = nullptr;
     QAction* m_zoomOutAct = nullptr;

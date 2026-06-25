@@ -699,8 +699,11 @@ void MainWindow::wireSignals() {
     connect(m_viewport, &Viewport::currentPageChanged, m_outline, &OutlinePanel::setCurrentPage);
     connect(m_outline, &OutlinePanel::saveRequested, this, &MainWindow::saveOutline);
 
-    // Form-field placement: a drawn rectangle becomes a new field.
+    // Form-field placement: a drawn rectangle becomes a new (or moved) field.
     connect(m_viewport, &Viewport::fieldRectDrawn, this, &MainWindow::placeFormField);
+    connect(m_forms, &FormPanel::addFieldRequested, this, &MainWindow::addFormField);
+    connect(m_forms, &FormPanel::moveFieldRequested, this, &MainWindow::moveFormField);
+    connect(m_forms, &FormPanel::deleteFieldRequested, this, &MainWindow::deleteFormField);
 
     // Redaction bar ↔ viewport.
     connect(m_viewport, &Viewport::redactionsChanged, this,
@@ -1017,6 +1020,7 @@ void MainWindow::addFormField() {
     m_pendingField.checked = dialog.checked();
     m_pendingField.options = dialog.options();
     m_placingField = true;
+    m_movingField.clear(); // this is an add, not a move
 
     setRedactionMode(false); // the edit modes are mutually exclusive
     setHighlightMode(false);
@@ -1025,42 +1029,83 @@ void MainWindow::addFormField() {
                           : tr("Draw where the field goes."));
 }
 
+void MainWindow::moveFormField(const QString& name) {
+    if (name.isEmpty() || !hasActiveDoc())
+        return;
+    m_movingField = name;
+    m_placingField = true;
+    setRedactionMode(false);
+    setHighlightMode(false);
+    m_viewport->setFieldPlacementMode(true);
+    m_toast->show(tr("Draw the new position for “%1”.").arg(name));
+}
+
+void MainWindow::deleteFormField(const QString& name) {
+    if (name.isEmpty() || !hasActiveDoc())
+        return;
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save form"), m_doc->filePath(),
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = FormEditor::deleteField(m_doc->filePath(), out, name, &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't delete field"), error);
+        return;
+    }
+    m_toast->show(tr("Deleted “%1”").arg(name));
+    openPath(out);
+    m_forms->reload(); // reflect the change even when overwriting in place
+}
+
 void MainWindow::placeFormField(int slot, const QRectF& normRect) {
     if (!m_placingField || !hasActiveDoc())
         return;
     m_placingField = false;
     m_viewport->setFieldPlacementMode(false);
 
-    // The drawn rect is normalized to the displayed page; the field lands on that
-    // page's original index so an in-session reorder still points at the right
-    // page on disk.
-    const int page = std::max(0, m_doc->originalPageAt(slot));
-    const bool isRadio = m_pendingField.type == FormEditor::Type::Radio;
-
     const QString out = QFileDialog::getSaveFileName(this, tr("Save form"), m_doc->filePath(),
                                                      tr("PDF documents (*.pdf)"));
-    if (out.isEmpty())
+    if (out.isEmpty()) {
+        m_movingField.clear();
         return;
+    }
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
     bool ok;
-    if (isRadio) {
-        ok = FormEditor::addRadioGroup(m_doc->filePath(), out, m_pendingField.name,
-                                       m_pendingField.options, page, normRect, &error);
+    QString message;
+    if (!m_movingField.isEmpty()) {
+        const QString name = m_movingField;
+        m_movingField.clear();
+        ok = FormEditor::setFieldRect(m_doc->filePath(), out, name, normRect, &error);
+        message = tr("Moved “%1”").arg(name);
     } else {
-        m_pendingField.page = page;
-        m_pendingField.rect = normRect;
-        ok = FormEditor::addField(m_doc->filePath(), out, m_pendingField, &error);
+        // The drawn rect is normalized to the displayed page; the field lands on
+        // that page's original index so an in-session reorder still points at the
+        // right page on disk.
+        const int page = std::max(0, m_doc->originalPageAt(slot));
+        if (m_pendingField.type == FormEditor::Type::Radio) {
+            ok = FormEditor::addRadioGroup(m_doc->filePath(), out, m_pendingField.name,
+                                           m_pendingField.options, page, normRect, &error);
+        } else {
+            m_pendingField.page = page;
+            m_pendingField.rect = normRect;
+            ok = FormEditor::addField(m_doc->filePath(), out, m_pendingField, &error);
+        }
+        message = tr("Added “%1” to %2").arg(m_pendingField.name, QFileInfo(out).fileName());
     }
     QApplication::restoreOverrideCursor();
 
     if (!ok) {
-        QMessageBox::warning(this, tr("Couldn't add field"), error);
+        QMessageBox::warning(this, tr("Couldn't save field"), error);
         return;
     }
-    m_toast->show(tr("Added “%1” to %2").arg(m_pendingField.name, QFileInfo(out).fileName()));
+    m_toast->show(message);
     openPath(out); // surface the document with its new field
+    m_forms->reload();
 }
 
 bool MainWindow::saveActiveAs() {
