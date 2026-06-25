@@ -26,16 +26,36 @@ stay GPLv3.
 
 ## Highlights so far
 
+**Reading & navigation**
 - **Custom render pipeline** — pages are laid out arithmetically and rendered
   off the UI thread into an LRU cache, so even a 4000-page document opens
   instantly and scrolls smoothly.
 - **Tabbed workspace** — one tab per document, each remembering its place.
 - **Home start screen** — recent files, drag-and-drop, one big Open.
-- **Thumbnails & outline** — lazy off-thread thumbnails and a bookmark tree.
+- **Thumbnails & outline** — lazy off-thread thumbnails and an **editable**
+  bookmark tree (add / rename / delete).
 - **Find** — live match count with highlight and next/previous navigation.
-- **Immersive reading mode** — the chrome slides away, leaving the page alone.
-- **Native theming** — follows the system light/dark preference; feather-teal
-  accent; symbolic icons.
+- **Immersive reading mode** and **native light/dark theming** (feather-teal
+  accent, symbolic icons).
+
+**Pages** — rotate, delete, drag-reorder, **insert** pages from another PDF,
+**extract** a page range, and **crop** margins — all lossless via QPDF.
+Combine, split, compare, optimize, watermark, Bates numbering, RGB→CMYK.
+
+**Annotations** — highlight, sticky note, freehand ink, **underline**,
+**strike-through**, **rectangle**, **line**, **arrow**, and **text boxes**,
+with a comment sidebar. Import/export form data as **XFDF**.
+
+**Forms** — fill text, checkbox, and dropdown fields, and **author** new ones
+(text, checkbox, dropdown, radio, push button) by drawing them on the page;
+move or delete existing fields.
+
+**Editing** — edit the text you've added; an **Open in LibreOffice Draw**
+bridge for heavier layout work.
+
+**More** — OCR (Tesseract) and image→PDF, document signing & verification
+(PAdES), office/image conversion (LibreOffice), AES-256 encryption, redaction,
+and flattening.
 
 ## Building
 
@@ -55,18 +75,18 @@ Requires a C++20 compiler and Qt 6.5 or newer.
 
 ## Roadmap
 
-| Milestone | Focus |
-|-----------|-------|
-| **M0** | Foundation & viewer *(current)* |
-| M1 | Page operations (lossless, via QPDF) |
-| M2 | Security & redaction |
-| M3 | Annotations |
-| M4 | Forms |
-| M5 | OCR |
-| M6 | Signatures |
-| M7 | Conversion |
-| M8 | Edit existing text with reflow *(the frontier)* |
-| M9 | Polish, plugins, i18n |
+| Milestone | Focus | Status |
+|-----------|-------|--------|
+| M0 | Foundation & viewer | ✅ Done |
+| M1 | Page operations (lossless, via QPDF) | ✅ Done |
+| M2 | Security & redaction | ✅ Done |
+| M3 | Annotations (+ XFDF form data) | ✅ Done |
+| M4 | Forms — fill **and** author | ✅ Done |
+| M5 | OCR & image→PDF | ✅ Done |
+| M6 | Signatures (PAdES) | ✅ Done |
+| M7 | Conversion (LibreOffice, images) | ✅ Done |
+| M8 | Editing — text you added ✅ · existing-text reflow & images *(the frontier)* | ◐ In progress |
+| M9 | Polish, plugins, i18n, CLI | 🔜 Next |
 
 ## License
 

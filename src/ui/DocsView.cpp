@@ -152,15 +152,24 @@ QList<Group> buildDocs() {
               "scroll.</p>")});
     panels.topics.append(
         {"outline", "Outline", "Outline",
-         sect("en", "<p>The document's bookmark/heading tree.</p>",
-              "<p>Jump to chapters and sections.</p>",
-              "<p>Read from the PDF's bookmark structure (Poppler).</p>",
-              "<ul><li>Open the <b>Outline</b> rail icon and click an entry.</li></ul>",
-              "<p>An empty outline means the PDF has no bookmarks - not all files include them.</p>"),
-         sect("id", "<p>Pohon bookmark/heading dokumen.</p>",
-              "<p>Lompat ke bab dan bagian.</p>", "<p>Dibaca dari struktur bookmark PDF (Poppler).</p>",
-              "<ul><li>Buka ikon rail <b>Outline</b> lalu klik entri.</li></ul>",
-              "<p>Outline kosong berarti PDF tak punya bookmark - tak semua berkas menyertakannya.</p>")});
+         sect("en", "<p>The document's bookmark/heading tree - now editable.</p>",
+              "<p>Jump to chapters and sections, and add, rename, or delete bookmarks.</p>",
+              "<p>Read from the PDF's bookmarks (Poppler); edits are written back into the "
+              "/Outlines structure with QPDF.</p>",
+              "<ul><li>Open the <b>Outline</b> rail icon and click an entry to jump.</li>"
+              "<li>Toolbar icons: <b>+</b> adds a bookmark to the current page, the pencil renames "
+              "the selected one, <b>×</b> deletes it, and the disk icon <b>saves</b> the outline.</li>"
+              "<li>Double-click an entry to rename it in place.</li></ul>",
+              "<p>An empty outline means the PDF has no bookmarks - use <b>+</b> to start one.</p>"),
+         sect("id", "<p>Pohon bookmark/heading dokumen - kini bisa diedit.</p>",
+              "<p>Lompat ke bab/bagian, serta tambah, ganti nama, atau hapus bookmark.</p>",
+              "<p>Dibaca dari bookmark PDF (Poppler); suntingan ditulis kembali ke struktur "
+              "/Outlines dengan QPDF.</p>",
+              "<ul><li>Buka ikon rail <b>Outline</b> lalu klik entri untuk melompat.</li>"
+              "<li>Ikon toolbar: <b>+</b> menambah bookmark ke halaman aktif, pensil mengganti nama, "
+              "<b>×</b> menghapus, dan ikon disk <b>menyimpan</b> outline.</li>"
+              "<li>Klik ganda entri untuk mengganti namanya langsung.</li></ul>",
+              "<p>Outline kosong berarti PDF tak punya bookmark - pakai <b>+</b> untuk memulai.</p>")});
     panels.topics.append(
         {"attachments", "Attachments", "Attachments",
          sect("en", "<p>Files embedded inside the PDF.</p>",
@@ -194,24 +203,61 @@ QList<Group> buildDocs() {
     // ── Editing ──────────────────────────────────────────────────────────────
     Group editing{"Editing &amp; assembly", "Mengedit &amp; merakit", {}};
     editing.topics.append(
-        {"page-ops", "Rotate, delete &amp; reorder", "Putar, hapus &amp; susun ulang",
+        {"page-ops", "Organize pages", "Menata halaman",
          sect("en", "<p>Lossless page operations on the open document.</p>",
-              "<p>Fix orientation, drop pages, and change page order.</p>",
-              "<p>Changes are tracked per tab with undo/redo and written back losslessly by QPDF "
-              "(page objects are copied, not re-rendered).</p>",
-              "<ul><li>Rotate: <b>Ctrl+[</b> / <b>Ctrl+]</b> or the Document menu.</li><li>Delete: "
-              "Document ▸ Delete Page.</li><li>Reorder: drag thumbnails.</li><li><b>Ctrl+Z</b>/"
-              "<b>Ctrl+Y</b> undo/redo; then <b>Save</b> or <b>Save As</b>.</li></ul>",
+              "<p>Fix orientation, drop pages, reorder, and insert, extract, or crop pages.</p>",
+              "<p>Rotate/delete/reorder are tracked per tab with undo/redo and written back "
+              "losslessly by QPDF. Insert/extract/crop write a new copy (page objects are copied, "
+              "not re-rendered) and open the result.</p>",
+              "<ul><li>Rotate: <b>Ctrl+[</b> / <b>Ctrl+]</b> or the Document menu.</li>"
+              "<li>Delete: Document ▸ Delete Page. Reorder: drag thumbnails.</li>"
+              "<li><b>Insert Pages…</b> pulls pages from another PDF to a chosen position.</li>"
+              "<li><b>Extract Pages…</b> saves a page range (e.g. <i>1-3, 5</i>) to a new PDF.</li>"
+              "<li><b>Crop Pages…</b> trims margins (mm) on all or selected pages.</li>"
+              "<li><b>Ctrl+Z</b>/<b>Ctrl+Y</b> undo/redo; then <b>Save</b> or <b>Save As</b>.</li></ul>",
               "<p>If Save is disabled, no document is open. Edits aren't on disk until you save.</p>"),
          sect("id", "<p>Operasi halaman lossless pada dokumen terbuka.</p>",
-              "<p>Perbaiki orientasi, buang halaman, dan ubah urutan.</p>",
-              "<p>Perubahan dilacak per tab dengan undo/redo dan ditulis balik lossless oleh QPDF "
-              "(objek halaman disalin, bukan di-render ulang).</p>",
-              "<ul><li>Putar: <b>Ctrl+[</b> / <b>Ctrl+]</b> atau menu Document.</li><li>Hapus: "
-              "Document ▸ Delete Page.</li><li>Susun ulang: seret thumbnail.</li><li><b>Ctrl+Z</b>/"
-              "<b>Ctrl+Y</b> undo/redo; lalu <b>Save</b> atau <b>Save As</b>.</li></ul>",
+              "<p>Perbaiki orientasi, buang halaman, susun ulang, serta sisip, ekstrak, atau crop "
+              "halaman.</p>",
+              "<p>Putar/hapus/susun-ulang dilacak per tab dengan undo/redo dan ditulis balik lossless "
+              "oleh QPDF. Sisip/ekstrak/crop menulis salinan baru (objek halaman disalin, bukan "
+              "di-render ulang) lalu membuka hasilnya.</p>",
+              "<ul><li>Putar: <b>Ctrl+[</b> / <b>Ctrl+]</b> atau menu Document.</li>"
+              "<li>Hapus: Document ▸ Delete Page. Susun ulang: seret thumbnail.</li>"
+              "<li><b>Insert Pages…</b> menyisipkan halaman dari PDF lain ke posisi pilihan.</li>"
+              "<li><b>Extract Pages…</b> menyimpan rentang halaman (mis. <i>1-3, 5</i>) ke PDF baru.</li>"
+              "<li><b>Crop Pages…</b> memangkas margin (mm) di semua atau sebagian halaman.</li>"
+              "<li><b>Ctrl+Z</b>/<b>Ctrl+Y</b> undo/redo; lalu <b>Save</b> atau <b>Save As</b>.</li></ul>",
               "<p>Jika Save nonaktif, tak ada dokumen terbuka. Perubahan belum tersimpan sampai kamu "
               "menyimpan.</p>")});
+    editing.topics.append(
+        {"edit-text", "Edit text", "Edit teks",
+         sect("en", "<p>Edit the text you added with the Text tool, and a bridge to LibreOffice "
+              "Draw for heavier edits.</p>",
+              "<p>Fix a typo in a text box you placed, or hand the file to Draw to move body text "
+              "and images.</p>",
+              "<p>Text boxes are /FreeText annotations Feather owns end to end, so it can rewrite "
+              "their words and appearance (QPDF). Editing the document's original body text with "
+              "reflow is still in development; LibreOffice Draw is the interim tool for that.</p>",
+              "<ul><li>Tools ▸ <b>Edit text</b> (or Document ▸ Edit Text…) lists your text boxes - "
+              "pick one to change its words or delete it.</li>"
+              "<li>Document ▸ <b>Open in LibreOffice Draw</b> opens the PDF in Draw for heavy "
+              "layout, body-text, and image edits.</li></ul>",
+              "<p>\"No editable text boxes\" means you haven't added any - use the <b>Text</b> "
+              "annotation tool first. The Draw bridge needs LibreOffice installed.</p>"),
+         sect("id", "<p>Edit teks yang kamu tambahkan dengan alat Text, plus jembatan ke "
+              "LibreOffice Draw untuk edit berat.</p>",
+              "<p>Perbaiki salah ketik di kotak teks yang kamu pasang, atau serahkan berkas ke Draw "
+              "untuk memindah teks isi dan gambar.</p>",
+              "<p>Kotak teks adalah anotasi /FreeText yang dimiliki Feather sepenuhnya, jadi kata dan "
+              "tampilannya bisa ditulis ulang (QPDF). Mengedit teks isi asli dokumen dengan reflow "
+              "masih dikembangkan; LibreOffice Draw adalah alat sementara untuk itu.</p>",
+              "<ul><li>Tools ▸ <b>Edit text</b> (atau Document ▸ Edit Text…) mendaftar kotak teksmu - "
+              "pilih satu untuk mengubah kata atau menghapusnya.</li>"
+              "<li>Document ▸ <b>Open in LibreOffice Draw</b> membuka PDF di Draw untuk edit tata "
+              "letak, teks isi, dan gambar yang berat.</li></ul>",
+              "<p>\"No editable text boxes\" berarti kamu belum menambah apa pun - pakai alat anotasi "
+              "<b>Text</b> dulu. Jembatan Draw butuh LibreOffice terpasang.</p>")});
     editing.topics.append(
         {"combine", "Combine", "Combine",
          sect("en", "<p>Merge several PDFs into one.</p>",
@@ -324,38 +370,54 @@ QList<Group> buildDocs() {
     Group review{"Review &amp; recognition", "Tinjauan &amp; pengenalan", {}};
     review.topics.append(
         {"annotate", "Annotations", "Anotasi",
-         sect("en", "<p>Highlights, sticky notes, and freehand drawing.</p>",
+         sect("en", "<p>Highlight, note, freehand ink, underline, strike-through, rectangle, line, "
+              "arrow, and text boxes.</p>",
               "<p>Mark up a document for review and save the marks into the file.</p>",
               "<p>Built with QPDF and given an explicit appearance stream, so the marks render in "
-              "any viewer (including this one on reopen).</p>",
-              "<ul><li><b>Tools ▸ Comment</b>. Choose <b>Highlight</b> (drag), <b>Note</b> (click, "
-              "then type), or <b>Draw</b> (freehand), pick a colour, then <b>Save Annotations</b>."
-              "</li><li>Right-click a mark to remove it before saving.</li></ul>",
+              "any viewer (including this one on reopen). Form values can also be exchanged as "
+              "<b>XFDF</b>.</p>",
+              "<ul><li><b>Tools ▸ Comment</b>, then pick a tool from the bar: Highlight, Note, Draw, "
+              "Underline, Strikeout, Rectangle, Line, Arrow, or Text. Drag on the page (Note clicks; "
+              "Text prompts for words), pick a colour, then <b>Save Annotations</b>.</li>"
+              "<li>Right-click a mark to remove it before saving.</li>"
+              "<li><b>File ▸ Form Data</b> exports/imports field values as XFDF.</li></ul>",
               "<p>Annotations are written to a new file; the original is untouched until you save.</p>"),
-         sect("id", "<p>Sorotan, catatan tempel, dan gambar bebas.</p>",
+         sect("id", "<p>Sorotan, catatan, tinta bebas, garis bawah, coret, kotak, garis, panah, dan "
+              "kotak teks.</p>",
               "<p>Tandai dokumen untuk ditinjau dan simpan tanda ke dalam berkas.</p>",
               "<p>Dibangun dengan QPDF dan diberi appearance stream eksplisit, sehingga tanda "
-              "ter-render di penampil mana pun (termasuk ini saat dibuka ulang).</p>",
-              "<ul><li><b>Tools ▸ Comment</b>. Pilih <b>Highlight</b> (seret), <b>Note</b> (klik "
-              "lalu ketik), atau <b>Draw</b> (bebas), pilih warna, lalu <b>Save Annotations</b>."
-              "</li><li>Klik kanan tanda untuk menghapusnya sebelum disimpan.</li></ul>",
+              "ter-render di penampil mana pun (termasuk ini saat dibuka ulang). Nilai form juga bisa "
+              "dipertukarkan sebagai <b>XFDF</b>.</p>",
+              "<ul><li><b>Tools ▸ Comment</b>, lalu pilih alat di bar: Highlight, Note, Draw, "
+              "Underline, Strikeout, Rectangle, Line, Arrow, atau Text. Seret di halaman (Note diklik; "
+              "Text meminta kata), pilih warna, lalu <b>Save Annotations</b>.</li>"
+              "<li>Klik kanan tanda untuk menghapusnya sebelum disimpan.</li>"
+              "<li><b>File ▸ Form Data</b> mengekspor/impor nilai field sebagai XFDF.</li></ul>",
               "<p>Anotasi ditulis ke berkas baru; berkas asli tak tersentuh sampai kamu menyimpan.</p>")});
     review.topics.append(
         {"forms", "Forms", "Formulir",
-         sect("en", "<p>Fill interactive AcroForm fields.</p>",
-              "<p>Complete text fields, checkboxes, and dropdowns, then save.</p>",
-              "<p>Fields are read and written with Poppler, which regenerates their appearance on "
-              "save so values show in any viewer.</p>",
-              "<ul><li>Open the <b>Forms</b> rail icon, edit the fields, then <b>Save Form</b>.</li></ul>",
-              "<p>If the panel is empty, the PDF has no fillable fields. Radio groups and multi-"
-              "select lists aren't editable yet.</p>"),
-         sect("id", "<p>Isi field AcroForm interaktif.</p>",
-              "<p>Lengkapi field teks, kotak centang, dan dropdown, lalu simpan.</p>",
-              "<p>Field dibaca dan ditulis dengan Poppler, yang meregenerasi tampilannya saat "
-              "menyimpan agar nilai tampak di penampil mana pun.</p>",
-              "<ul><li>Buka ikon rail <b>Forms</b>, sunting field, lalu <b>Save Form</b>.</li></ul>",
-              "<p>Jika panel kosong, PDF tak punya field isian. Grup radio dan list pilih-banyak "
-              "belum bisa diedit.</p>")});
+         sect("en", "<p>Fill interactive AcroForm fields - and author new ones.</p>",
+              "<p>Complete existing fields, and add, move, or delete fields of your own.</p>",
+              "<p>Filling reads/writes with Poppler (it regenerates appearances on save). Authoring "
+              "writes the field with QPDF and a generated appearance, so it shows and fills "
+              "everywhere.</p>",
+              "<ul><li>Open the <b>Forms</b> tool/rail icon, edit fields, then <b>Save Form</b>.</li>"
+              "<li><b>Add field</b> (the + button, or Document ▸ Add Form Field…): choose a type - "
+              "Text, Check box, Dropdown, Radio group, or Push button - then draw it on the page.</li>"
+              "<li>Each field row has <b>Move</b> (draw a new spot) and <b>×</b> (delete).</li></ul>",
+              "<p>If the panel is empty, the PDF has no fields yet - add one. A radio group needs at "
+              "least two options.</p>"),
+         sect("id", "<p>Isi field AcroForm interaktif - dan buat yang baru.</p>",
+              "<p>Lengkapi field yang ada, serta tambah, pindah, atau hapus field buatanmu.</p>",
+              "<p>Pengisian dibaca/ditulis dengan Poppler (meregenerasi tampilan saat menyimpan). "
+              "Pembuatan menulis field dengan QPDF beserta appearance, sehingga tampil dan terisi di "
+              "mana saja.</p>",
+              "<ul><li>Buka ikon tool/rail <b>Forms</b>, sunting field, lalu <b>Save Form</b>.</li>"
+              "<li><b>Add field</b> (tombol +, atau Document ▸ Add Form Field…): pilih tipe - Text, "
+              "Check box, Dropdown, Radio group, atau Push button - lalu gambar di halaman.</li>"
+              "<li>Tiap baris field punya <b>Move</b> (gambar posisi baru) dan <b>×</b> (hapus).</li></ul>",
+              "<p>Jika panel kosong, PDF belum punya field - tambah satu. Grup radio butuh minimal "
+              "dua opsi.</p>")});
     review.topics.append(
         {"sign", "Digital signatures", "Tanda tangan digital",
          sect("en", "<p>Sign documents and verify existing signatures.</p>",
