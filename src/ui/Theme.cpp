@@ -142,6 +142,14 @@ void Theme::toggleMode() {
     setMode(m_mode == Mode::Light ? Mode::Dark : Mode::Light);
 }
 
+void Theme::useSystem() {
+    QSettings().remove(QStringLiteral("theme/mode")); // drop the explicit choice
+    m_followSystem = true;
+    m_mode = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark ? Mode::Dark
+                                                                                   : Mode::Light;
+    rebuild();
+}
+
 void Theme::rebuild() {
     m_palette = paletteFor(m_mode);
     if (auto* app = qobject_cast<QApplication*>(QApplication::instance())) {

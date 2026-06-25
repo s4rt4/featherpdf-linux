@@ -59,12 +59,16 @@ public:
     void apply();
 
     Mode mode() const { return m_mode; }
+    bool followsSystem() const { return m_followSystem; }
     const Palette& palette() const { return m_palette; }
 
     // Flip between light and dark by hand. (The system preference still wins on
     // the next system change; this is the manual affordance from the tab strip.)
     void toggleMode();
     void setMode(Mode mode);
+    // Go back to following the system light/dark preference (clears the saved
+    // explicit choice).
+    void useSystem();
 
     // A symbolic icon rendered from an embedded SVG (resource path
     // ":/icons/<name>.svg"), tinted to `color`. Cached per (name,color,dpr).

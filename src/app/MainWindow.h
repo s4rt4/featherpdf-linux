@@ -103,6 +103,8 @@ private:
     void importFormData(); // apply an XFDF file's values, open the result
     void editTextBoxes();  // M8(a): edit/delete the text boxes you've added
     void editInLibreOffice(); // M8 fallback: open the PDF in LibreOffice Draw
+    void showPreferences();   // the Preferences dialog
+    void applyViewDefaults(); // apply the saved default layout/zoom to the viewport
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode

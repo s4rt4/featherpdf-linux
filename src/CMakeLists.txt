@@ -84,6 +84,8 @@ qt_add_executable(feather-pdf
     ui/TextEditDialog.h
     ui/CustomizeToolsDialog.cpp
     ui/CustomizeToolsDialog.h
+    ui/PreferencesDialog.cpp
+    ui/PreferencesDialog.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

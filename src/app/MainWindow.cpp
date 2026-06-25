@@ -44,6 +44,7 @@
 #include "ui/FlattenDialog.h"
 #include "ui/FormFieldDialog.h"
 #include "ui/GoToPageDialog.h"
+#include "ui/PreferencesDialog.h"
 #include "ui/TextEditDialog.h"
 #include "ui/InsertDialog.h"
 #include "ui/FindBar.h"
@@ -273,6 +274,11 @@ void MainWindow::buildMenus() {
     QAction* find = edit->addAction(tr("&Find…"));
     find->setShortcut(QKeySequence::Find);
     connect(find, &QAction::triggered, this, &MainWindow::openFind);
+    edit->addSeparator();
+    QAction* prefs = edit->addAction(tr("&Preferences…"));
+    prefs->setShortcut(QKeySequence::Preferences);
+    prefs->setMenuRole(QAction::PreferencesRole);
+    connect(prefs, &QAction::triggered, this, &MainWindow::showPreferences);
 
     QMenu* view = menuBar()->addMenu(tr("&View"));
     view->addAction(m_zoomInAct);
@@ -1205,6 +1211,50 @@ void MainWindow::editInLibreOffice() {
         return;
     }
     m_toast->show(tr("Opening in LibreOffice Draw…"));
+}
+
+void MainWindow::showPreferences() {
+    PreferencesDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    // Appearance — apply immediately (and Theme persists the choice itself).
+    switch (dialog.theme()) {
+    case PreferencesDialog::Theme::System: Theme::instance().useSystem(); break;
+    case PreferencesDialog::Theme::Light: Theme::instance().setMode(Theme::Mode::Light); break;
+    case PreferencesDialog::Theme::Dark: Theme::instance().setMode(Theme::Mode::Dark); break;
+    }
+
+    // Default view for newly opened documents.
+    QSettings settings;
+    settings.setValue(QStringLiteral("view/defaultLayout"), dialog.layout());
+    settings.setValue(QStringLiteral("view/defaultZoom"), dialog.zoom());
+    if (hasActiveDoc())
+        applyViewDefaults(); // reflect the new default on the current document too
+}
+
+void MainWindow::applyViewDefaults() {
+    QSettings settings;
+    // Only act on settings the user has actually chosen, so the out-of-the-box
+    // open behaviour is unchanged until Preferences is used.
+    if (settings.contains(QStringLiteral("view/defaultLayout"))) {
+        const QString layout = settings.value(QStringLiteral("view/defaultLayout")).toString();
+        if (layout == QLatin1String("single"))
+            m_viewport->setLayoutMode(PageView::LayoutMode::SinglePage);
+        else if (layout == QLatin1String("twoup"))
+            m_viewport->setLayoutMode(PageView::LayoutMode::TwoUp);
+        else
+            m_viewport->setLayoutMode(PageView::LayoutMode::Continuous);
+    }
+    if (settings.contains(QStringLiteral("view/defaultZoom"))) {
+        const QString zoom = settings.value(QStringLiteral("view/defaultZoom")).toString();
+        if (zoom == QLatin1String("fitpage"))
+            m_viewport->fitWholePage();
+        else if (zoom == QLatin1String("actual"))
+            m_viewport->zoomActualSize();
+        else
+            m_viewport->fitToWidth();
+    }
 }
 
 void MainWindow::placeFormField(int slot, const QRectF& normRect) {
@@ -2289,6 +2339,7 @@ bool MainWindow::openPath(const QString& path) {
     });
     m_sessions.append(s);
     activateSession(s.id);
+    applyViewDefaults(); // a freshly opened document gets the preferred layout/zoom
     return true;
 }
 
