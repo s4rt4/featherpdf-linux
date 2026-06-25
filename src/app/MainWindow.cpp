@@ -25,6 +25,7 @@
 #include "backends/FormEditor.h"
 #include "backends/FormFiller.h"
 #include "backends/Splitter.h"
+#include "backends/TextEditor.h"
 #include "backends/Ocr.h"
 #include "backends/Signer.h"
 #include "backends/Watermarker.h"
@@ -43,6 +44,7 @@
 #include "ui/FlattenDialog.h"
 #include "ui/FormFieldDialog.h"
 #include "ui/GoToPageDialog.h"
+#include "ui/TextEditDialog.h"
 #include "ui/InsertDialog.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
@@ -298,6 +300,10 @@ void MainWindow::buildMenus() {
     document->addAction(m_cropPagesAct);
     document->addSeparator();
     document->addAction(m_addFieldAct);
+    QAction* editText = document->addAction(tr("Edit &Text…"));
+    connect(editText, &QAction::triggered, this, &MainWindow::editTextBoxes);
+    QAction* loDraw = document->addAction(tr("Open in &LibreOffice Draw…"));
+    connect(loDraw, &QAction::triggered, this, &MainWindow::editInLibreOffice);
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
     connect(props, &QAction::triggered, this, &MainWindow::showProperties);
@@ -1129,6 +1135,74 @@ void MainWindow::importFormData() {
     openPath(dest);
 }
 
+void MainWindow::editTextBoxes() {
+    if (!hasActiveDoc())
+        return;
+    const QList<TextEditor::TextBox> boxes = TextEditor::read(m_doc->filePath());
+    if (boxes.isEmpty()) {
+        m_toast->show(tr("No editable text boxes yet — add one with the Text tool."));
+        return;
+    }
+
+    TextEditDialog dialog(boxes, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const int idx = dialog.selectedIndex();
+    if (idx < 0 || idx >= boxes.size())
+        return;
+    const TextEditor::TextBox& box = boxes[idx];
+
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save edited PDF"), m_doc->filePath(),
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    bool ok;
+    QString message;
+    if (dialog.action() == TextEditDialog::Action::Delete) {
+        ok = TextEditor::remove(m_doc->filePath(), out, box.objId, box.objGen, &error);
+        message = tr("Deleted the text box");
+    } else {
+        ok = TextEditor::setText(m_doc->filePath(), out, box.objId, box.objGen, dialog.text(),
+                                 &error);
+        message = tr("Updated the text");
+    }
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't edit text"), error);
+        return;
+    }
+    m_toast->show(message);
+    openPath(out);
+}
+
+void MainWindow::editInLibreOffice() {
+    if (!hasActiveDoc())
+        return;
+    QString soffice = QStandardPaths::findExecutable(QStringLiteral("soffice"));
+    if (soffice.isEmpty())
+        soffice = QStandardPaths::findExecutable(QStringLiteral("libreoffice"));
+    if (soffice.isEmpty()) {
+        QMessageBox::information(
+            this, tr("LibreOffice not found"),
+            tr("Install LibreOffice to edit heavy layout, body text, and images in Draw."));
+        return;
+    }
+    // Hand the file to Draw for the edits Feather can't do natively yet (existing
+    // body text with reflow, image move/resize). Detached — Feather keeps running.
+    const bool ok = QProcess::startDetached(
+        soffice, {QStringLiteral("--draw"), QDir::toNativeSeparators(m_doc->filePath())});
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't open LibreOffice Draw"),
+                             tr("LibreOffice is installed but couldn't be launched."));
+        return;
+    }
+    m_toast->show(tr("Opening in LibreOffice Draw…"));
+}
+
 void MainWindow::placeFormField(int slot, const QRectF& normRect) {
     if (!m_placingField || !hasActiveDoc())
         return;
@@ -1464,6 +1538,8 @@ void MainWindow::activateTool(const QString& id) {
             setHighlightMode(!m_viewport->highlightMode());
     } else if (id == QLatin1String("sign")) {
         signDocument();
+    } else if (id == QLatin1String("edit")) {
+        editTextBoxes();
     } else if (id == QLatin1String("create")) {
         createPdf();
     } else {

@@ -101,6 +101,8 @@ private:
     void deleteFormField(const QString& name); // remove an existing field
     void exportFormData(); // write the document's form values to an XFDF file
     void importFormData(); // apply an XFDF file's values, open the result
+    void editTextBoxes();  // M8(a): edit/delete the text boxes you've added
+    void editInLibreOffice(); // M8 fallback: open the PDF in LibreOffice Draw
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
