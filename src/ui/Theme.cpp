@@ -26,6 +26,7 @@
 #include <QPalette>
 #include <QPixmap>
 #include <QScreen>
+#include <QSettings>
 #include <QStyleHints>
 #include <QSvgRenderer>
 
@@ -98,6 +99,16 @@ void Theme::apply() {
     auto resolveFromSystem = [hints]() -> Mode {
         return hints->colorScheme() == Qt::ColorScheme::Dark ? Mode::Dark : Mode::Light;
     };
+    // Restore an explicit light/dark choice the user made in a previous session;
+    // with none saved we follow the system preference.
+    const QString saved = QSettings().value(QStringLiteral("theme/mode")).toString();
+    if (saved == QLatin1String("light")) {
+        m_followSystem = false;
+        m_mode = Mode::Light;
+    } else if (saved == QLatin1String("dark")) {
+        m_followSystem = false;
+        m_mode = Mode::Dark;
+    }
     if (m_followSystem)
         m_mode = resolveFromSystem();
 
@@ -116,6 +127,9 @@ void Theme::apply() {
 
 void Theme::setMode(Mode mode) {
     m_followSystem = false; // explicit choice overrides the system until next apply()
+    // Persist the choice so it survives a restart.
+    QSettings().setValue(QStringLiteral("theme/mode"),
+                         mode == Mode::Light ? QStringLiteral("light") : QStringLiteral("dark"));
     if (mode == m_mode) {
         m_palette = paletteFor(m_mode); // ensure populated on first call
         return;
