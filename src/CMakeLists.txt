@@ -66,6 +66,8 @@ qt_add_executable(feather-pdf
     ui/FlattenDialog.h
     ui/SplitDialog.cpp
     ui/SplitDialog.h
+    ui/ExtractDialog.cpp
+    ui/ExtractDialog.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

@@ -36,6 +36,7 @@
 #include "ui/CombineDialog.h"
 #include "ui/CommandBar.h"
 #include "ui/DocsView.h"
+#include "ui/ExtractDialog.h"
 #include "ui/FlattenDialog.h"
 #include "ui/GoToPageDialog.h"
 #include "ui/FindBar.h"
@@ -159,6 +160,9 @@ void MainWindow::buildActions() {
     m_deletePageAct = new QAction(tr("&Delete Page"), this);
     connect(m_deletePageAct, &QAction::triggered, this, &MainWindow::deleteActivePage);
 
+    m_extractPagesAct = new QAction(tr("&Extract Pages…"), this);
+    connect(m_extractPagesAct, &QAction::triggered, this, &MainWindow::extractActivePages);
+
     m_closeAct = new QAction(tr("&Close"), this);
     m_closeAct->setShortcut(QKeySequence::Close);
     connect(m_closeAct, &QAction::triggered, this, &MainWindow::closeDocument);
@@ -269,6 +273,7 @@ void MainWindow::buildMenus() {
     document->addAction(m_rotateLeftAct);
     document->addAction(m_rotateRightAct);
     document->addAction(m_deletePageAct);
+    document->addAction(m_extractPagesAct);
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
     connect(props, &QAction::triggered, this, &MainWindow::showProperties);
@@ -576,6 +581,7 @@ void MainWindow::wireSignals() {
         menu.addAction(m_rotateLeftAct);
         menu.addAction(m_rotateRightAct);
         menu.addAction(m_deletePageAct);
+        menu.addAction(m_extractPagesAct);
         menu.addSeparator();
         menu.addAction(m_singlePageAct);
         menu.addAction(m_continuousAct);
@@ -796,6 +802,55 @@ void MainWindow::deleteActivePage() {
         return;
     }
     s->undo->push(new DeletePageCommand(s->doc, m_viewport->currentPage()));
+}
+
+void MainWindow::extractActivePages() {
+    if (!hasActiveDoc())
+        return;
+
+    ExtractDialog dialog(m_doc->pageCount(), m_viewport->currentPage() + 1, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    const QVector<int> pageSlots = dialog.selectedDisplayIndices();
+    if (pageSlots.isEmpty()) {
+        m_toast->show(tr("No pages in that range to extract."));
+        return;
+    }
+
+    // Map the chosen display slots back to the on-disk page order + per-slot
+    // rotation that PdfEditor::saveArrangement consumes, so the extract is
+    // lossless and respects any in-session edits.
+    QVector<int> order;
+    QVector<int> rotations;
+    order.reserve(pageSlots.size());
+    rotations.reserve(pageSlots.size());
+    for (int slot : pageSlots) {
+        order.push_back(m_doc->originalPageAt(slot));
+        rotations.push_back(m_doc->rotation(slot));
+    }
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested = info.dir().filePath(
+        info.completeBaseName() +
+        tr("-extracted", "suffix for an extracted-pages file") + QStringLiteral(".pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Extract Pages"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok =
+        PdfEditor::saveArrangement(m_doc->filePath(), out, order, rotations, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't extract"), error);
+        return;
+    }
+    m_toast->show(tr("Extracted %n page(s) to %1", "", pageSlots.size())
+                      .arg(QFileInfo(out).fileName()));
 }
 
 bool MainWindow::saveActiveAs() {
@@ -1991,6 +2046,7 @@ void MainWindow::updateChromeState() {
     m_rotateLeftAct->setEnabled(loaded);
     m_rotateRightAct->setEnabled(loaded);
     m_deletePageAct->setEnabled(loaded);
+    m_extractPagesAct->setEnabled(loaded);
     m_closeAct->setEnabled(loaded);
     m_zoomInAct->setEnabled(loaded);
     m_zoomOutAct->setEnabled(loaded);
