@@ -37,6 +37,29 @@ public:
                                 const QVector<int>& order, const QVector<int>& rotations,
                                 QString* error);
 
+    // Margins to trim off each edge of a page, in points, expressed in the
+    // page's *displayed* orientation (what the user sees, after rotation).
+    struct CropMargins {
+        double left = 0;
+        double right = 0;
+        double top = 0;
+        double bottom = 0;
+    };
+
+    // Write the base document's current arrangement (`order`/`rotations`, as
+    // saveArrangement) with a tighter /CropBox on the chosen pages. `applyToSlots`
+    // lists the display slots to crop (empty = every slot). `margins` are insets
+    // from each displayed edge; they are mapped into the page's unrotated space
+    // (honouring both the page's own /Rotate and the per-slot rotation) and
+    // applied relative to each page's current crop/media box. The visible content
+    // is clipped, not removed (lossless — the full page data stays). Temp file +
+    // atomic rename, so `outputPath` may equal `inputPath`. Returns true on
+    // success; on failure fills *error with a friendly message.
+    static bool cropPages(const QString& inputPath, const QString& outputPath,
+                          const QVector<int>& order, const QVector<int>& rotations,
+                          const QVector<int>& applyToSlots, const CropMargins& margins,
+                          QString* error);
+
     // Build a new document at `outputPath` from the base document's current
     // arrangement (`order`/`rotations`, exactly as saveArrangement consumes them)
     // with pages from `insertPath` spliced in. `insertPages` lists the 0-based

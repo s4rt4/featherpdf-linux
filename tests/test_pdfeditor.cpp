@@ -55,6 +55,27 @@ private:
         return static_cast<int>(QPDFPageDocumentHelper(q).getAllPages().size());
     }
 
+    // Read box `key` ("/MediaBox" or "/CropBox") of page `index`, normalized to
+    // [x0,y0,x1,y1]. Returns false if the page has no such 4-element box.
+    bool boxOf(const QString& path, int index, const char* key, double out[4]) {
+        QPDF q;
+        q.processFile(path.toLocal8Bit().constData());
+        QPDFPageDocumentHelper dh(q);
+        dh.pushInheritedAttributesToPage();
+        auto pages = dh.getAllPages();
+        QPDFObjectHandle b = pages.at(index).getObjectHandle().getKey(key);
+        if (!b.isArray() || b.getArrayNItems() != 4)
+            return false;
+        double v[4];
+        for (int i = 0; i < 4; ++i)
+            v[i] = b.getArrayItem(i).getNumericValue();
+        out[0] = qMin(v[0], v[2]);
+        out[1] = qMin(v[1], v[3]);
+        out[2] = qMax(v[0], v[2]);
+        out[3] = qMax(v[1], v[3]);
+        return true;
+    }
+
 private slots:
     void initTestCase() {
         QVERIFY(m_dir.isValid());
@@ -128,6 +149,53 @@ private slots:
         QCOMPARE(pageRotation(out, 1), 0);   // inserted page
         QCOMPARE(pageRotation(out, 2), 180); // base page 1
         QCOMPARE(pageRotation(out, 3), 270); // base page 2
+    }
+
+    void cropAllInsetsTheCropBox() {
+        const QString out = m_dir.filePath("crop-all.pdf");
+        QString err;
+        // Distinct margins per edge (points), every page, no rotation.
+        PdfEditor::CropMargins m{10, 20, 30, 40}; // left, right, top, bottom
+        QVERIFY2(PdfEditor::cropPages(m_input, out, {0, 1, 2}, {0, 0, 0}, {}, m, &err),
+                 qPrintable(err));
+        for (int i = 0; i < 3; ++i) {
+            double mb[4], cb[4];
+            QVERIFY(boxOf(out, i, "/MediaBox", mb));
+            QVERIFY(boxOf(out, i, "/CropBox", cb));
+            QVERIFY(qAbs(cb[0] - (mb[0] + 10)) < 0.01); // left inset
+            QVERIFY(qAbs(cb[1] - (mb[1] + 40)) < 0.01); // bottom inset
+            QVERIFY(qAbs(cb[2] - (mb[2] - 20)) < 0.01); // right inset
+            QVERIFY(qAbs(cb[3] - (mb[3] - 30)) < 0.01); // top inset
+        }
+    }
+
+    void cropTargetsOnlySelectedSlots() {
+        const QString out = m_dir.filePath("crop-one.pdf");
+        QString err;
+        PdfEditor::CropMargins m{10, 10, 10, 10};
+        QVERIFY2(PdfEditor::cropPages(m_input, out, {0, 1, 2}, {0, 0, 0}, {1}, m, &err),
+                 qPrintable(err));
+        double cb[4];
+        QVERIFY(!boxOf(out, 0, "/CropBox", cb)); // untouched
+        QVERIFY(boxOf(out, 1, "/CropBox", cb));  // cropped
+        QVERIFY(!boxOf(out, 2, "/CropBox", cb)); // untouched
+    }
+
+    void cropMapsMarginsThroughRotation() {
+        const QString out = m_dir.filePath("crop-rot.pdf");
+        QString err;
+        // A displayed "left" margin on a page rotated 90° clockwise must trim the
+        // page's unrotated *bottom* edge (and nothing else).
+        PdfEditor::CropMargins m{10, 0, 0, 0}; // left only
+        QVERIFY2(PdfEditor::cropPages(m_input, out, {0}, {90}, {0}, m, &err), qPrintable(err));
+        QCOMPARE(pageRotation(out, 0), 90);
+        double mb[4], cb[4];
+        QVERIFY(boxOf(out, 0, "/MediaBox", mb));
+        QVERIFY(boxOf(out, 0, "/CropBox", cb));
+        QVERIFY(qAbs(cb[0] - mb[0]) < 0.01);        // left edge unchanged
+        QVERIFY(qAbs(cb[1] - (mb[1] + 10)) < 0.01); // bottom inset by 10
+        QVERIFY(qAbs(cb[2] - mb[2]) < 0.01);        // right edge unchanged
+        QVERIFY(qAbs(cb[3] - mb[3]) < 0.01);        // top edge unchanged
     }
 };
 

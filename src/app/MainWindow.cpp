@@ -34,6 +34,7 @@
 #include "ui/BatesDialog.h"
 #include "ui/AttachmentsPanel.h"
 #include "ui/CombineDialog.h"
+#include "ui/CropDialog.h"
 #include "ui/CommandBar.h"
 #include "ui/DocsView.h"
 #include "ui/ExtractDialog.h"
@@ -167,6 +168,9 @@ void MainWindow::buildActions() {
     m_insertPagesAct = new QAction(tr("&Insert Pages…"), this);
     connect(m_insertPagesAct, &QAction::triggered, this, &MainWindow::insertPagesIntoActive);
 
+    m_cropPagesAct = new QAction(tr("&Crop Pages…"), this);
+    connect(m_cropPagesAct, &QAction::triggered, this, &MainWindow::cropActivePages);
+
     m_closeAct = new QAction(tr("&Close"), this);
     m_closeAct->setShortcut(QKeySequence::Close);
     connect(m_closeAct, &QAction::triggered, this, &MainWindow::closeDocument);
@@ -279,6 +283,7 @@ void MainWindow::buildMenus() {
     document->addAction(m_deletePageAct);
     document->addAction(m_insertPagesAct);
     document->addAction(m_extractPagesAct);
+    document->addAction(m_cropPagesAct);
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
     connect(props, &QAction::triggered, this, &MainWindow::showProperties);
@@ -588,6 +593,7 @@ void MainWindow::wireSignals() {
         menu.addAction(m_deletePageAct);
         menu.addAction(m_insertPagesAct);
         menu.addAction(m_extractPagesAct);
+        menu.addAction(m_cropPagesAct);
         menu.addSeparator();
         menu.addAction(m_singlePageAct);
         menu.addAction(m_continuousAct);
@@ -910,6 +916,44 @@ void MainWindow::insertPagesIntoActive() {
     m_toast->show(tr("Inserted %n page(s) into %1", "", pages.size())
                       .arg(QFileInfo(out).fileName()));
     openPath(out); // open the merged result
+}
+
+void MainWindow::cropActivePages() {
+    if (!hasActiveDoc())
+        return;
+
+    CropDialog dialog(m_doc->pageCount(), this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    if (dialog.isEmptyCrop()) {
+        m_toast->show(tr("Set a margin on at least one edge to crop."));
+        return;
+    }
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-cropped.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save cropped PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    const PdfEditor::CropMargins margins{dialog.leftPt(), dialog.rightPt(), dialog.topPt(),
+                                         dialog.bottomPt()};
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = PdfEditor::cropPages(m_doc->filePath(), out, m_doc->pageOrder(),
+                                         m_doc->rotations(), dialog.selectedSlots(), margins,
+                                         &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't crop"), error);
+        return;
+    }
+    m_toast->show(tr("Saved cropped copy to %1").arg(QFileInfo(out).fileName()));
+    openPath(out); // open the cropped result
 }
 
 bool MainWindow::saveActiveAs() {
@@ -2107,6 +2151,7 @@ void MainWindow::updateChromeState() {
     m_deletePageAct->setEnabled(loaded);
     m_extractPagesAct->setEnabled(loaded);
     m_insertPagesAct->setEnabled(loaded);
+    m_cropPagesAct->setEnabled(loaded);
     m_closeAct->setEnabled(loaded);
     m_zoomInAct->setEnabled(loaded);
     m_zoomOutAct->setEnabled(loaded);

@@ -70,6 +70,8 @@ qt_add_executable(feather-pdf
     ui/ExtractDialog.h
     ui/InsertDialog.cpp
     ui/InsertDialog.h
+    ui/CropDialog.cpp
+    ui/CropDialog.h
     ui/TabStrip.cpp
     ui/TabStrip.h
     ui/CommandBar.cpp

@@ -165,6 +165,130 @@ bool PdfEditor::insertPages(const QString& inputPath, const QString& outputPath,
     return true;
 }
 
+namespace {
+// A page box as [x0,y0,x1,y1] with x0<x1, y0<y1 (PDF points, y up).
+struct Box {
+    double x0, y0, x1, y1;
+    bool valid = false;
+};
+Box readBox(QPDFObjectHandle page) {
+    QPDFObjectHandle b = page.getKey("/CropBox");
+    if (!b.isArray() || b.getArrayNItems() != 4)
+        b = page.getKey("/MediaBox");
+    Box out;
+    if (!b.isArray() || b.getArrayNItems() != 4)
+        return out;
+    double v[4];
+    for (int i = 0; i < 4; ++i) {
+        QPDFObjectHandle e = b.getArrayItem(i);
+        if (!e.isNumber())
+            return out;
+        v[i] = e.getNumericValue();
+    }
+    out.x0 = std::min(v[0], v[2]);
+    out.y0 = std::min(v[1], v[3]);
+    out.x1 = std::max(v[0], v[2]);
+    out.y1 = std::max(v[1], v[3]);
+    out.valid = true;
+    return out;
+}
+} // namespace
+
+bool PdfEditor::cropPages(const QString& inputPath, const QString& outputPath,
+                          const QVector<int>& order, const QVector<int>& rotations,
+                          const QVector<int>& applyToSlots, const CropMargins& margins,
+                          QString* error) {
+    const bool inPlace =
+        QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
+    const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
+
+    const bool cropAll = applyToSlots.isEmpty();
+    const auto cropsThisSlot = [&](int slot) {
+        return cropAll || applyToSlots.contains(slot);
+    };
+
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData());
+
+        QPDFPageDocumentHelper dh(qpdf);
+        dh.pushInheritedAttributesToPage();
+        std::vector<QPDFPageObjectHelper> base = dh.getAllPages();
+        for (auto& page : base)
+            dh.removePage(page);
+
+        const int n = static_cast<int>(base.size());
+        for (int slot = 0; slot < order.size(); ++slot) {
+            const int orig = order[slot];
+            if (orig < 0 || orig >= n)
+                continue;
+            QPDFPageObjectHelper page = base[orig];
+            QPDFObjectHandle obj = page.getObjectHandle();
+
+            int sessionRot = (slot < rotations.size()) ? rotations[slot] : 0;
+            sessionRot = ((sessionRot % 360) + 360) % 360;
+
+            if (cropsThisSlot(slot)) {
+                // The page's displayed orientation includes any baked-in /Rotate
+                // plus the per-slot session rotation. Map the displayed margins
+                // into the page's unrotated coordinates before insetting the box.
+                QPDFObjectHandle rotObj = obj.getKey("/Rotate");
+                int baked = rotObj.isInteger() ? rotObj.getIntValueAsInt() : 0;
+                const int eff = (((baked + sessionRot) % 360) + 360) % 360;
+
+                const double L = margins.left, R = margins.right, T = margins.top,
+                             B = margins.bottom;
+                double uL = L, uR = R, uT = T, uB = B; // unrotated insets
+                switch (eff) {
+                case 90:  uL = T; uR = B; uT = R; uB = L; break;
+                case 180: uL = R; uR = L; uT = B; uB = T; break;
+                case 270: uL = B; uR = T; uT = L; uB = R; break;
+                default:  break; // 0
+                }
+
+                const Box box = readBox(obj);
+                if (box.valid) {
+                    const double nx0 = box.x0 + uL, nx1 = box.x1 - uR;
+                    const double ny0 = box.y0 + uB, ny1 = box.y1 - uT;
+                    // Only apply when a sane, non-degenerate box remains.
+                    if (nx1 - nx0 >= 1.0 && ny1 - ny0 >= 1.0) {
+                        QPDFObjectHandle cb = QPDFObjectHandle::newArray();
+                        cb.appendItem(QPDFObjectHandle::newReal(nx0, 3));
+                        cb.appendItem(QPDFObjectHandle::newReal(ny0, 3));
+                        cb.appendItem(QPDFObjectHandle::newReal(nx1, 3));
+                        cb.appendItem(QPDFObjectHandle::newReal(ny1, 3));
+                        obj.replaceKey("/CropBox", cb);
+                    }
+                }
+            }
+
+            if (sessionRot != 0)
+                page.rotatePage(sessionRot, /*relative=*/true);
+            dh.addPage(page, /*first=*/false);
+        }
+
+        QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
+        writer.write();
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        if (inPlace)
+            QFile::remove(target);
+        return false;
+    }
+
+    if (inPlace) {
+        QFile::remove(outputPath);
+        if (!QFile::rename(target, outputPath)) {
+            if (error)
+                *error = QStringLiteral("The cropped file couldn't replace the original.");
+            QFile::remove(target);
+            return false;
+        }
+    }
+    return true;
+}
+
 bool PdfEditor::combine(const QStringList& inputPaths, const QString& outputPath, QString* error) {
     if (inputPaths.isEmpty()) {
         if (error)
