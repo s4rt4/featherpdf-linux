@@ -99,6 +99,8 @@ private:
     void placeFormField(int slot, const QRectF& normRect); // drawn rect → create/move field
     void moveFormField(const QString& name);   // start repositioning an existing field
     void deleteFormField(const QString& name); // remove an existing field
+    void exportFormData(); // write the document's form values to an XFDF file
+    void importFormData(); // apply an XFDF file's values, open the result
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
@@ -219,6 +221,8 @@ private:
     QAction* m_insertPagesAct = nullptr;
     QAction* m_cropPagesAct = nullptr;
     QAction* m_addFieldAct = nullptr;
+    QAction* m_exportXfdfAct = nullptr;
+    QAction* m_importXfdfAct = nullptr;
     FormEditor::NewField m_pendingField; // field being placed (after the dialog)
     bool m_placingField = false;         // viewport is in field-placement mode
     QString m_movingField;               // non-empty: placing repositions this field

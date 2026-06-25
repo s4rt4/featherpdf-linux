@@ -69,6 +69,26 @@ target_link_libraries(test_formroundtrip PRIVATE
 add_test(NAME formroundtrip COMMAND test_formroundtrip)
 set_tests_properties(formroundtrip PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_xfdf
+    test_xfdf.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Xfdf.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Xfdf.h
+    ${CMAKE_SOURCE_DIR}/src/backends/FormFiller.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/FormFiller.h
+    ${CMAKE_SOURCE_DIR}/src/backends/FormEditor.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/FormEditor.h
+)
+target_include_directories(test_xfdf PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_xfdf PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::QPDF
+    PkgConfig::POPPLER_QT6
+)
+add_test(NAME xfdf COMMAND test_xfdf)
+set_tests_properties(xfdf PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_document
     test_document.cpp
     ${CMAKE_SOURCE_DIR}/src/core/FeatherDocument.cpp

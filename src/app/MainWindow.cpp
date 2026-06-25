@@ -28,6 +28,7 @@
 #include "backends/Ocr.h"
 #include "backends/Signer.h"
 #include "backends/Watermarker.h"
+#include "backends/Xfdf.h"
 #include "core/FeatherDocument.h"
 #include "core/PageCommands.h"
 #include "ui/AnnotationBar.h"
@@ -250,6 +251,12 @@ void MainWindow::buildMenus() {
     file->addAction(m_saveAsAct);
     file->addAction(m_protectAct);
     file->addAction(m_removeProtectionAct);
+    file->addSeparator();
+    QMenu* formData = file->addMenu(tr("Form &Data"));
+    m_exportXfdfAct = formData->addAction(tr("&Export to XFDF…"));
+    connect(m_exportXfdfAct, &QAction::triggered, this, &MainWindow::exportFormData);
+    m_importXfdfAct = formData->addAction(tr("&Import from XFDF…"));
+    connect(m_importXfdfAct, &QAction::triggered, this, &MainWindow::importFormData);
     file->addSeparator();
     file->addAction(m_printAct);
     file->addSeparator();
@@ -1072,6 +1079,54 @@ void MainWindow::deleteFormField(const QString& name) {
     m_toast->show(tr("Deleted “%1”").arg(name));
     openPath(out);
     m_forms->reload(); // reflect the change even when overwriting in place
+}
+
+void MainWindow::exportFormData() {
+    if (!hasActiveDoc())
+        return;
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral(".xfdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Export form data"), suggested,
+                                                     tr("XFDF form data (*.xfdf)"));
+    if (out.isEmpty())
+        return;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = Xfdf::exportFields(m_doc->filePath(), out, &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't export form data"), error);
+        return;
+    }
+    m_toast->show(tr("Exported form data to %1").arg(QFileInfo(out).fileName()));
+}
+
+void MainWindow::importFormData() {
+    if (!hasActiveDoc())
+        return;
+    const QFileInfo info(m_doc->filePath());
+    const QString xfdf = QFileDialog::getOpenFileName(this, tr("Import form data"),
+                                                      info.absolutePath(),
+                                                      tr("XFDF form data (*.xfdf)"));
+    if (xfdf.isEmpty())
+        return;
+    const QString out =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-filled.pdf"));
+    const QString dest = QFileDialog::getSaveFileName(this, tr("Save filled form"), out,
+                                                      tr("PDF documents (*.pdf)"));
+    if (dest.isEmpty())
+        return;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = Xfdf::importFields(m_doc->filePath(), xfdf, dest, &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't import form data"), error);
+        return;
+    }
+    m_toast->show(tr("Imported form data into %1").arg(QFileInfo(dest).fileName()));
+    openPath(dest);
 }
 
 void MainWindow::placeFormField(int slot, const QRectF& normRect) {
@@ -2353,6 +2408,8 @@ void MainWindow::updateChromeState() {
     m_insertPagesAct->setEnabled(loaded);
     m_cropPagesAct->setEnabled(loaded);
     m_addFieldAct->setEnabled(loaded);
+    m_exportXfdfAct->setEnabled(loaded);
+    m_importXfdfAct->setEnabled(loaded);
     m_closeAct->setEnabled(loaded);
     m_zoomInAct->setEnabled(loaded);
     m_zoomOutAct->setEnabled(loaded);
