@@ -38,7 +38,9 @@ public:
 private:
     void rebuildToc();
     void setLanguage(const QString& lang);
-    void applyFontSize(); // set the article's base font from m_fontPt
+    void applyFontSize();    // set the article's base font from m_fontPt
+    void applyThemeStyles(); // (re)build the palette-derived stylesheet
+    void showTopic(const QString& id); // render a topic's article
 
     QTreeWidget* m_toc = nullptr;
     QTextBrowser* m_browser = nullptr;

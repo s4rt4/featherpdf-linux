@@ -471,27 +471,12 @@ const QList<Group>& docs() {
 DocsView::DocsView(QWidget* parent) : QWidget(parent) {
     setObjectName(QStringLiteral("DocsView"));
 
-    const Theme::Palette& p = Theme::instance().palette();
-    const auto css = [](const QColor& c) { return c.name(QColor::HexRgb); };
-    setStyleSheet(
-        QStringLiteral(
-            "#DocsView { background:%1; }"
-            "#DocsSidebar { background:%2; border-right:1px solid %3; }"
-            "#DocsTitle { color:%4; font-size:15px; font-weight:700; }"
-            "QTreeWidget#DocsToc { background:transparent; border:none; outline:0; }"
-            "QTreeWidget#DocsToc::item { padding:5px 4px; color:%4; }"
-            // Flat full-row highlight: the item AND the branch (arrow) cell share
-            // one colour, so no stray box sits beside the text (same as Outline).
-            "QTreeWidget#DocsToc::item:hover, QTreeWidget#DocsToc::branch:hover { background:%1; }"
-            "QTreeWidget#DocsToc::item:selected, QTreeWidget#DocsToc::branch:selected"
-            " { background:%5; }"
-            "QTreeWidget#DocsToc::item:selected { color:%6; }"
-            "QPushButton#DocsLang { background:transparent; border:1px solid %3; border-radius:7px;"
-            " padding:4px 10px; color:%4; }"
-            "QPushButton#DocsLang:checked { background:%5; border:1px solid %6; color:%6; }"
-            "QTextBrowser#DocsArticle { background:%1; border:none; color:%4; }")
-            .arg(css(p.canvas), css(p.surface), css(p.hairline), css(p.text), css(p.accentTint),
-                 css(p.accent)));
+    applyThemeStyles();
+    // Persistent widget: restyle (and re-render the article) when the theme flips.
+    connect(&Theme::instance(), &Theme::changed, this, [this] {
+        applyThemeStyles();
+        showTopic(m_currentId);
+    });
 
     auto* root = new QHBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);
@@ -570,11 +555,7 @@ DocsView::DocsView(QWidget* parent) : QWidget(parent) {
             return;
         }
         m_currentId = id;
-        const bool indo = m_lang == QStringLiteral("id");
-        for (const Group& gr : docs())
-            for (const Topic& t : gr.topics)
-                if (t.id == id)
-                    m_browser->setHtml(indo ? t.bodyId : t.bodyEn);
+        showTopic(id);
     });
 
     // Restore the saved text size, apply it, then persist on change.
@@ -598,6 +579,43 @@ void DocsView::applyFontSize() {
     f.setPointSize(m_fontPt);
     m_browser->setFont(f);
     m_browser->document()->setDefaultFont(f); // base size HTML headings/paras inherit
+}
+
+void DocsView::applyThemeStyles() {
+    const Theme::Palette& p = Theme::instance().palette();
+    const auto css = [](const QColor& c) { return c.name(QColor::HexRgb); };
+    setStyleSheet(
+        QStringLiteral(
+            "#DocsView { background:%1; }"
+            "#DocsSidebar { background:%2; border-right:1px solid %3; }"
+            "#DocsTitle { color:%4; font-size:15px; font-weight:700; }"
+            "QTreeWidget#DocsToc { background:transparent; border:none; outline:0; }"
+            "QTreeWidget#DocsToc::item { padding:5px 4px; color:%4; }"
+            // Flat full-row highlight: the item AND the branch (arrow) cell share
+            // one colour, so no stray box sits beside the text (same as Outline).
+            "QTreeWidget#DocsToc::item:hover, QTreeWidget#DocsToc::branch:hover { background:%1; }"
+            "QTreeWidget#DocsToc::item:selected, QTreeWidget#DocsToc::branch:selected"
+            " { background:%5; }"
+            "QTreeWidget#DocsToc::item:selected { color:%6; }"
+            "QPushButton#DocsLang { background:transparent; border:1px solid %3; border-radius:7px;"
+            " padding:4px 10px; color:%4; }"
+            "QPushButton#DocsLang:checked { background:%5; border:1px solid %6; color:%6; }"
+            "QTextBrowser#DocsArticle { background:%1; border:none; color:%4; }")
+            .arg(css(p.canvas), css(p.surface), css(p.hairline), css(p.text), css(p.accentTint),
+                 css(p.accent)));
+}
+
+void DocsView::showTopic(const QString& id) {
+    if (!m_browser || id.isEmpty())
+        return;
+    const bool indo = m_lang == QStringLiteral("id");
+    for (const Group& gr : docs())
+        for (const Topic& t : gr.topics)
+            if (t.id == id) {
+                m_browser->setHtml(indo ? t.bodyId : t.bodyEn);
+                applyFontSize(); // setHtml keeps the base font, but be explicit
+                return;
+            }
 }
 
 void DocsView::setLanguage(const QString& lang) {
