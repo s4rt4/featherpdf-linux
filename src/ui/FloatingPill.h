@@ -35,12 +35,15 @@ public:
 
     void setPageText(const QString& text);
     void setZoomText(const QString& text);
+    void setReadingMode(bool on); // swaps the reading-mode toggle icon/tooltip
 
 signals:
     void prevPageRequested();
     void nextPageRequested();
     void zoomOutRequested();
     void zoomInRequested();
+    void goToPageRequested();          // the page label was clicked
+    void readingModeToggleRequested(); // the reading-mode button was clicked
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -54,5 +57,7 @@ private:
 
     QLabel* m_page = nullptr;
     QLabel* m_zoom = nullptr;
+    QToolButton* m_readingBtn = nullptr;
+    bool m_readingMode = false;
     QVector<QPair<QToolButton*, QString>> m_iconButtons;
 };

@@ -495,6 +495,7 @@ void MainWindow::setImmersive(bool on) {
     if (on == m_immersive)
         return;
     m_immersive = on;
+    m_pill->setReadingMode(on); // flip the pill's reading-mode glyph
 
     if (on) {
         // Everything recedes; only the page and its floating pill remain.
@@ -641,20 +642,23 @@ void MainWindow::wireSignals() {
         else
             m_continuousAct->setChecked(true);
     });
-    connect(m_commandBar, &CommandBar::counterClicked, this, [this] {
+    const auto promptGoToPage = [this] {
         if (!hasActiveDoc())
             return;
-        const int n = m_doc->pageCount();
-        GoToPageDialog dialog(n, m_viewport->currentPage() + 1, this);
+        GoToPageDialog dialog(m_doc->pageCount(), m_viewport->currentPage() + 1, this);
         if (dialog.exec() == QDialog::Accepted)
             m_viewport->goToPage(dialog.selectedPage() - 1);
-    });
+    };
+    connect(m_commandBar, &CommandBar::counterClicked, this, promptGoToPage);
 
     // Floating pill.
     connect(m_pill, &FloatingPill::zoomInRequested, m_viewport, &Viewport::zoomIn);
     connect(m_pill, &FloatingPill::zoomOutRequested, m_viewport, &Viewport::zoomOut);
     connect(m_pill, &FloatingPill::nextPageRequested, this, &MainWindow::nextPage);
     connect(m_pill, &FloatingPill::prevPageRequested, this, &MainWindow::previousPage);
+    connect(m_pill, &FloatingPill::goToPageRequested, this, promptGoToPage);
+    connect(m_pill, &FloatingPill::readingModeToggleRequested, this,
+            [this] { m_immersiveAct->toggle(); });
 
     // View actions → viewport.
     connect(m_zoomInAct, &QAction::triggered, m_viewport, &Viewport::zoomIn);

@@ -41,6 +41,9 @@ FloatingPill::FloatingPill(QWidget* viewportParent) : QWidget(viewportParent) {
     m_page = new QLabel("- / -", this);
     m_page->setObjectName("PillLabel");
     m_page->setAlignment(Qt::AlignCenter);
+    m_page->setCursor(Qt::PointingHandCursor);
+    m_page->setToolTip(tr("Go to page"));
+    m_page->installEventFilter(this); // click → goToPageRequested
     row->addWidget(m_page);
 
     auto* next = addButton("chevron-right", tr("Next page"));
@@ -61,6 +64,18 @@ FloatingPill::FloatingPill(QWidget* viewportParent) : QWidget(viewportParent) {
     auto* zoomIn = addButton("plus", tr("Zoom in"));
     connect(zoomIn, &QToolButton::clicked, this, &FloatingPill::zoomInRequested);
     row->addWidget(zoomIn);
+
+    row->addWidget(addSeparator());
+
+    // Reading-mode toggle: its icon/tooltip flip via setReadingMode(). Kept out of
+    // m_iconButtons so refreshIcons() can pick the state-dependent glyph.
+    m_readingBtn = new QToolButton(this);
+    m_readingBtn->setCursor(Qt::PointingHandCursor);
+    m_readingBtn->setFixedSize(26, 26);
+    m_readingBtn->setIconSize(QSize(15, 15));
+    m_readingBtn->setAutoRaise(true);
+    connect(m_readingBtn, &QToolButton::clicked, this, &FloatingPill::readingModeToggleRequested);
+    row->addWidget(m_readingBtn);
 
     // The float shadow (ui-guidelines §4) - the pill is an overlay layer.
     auto* shadow = new QGraphicsDropShadowEffect(this);
@@ -109,6 +124,15 @@ void FloatingPill::refreshIcons() {
                                           "QToolButton:hover{background:%1;}")
                                .arg(pal.canvas.name()));
     }
+    if (m_readingBtn) {
+        m_readingBtn->setIcon(Theme::instance().icon(
+            m_readingMode ? QStringLiteral("reading-exit") : QStringLiteral("book"), pal.text));
+        m_readingBtn->setToolTip(m_readingMode ? tr("Exit reading mode") : tr("Reading mode"));
+        m_readingBtn->setStyleSheet(QStringLiteral("QToolButton{background:transparent;border:none;"
+                                                   "border-radius:13px;}"
+                                                   "QToolButton:hover{background:%1;}")
+                                        .arg(pal.canvas.name()));
+    }
     const QString labelCss = QStringLiteral("color:%1; font-family:'Source Code Pro',monospace;"
                                             " font-size:12px; padding:0 4px;")
                                  .arg(pal.text.name());
@@ -116,6 +140,13 @@ void FloatingPill::refreshIcons() {
         m_page->setStyleSheet(labelCss);
     if (m_zoom)
         m_zoom->setStyleSheet(labelCss);
+}
+
+void FloatingPill::setReadingMode(bool on) {
+    if (m_readingMode == on)
+        return;
+    m_readingMode = on;
+    refreshIcons(); // swap the toggle glyph + tooltip
 }
 
 void FloatingPill::setPageText(const QString& text) {
@@ -143,6 +174,10 @@ bool FloatingPill::eventFilter(QObject* watched, QEvent* event) {
     if (watched == parentWidget() &&
         (event->type() == QEvent::Resize || event->type() == QEvent::Show))
         reposition();
+    if (watched == m_page && event->type() == QEvent::MouseButtonRelease) {
+        emit goToPageRequested();
+        return true;
+    }
     return QWidget::eventFilter(watched, event);
 }
 
