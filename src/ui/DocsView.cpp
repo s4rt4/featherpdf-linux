@@ -22,6 +22,8 @@
 #include <QLabel>
 #include <QLocale>
 #include <QPushButton>
+#include <QSettings>
+#include <QSlider>
 #include <QTextBrowser>
 #include <QTreeWidget>
 #include <QVBoxLayout>
@@ -521,6 +523,24 @@ DocsView::DocsView(QWidget* parent) : QWidget(parent) {
     m_toc->setIndentation(12);
     m_toc->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     side->addWidget(m_toc, 1);
+
+    // Text-size control for the article (the default can read small).
+    auto* sizeRow = new QHBoxLayout;
+    sizeRow->setContentsMargins(2, 6, 2, 0);
+    sizeRow->setSpacing(8);
+    auto* aSmall = new QLabel(QStringLiteral("A"), sidebar);
+    aSmall->setStyleSheet(QStringLiteral("font-size:11px;"));
+    auto* aBig = new QLabel(QStringLiteral("A"), sidebar);
+    aBig->setStyleSheet(QStringLiteral("font-size:17px; font-weight:600;"));
+    m_fontSlider = new QSlider(Qt::Horizontal, sidebar);
+    m_fontSlider->setRange(10, 24);
+    m_fontSlider->setCursor(Qt::PointingHandCursor);
+    m_fontSlider->setToolTip(tr("Text size"));
+    sizeRow->addWidget(aSmall);
+    sizeRow->addWidget(m_fontSlider, 1);
+    sizeRow->addWidget(aBig);
+    side->addLayout(sizeRow);
+
     root->addWidget(sidebar);
 
     // Article.
@@ -552,8 +572,27 @@ DocsView::DocsView(QWidget* parent) : QWidget(parent) {
                     m_browser->setHtml(indo ? t.bodyId : t.bodyEn);
     });
 
+    // Restore the saved text size, apply it, then persist on change.
+    m_fontPt = QSettings().value(QStringLiteral("docs/fontPt"), 13).toInt();
+    m_fontSlider->setValue(m_fontPt);
+    applyFontSize();
+    connect(m_fontSlider, &QSlider::valueChanged, this, [this](int v) {
+        m_fontPt = v;
+        applyFontSize();
+        QSettings().setValue(QStringLiteral("docs/fontPt"), v);
+    });
+
     setLanguage(QLocale().language() == QLocale::Indonesian ? QStringLiteral("id")
                                                             : QStringLiteral("en"));
+}
+
+void DocsView::applyFontSize() {
+    if (!m_browser)
+        return;
+    QFont f = m_browser->font();
+    f.setPointSize(m_fontPt);
+    m_browser->setFont(f);
+    m_browser->document()->setDefaultFont(f); // base size HTML headings/paras inherit
 }
 
 void DocsView::setLanguage(const QString& lang) {

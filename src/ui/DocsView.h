@@ -23,6 +23,7 @@ class QTreeWidget;
 class QTreeWidgetItem;
 class QTextBrowser;
 class QPushButton;
+class QSlider;
 
 // The full in-app documentation, shown as its own workspace tab: a table-of-
 // contents sidebar (grouped topics) beside the article for the selected topic.
@@ -37,11 +38,14 @@ public:
 private:
     void rebuildToc();
     void setLanguage(const QString& lang);
+    void applyFontSize(); // set the article's base font from m_fontPt
 
     QTreeWidget* m_toc = nullptr;
     QTextBrowser* m_browser = nullptr;
     QPushButton* m_en = nullptr;
     QPushButton* m_id = nullptr;
+    QSlider* m_fontSlider = nullptr;
+    int m_fontPt = 13;     // article base font size (points), persisted
     QString m_lang;        // "en" or "id"
     QString m_currentId;   // currently shown topic id
 };
