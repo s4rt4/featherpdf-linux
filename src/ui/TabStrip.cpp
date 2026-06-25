@@ -28,7 +28,7 @@
 
 namespace {
 constexpr int kTabHeight = 34;
-constexpr int kStripTop = 6;
+constexpr int kStripTop = 10; // breathing room between the menu bar and the tabs
 constexpr int kPadH = 13;     // horizontal text padding
 constexpr int kGap = 7;       // gap between icon/label/extras
 constexpr int kIcon = 15;     // leading icon (Home/Tools)
