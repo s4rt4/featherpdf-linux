@@ -52,7 +52,7 @@ NavigationRail::NavigationRail(QWidget* parent) : QWidget(parent) {
     docsBtn->setIconSize(QSize(19, 19));
     docsBtn->setAutoRaise(true);
     connect(docsBtn, &QToolButton::clicked, this, &NavigationRail::docsRequested);
-    m_iconButtons.append({docsBtn, QStringLiteral("book")});
+    m_iconButtons.append({docsBtn, QStringLiteral("help-circle")});
     col->addWidget(docsBtn, 0, Qt::AlignHCenter);
 
     refreshIcons();

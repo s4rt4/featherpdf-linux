@@ -3,6 +3,7 @@
   <file alias="attachment.svg">icons/attachment.svg</file>
   <file alias="book.svg">icons/book.svg</file>
   <file alias="reading-exit.svg">icons/reading-exit.svg</file>
+  <file alias="help-circle.svg">icons/help-circle.svg</file>
   <file alias="chevron-down.svg">icons/chevron-down.svg</file>
   <file alias="chevron-left.svg">icons/chevron-left.svg</file>
   <file alias="chevron-right.svg">icons/chevron-right.svg</file>
