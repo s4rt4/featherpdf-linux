@@ -28,7 +28,7 @@ class QModelIndex;
 class QTreeView;
 class QStackedWidget;
 class QLabel;
-class QPushButton;
+class QToolButton;
 
 // The Outline rail panel (ui-guidelines §5.5): the document's bookmark tree,
 // now editable. Bookmarks can be added (to the current page), renamed in place,
@@ -55,16 +55,17 @@ private:
     void requestSave();
     void updateButtons();
     void updateEmptyState();
+    void applyIcons(); // (re)tint the toolbar icons for the current theme
     void populateFrom(QPdfDocument* doc);
 
     QStandardItemModel* m_model = nullptr;
     QTreeView* m_tree = nullptr;
     QStackedWidget* m_stack = nullptr;
     QLabel* m_empty = nullptr;
-    QPushButton* m_addBtn = nullptr;
-    QPushButton* m_renameBtn = nullptr;
-    QPushButton* m_deleteBtn = nullptr;
-    QPushButton* m_saveBtn = nullptr;
+    QToolButton* m_addBtn = nullptr;
+    QToolButton* m_renameBtn = nullptr;
+    QToolButton* m_deleteBtn = nullptr;
+    QToolButton* m_saveBtn = nullptr;
     int m_currentPage = 0;
     int m_pageCount = 0;
     bool m_loaded = false;

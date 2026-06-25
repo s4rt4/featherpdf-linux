@@ -16,15 +16,17 @@
 
 #include "ui/OutlinePanel.h"
 
+#include "ui/Theme.h"
+
 #include <QHBoxLayout>
 #include <QItemSelectionModel>
 #include <QLabel>
 #include <QPdfBookmarkModel>
 #include <QPdfDocument>
-#include <QPushButton>
 #include <QStackedWidget>
 #include <QStandardItem>
 #include <QStandardItemModel>
+#include <QToolButton>
 #include <QTreeView>
 #include <QVBoxLayout>
 
@@ -54,19 +56,28 @@ OutlinePanel::OutlinePanel(QWidget* parent) : QWidget(parent) {
     auto* bar = new QHBoxLayout;
     bar->setContentsMargins(8, 6, 8, 6);
     bar->setSpacing(6);
-    m_addBtn = new QPushButton(tr("Add"), this);
-    m_renameBtn = new QPushButton(tr("Rename"), this);
-    m_deleteBtn = new QPushButton(tr("Delete"), this);
-    m_saveBtn = new QPushButton(tr("Save"), this);
-    m_saveBtn->setObjectName(QStringLiteral("Share")); // accent-filled primary
-    for (QPushButton* b : {m_addBtn, m_renameBtn, m_deleteBtn, m_saveBtn})
+    // Icon-only toolbar (the rail is narrow); the tooltip names each action.
+    const auto makeBtn = [this](const QString& tip) {
+        auto* b = new QToolButton(this);
+        b->setToolTip(tip);
+        b->setAccessibleName(tip);
         b->setCursor(Qt::PointingHandCursor);
-    m_addBtn->setToolTip(tr("Add a bookmark to the current page"));
+        b->setAutoRaise(true);
+        b->setFixedSize(30, 30);
+        b->setIconSize(QSize(17, 17));
+        return b;
+    };
+    m_addBtn = makeBtn(tr("Add a bookmark to the current page"));
+    m_renameBtn = makeBtn(tr("Rename the selected bookmark"));
+    m_deleteBtn = makeBtn(tr("Delete the selected bookmark"));
+    m_saveBtn = makeBtn(tr("Save the outline"));
     bar->addWidget(m_addBtn);
     bar->addWidget(m_renameBtn);
     bar->addWidget(m_deleteBtn);
     bar->addStretch(1);
     bar->addWidget(m_saveBtn);
+    applyIcons();
+    connect(&Theme::instance(), &Theme::changed, this, &OutlinePanel::applyIcons);
     col->addLayout(bar);
 
     m_stack = new QStackedWidget(this);
@@ -104,10 +115,10 @@ OutlinePanel::OutlinePanel(QWidget* parent) : QWidget(parent) {
     connect(m_model, &QAbstractItemModel::rowsInserted, this, &OutlinePanel::updateEmptyState);
     connect(m_model, &QAbstractItemModel::rowsRemoved, this, &OutlinePanel::updateEmptyState);
 
-    connect(m_addBtn, &QPushButton::clicked, this, &OutlinePanel::addBookmark);
-    connect(m_renameBtn, &QPushButton::clicked, this, &OutlinePanel::renameSelected);
-    connect(m_deleteBtn, &QPushButton::clicked, this, &OutlinePanel::deleteSelected);
-    connect(m_saveBtn, &QPushButton::clicked, this, &OutlinePanel::requestSave);
+    connect(m_addBtn, &QToolButton::clicked, this, &OutlinePanel::addBookmark);
+    connect(m_renameBtn, &QToolButton::clicked, this, &OutlinePanel::renameSelected);
+    connect(m_deleteBtn, &QToolButton::clicked, this, &OutlinePanel::deleteSelected);
+    connect(m_saveBtn, &QToolButton::clicked, this, &OutlinePanel::requestSave);
 
     updateEmptyState();
     updateButtons();
@@ -215,6 +226,14 @@ void OutlinePanel::updateButtons() {
     m_saveBtn->setEnabled(m_loaded);
     m_renameBtn->setEnabled(hasSel);
     m_deleteBtn->setEnabled(hasSel);
+}
+
+void OutlinePanel::applyIcons() {
+    const Theme::Palette& p = Theme::instance().palette();
+    m_addBtn->setIcon(Theme::instance().icon(QStringLiteral("plus"), p.text));
+    m_renameBtn->setIcon(Theme::instance().icon(QStringLiteral("edit"), p.text));
+    m_deleteBtn->setIcon(Theme::instance().icon(QStringLiteral("x"), p.text));
+    m_saveBtn->setIcon(Theme::instance().icon(QStringLiteral("save"), p.accent)); // primary
 }
 
 void OutlinePanel::updateEmptyState() {

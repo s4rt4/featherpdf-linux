@@ -24,7 +24,6 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QPushButton>
 #include <QScrollArea>
 #include <QShowEvent>
 #include <QStackedWidget>
@@ -82,11 +81,19 @@ FormPanel::FormPanel(QWidget* parent) : QWidget(parent) {
     m_stack->addWidget(m_empty);  // 1
     col->addWidget(m_stack, 1);
 
-    m_add = new QPushButton(tr("Add field…"), this);
-    m_add->setCursor(Qt::PointingHandCursor);
-    m_save = new QPushButton(tr("Save Form"), this);
-    m_save->setObjectName(QStringLiteral("Share"));
-    m_save->setCursor(Qt::PointingHandCursor);
+    // Icon-only footer (the rail is narrow); tooltips name each action.
+    const auto makeBtn = [this](const QString& tip) {
+        auto* b = new QToolButton(this);
+        b->setToolTip(tip);
+        b->setAccessibleName(tip);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setAutoRaise(true);
+        b->setFixedSize(30, 30);
+        b->setIconSize(QSize(17, 17));
+        return b;
+    };
+    m_add = makeBtn(tr("Add a field"));
+    m_save = makeBtn(tr("Save the form"));
     auto* footer = new QHBoxLayout;
     footer->setContentsMargins(12, 8, 12, 12);
     footer->setSpacing(8);
@@ -95,8 +102,16 @@ FormPanel::FormPanel(QWidget* parent) : QWidget(parent) {
     footer->addWidget(m_save);
     col->addLayout(footer);
 
-    connect(m_save, &QPushButton::clicked, this, [this] { emit saveRequested(m_values); });
-    connect(m_add, &QPushButton::clicked, this, [this] { emit addFieldRequested(); });
+    const auto applyIcons = [this] {
+        const Theme::Palette& p = Theme::instance().palette();
+        m_add->setIcon(Theme::instance().icon(QStringLiteral("plus"), p.text));
+        m_save->setIcon(Theme::instance().icon(QStringLiteral("save"), p.accent)); // primary
+    };
+    applyIcons();
+    connect(&Theme::instance(), &Theme::changed, this, applyIcons);
+
+    connect(m_save, &QToolButton::clicked, this, [this] { emit saveRequested(m_values); });
+    connect(m_add, &QToolButton::clicked, this, [this] { emit addFieldRequested(); });
 }
 
 void FormPanel::setDocumentPath(const QString& path) {

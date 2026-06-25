@@ -23,7 +23,7 @@
 
 class QStackedWidget;
 class QLabel;
-class QPushButton;
+class QToolButton;
 class QWidget;
 
 // The Forms rail panel: lists a document's fillable AcroForm fields with inline
@@ -60,6 +60,6 @@ private:
     QWidget* m_form = nullptr;        // scroll content holding the editors
     QWidget* m_fieldHost = nullptr;   // re-created each rebuild
     QLabel* m_empty = nullptr;
-    QPushButton* m_save = nullptr;
-    QPushButton* m_add = nullptr;
+    QToolButton* m_save = nullptr;
+    QToolButton* m_add = nullptr;
 };
