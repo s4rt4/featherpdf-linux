@@ -20,6 +20,7 @@
 #include <QFileInfo>
 #include <QRandomGenerator>
 
+#include <algorithm>
 #include <exception>
 #include <memory>
 #include <vector>
@@ -82,6 +83,81 @@ bool PdfEditor::saveArrangement(const QString& inputPath, const QString& outputP
         if (!QFile::rename(target, outputPath)) {
             if (error)
                 *error = QStringLiteral("The edited file couldn't replace the original.");
+            QFile::remove(target);
+            return false;
+        }
+    }
+    return true;
+}
+
+bool PdfEditor::insertPages(const QString& inputPath, const QString& outputPath,
+                            const QVector<int>& order, const QVector<int>& rotations,
+                            const QString& insertPath, const QVector<int>& insertPages, int atSlot,
+                            QString* error) {
+    const bool inPlace =
+        QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
+    const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
+
+    const int clampedAt = std::max(0, std::min<int>(atSlot, order.size()));
+
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData());
+
+        QPDFPageDocumentHelper dh(qpdf);
+        dh.pushInheritedAttributesToPage();
+        std::vector<QPDFPageObjectHelper> base = dh.getAllPages();
+        for (auto& page : base)
+            dh.removePage(page);
+
+        // The insert source must outlive write(): QPDF copies foreign pages
+        // lazily, so keep it open until the file is flushed. addPage() copies a
+        // foreign page automatically when it belongs to a different QPDF.
+        QPDF source;
+        source.processFile(insertPath.toLocal8Bit().constData());
+        QPDFPageDocumentHelper srcDh(source);
+        srcDh.pushInheritedAttributesToPage();
+        std::vector<QPDFPageObjectHelper> srcPages = srcDh.getAllPages();
+        const int srcN = static_cast<int>(srcPages.size());
+
+        const auto addInserted = [&] {
+            for (int p : insertPages)
+                if (p >= 0 && p < srcN)
+                    dh.addPage(srcPages[p], /*first=*/false);
+        };
+
+        const int n = static_cast<int>(base.size());
+        for (int slot = 0; slot < order.size(); ++slot) {
+            if (slot == clampedAt)
+                addInserted();
+            const int orig = order[slot];
+            if (orig < 0 || orig >= n)
+                continue;
+            QPDFPageObjectHelper page = base[orig];
+            int rot = (slot < rotations.size()) ? rotations[slot] : 0;
+            rot = ((rot % 360) + 360) % 360;
+            if (rot != 0)
+                page.rotatePage(rot, /*relative=*/true);
+            dh.addPage(page, /*first=*/false);
+        }
+        if (clampedAt >= order.size()) // inserting at (or past) the end
+            addInserted();
+
+        QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
+        writer.write();
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        if (inPlace)
+            QFile::remove(target);
+        return false;
+    }
+
+    if (inPlace) {
+        QFile::remove(outputPath);
+        if (!QFile::rename(target, outputPath)) {
+            if (error)
+                *error = QStringLiteral("The merged file couldn't replace the original.");
             QFile::remove(target);
             return false;
         }

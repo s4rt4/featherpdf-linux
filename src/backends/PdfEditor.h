@@ -37,6 +37,19 @@ public:
                                 const QVector<int>& order, const QVector<int>& rotations,
                                 QString* error);
 
+    // Build a new document at `outputPath` from the base document's current
+    // arrangement (`order`/`rotations`, exactly as saveArrangement consumes them)
+    // with pages from `insertPath` spliced in. `insertPages` lists the 0-based
+    // pages of `insertPath` to take, in that order; they are inserted at display
+    // slot `atSlot` (clamped to 0..order.size()). Base pages are copied losslessly
+    // with their per-slot rotation; inserted pages keep their own orientation.
+    // Temp file + atomic rename, so `outputPath` may equal `inputPath`. Returns
+    // true on success; on failure fills *error with a friendly message.
+    static bool insertPages(const QString& inputPath, const QString& outputPath,
+                            const QVector<int>& order, const QVector<int>& rotations,
+                            const QString& insertPath, const QVector<int>& insertPages, int atSlot,
+                            QString* error);
+
     // Merge `inputPaths` into a single PDF at `outputPath`, concatenating all
     // pages of each input in list order. Pages are copied losslessly (foreign
     // object copy, no re-render). The write goes through a temp file then an

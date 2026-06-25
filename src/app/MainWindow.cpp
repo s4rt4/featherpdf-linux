@@ -39,6 +39,7 @@
 #include "ui/ExtractDialog.h"
 #include "ui/FlattenDialog.h"
 #include "ui/GoToPageDialog.h"
+#include "ui/InsertDialog.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
 #include "ui/FormPanel.h"
@@ -163,6 +164,9 @@ void MainWindow::buildActions() {
     m_extractPagesAct = new QAction(tr("&Extract Pages…"), this);
     connect(m_extractPagesAct, &QAction::triggered, this, &MainWindow::extractActivePages);
 
+    m_insertPagesAct = new QAction(tr("&Insert Pages…"), this);
+    connect(m_insertPagesAct, &QAction::triggered, this, &MainWindow::insertPagesIntoActive);
+
     m_closeAct = new QAction(tr("&Close"), this);
     m_closeAct->setShortcut(QKeySequence::Close);
     connect(m_closeAct, &QAction::triggered, this, &MainWindow::closeDocument);
@@ -273,6 +277,7 @@ void MainWindow::buildMenus() {
     document->addAction(m_rotateLeftAct);
     document->addAction(m_rotateRightAct);
     document->addAction(m_deletePageAct);
+    document->addAction(m_insertPagesAct);
     document->addAction(m_extractPagesAct);
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
@@ -581,6 +586,7 @@ void MainWindow::wireSignals() {
         menu.addAction(m_rotateLeftAct);
         menu.addAction(m_rotateRightAct);
         menu.addAction(m_deletePageAct);
+        menu.addAction(m_insertPagesAct);
         menu.addAction(m_extractPagesAct);
         menu.addSeparator();
         menu.addAction(m_singlePageAct);
@@ -851,6 +857,59 @@ void MainWindow::extractActivePages() {
     }
     m_toast->show(tr("Extracted %n page(s) to %1", "", pageSlots.size())
                       .arg(QFileInfo(out).fileName()));
+}
+
+void MainWindow::insertPagesIntoActive() {
+    if (!hasActiveDoc())
+        return;
+
+    const QFileInfo info(m_doc->filePath());
+    const QString src = QFileDialog::getOpenFileName(this, tr("Choose a PDF to insert"),
+                                                     info.absolutePath(),
+                                                     tr("PDF documents (*.pdf)"));
+    if (src.isEmpty())
+        return;
+
+    // Read the source page count up front (and reject what we can't open, e.g. an
+    // encrypted file — the QPDF copy path below opens it without a password too).
+    QPdfDocument probe;
+    if (probe.load(src) != QPdfDocument::Error::None || probe.pageCount() < 1) {
+        m_toast->show(tr("That PDF couldn't be opened to insert from."));
+        return;
+    }
+
+    InsertDialog dialog(QFileInfo(src).fileName(), probe.pageCount(),
+                        m_viewport->currentPage() + 1, m_doc->pageCount(), this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    const QVector<int> pages = dialog.sourcePages();
+    if (pages.isEmpty()) {
+        m_toast->show(tr("No pages in that range to insert."));
+        return;
+    }
+
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-merged.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save merged PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok =
+        PdfEditor::insertPages(m_doc->filePath(), out, m_doc->pageOrder(), m_doc->rotations(), src,
+                               pages, dialog.insertAtSlot(), &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't insert"), error);
+        return;
+    }
+    m_toast->show(tr("Inserted %n page(s) into %1", "", pages.size())
+                      .arg(QFileInfo(out).fileName()));
+    openPath(out); // open the merged result
 }
 
 bool MainWindow::saveActiveAs() {
@@ -2047,6 +2106,7 @@ void MainWindow::updateChromeState() {
     m_rotateRightAct->setEnabled(loaded);
     m_deletePageAct->setEnabled(loaded);
     m_extractPagesAct->setEnabled(loaded);
+    m_insertPagesAct->setEnabled(loaded);
     m_closeAct->setEnabled(loaded);
     m_zoomInAct->setEnabled(loaded);
     m_zoomOutAct->setEnabled(loaded);

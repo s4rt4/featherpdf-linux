@@ -23,6 +23,7 @@ class TestPdfEditor : public QObject {
 private:
     QTemporaryDir m_dir;
     QString m_input;
+    QString m_source; // a separate 2-page PDF to insert from
 
     // A simple 3-page PDF (no display needed; runs under QT_QPA_PLATFORM=offscreen).
     void makeSample(const QString& path, int pages) {
@@ -60,6 +61,9 @@ private slots:
         m_input = m_dir.filePath("input.pdf");
         makeSample(m_input, 3);
         QCOMPARE(pageCount(m_input), 3);
+        m_source = m_dir.filePath("source.pdf");
+        makeSample(m_source, 2);
+        QCOMPARE(pageCount(m_source), 2);
     }
 
     void identityKeepsAllPages() {
@@ -87,6 +91,43 @@ private slots:
         QCOMPARE(pageRotation(out, 0), 90);
         QCOMPARE(pageRotation(out, 1), 180);
         QCOMPARE(pageRotation(out, 2), 0);
+    }
+
+    void insertAtEndAppends() {
+        const QString out = m_dir.filePath("ins-end.pdf");
+        QString err;
+        QVERIFY2(PdfEditor::insertPages(m_input, out, {0, 1, 2}, {0, 0, 0}, m_source, {0, 1},
+                                        /*atSlot=*/3, &err),
+                 qPrintable(err));
+        QCOMPARE(pageCount(out), 5);
+    }
+
+    void insertAtBeginningPrepends() {
+        // Base pages carry distinct rotations as markers; the inserted page has
+        // none, so its position 0 and the preserved base order are both visible.
+        const QString out = m_dir.filePath("ins-begin.pdf");
+        QString err;
+        QVERIFY2(PdfEditor::insertPages(m_input, out, {0, 1, 2}, {90, 180, 270}, m_source, {0},
+                                        /*atSlot=*/0, &err),
+                 qPrintable(err));
+        QCOMPARE(pageCount(out), 4);
+        QCOMPARE(pageRotation(out, 0), 0);   // inserted page, first
+        QCOMPARE(pageRotation(out, 1), 90);  // base page 0
+        QCOMPARE(pageRotation(out, 2), 180); // base page 1
+        QCOMPARE(pageRotation(out, 3), 270); // base page 2
+    }
+
+    void insertInMiddleKeepsOrderAndRotation() {
+        const QString out = m_dir.filePath("ins-mid.pdf");
+        QString err;
+        QVERIFY2(PdfEditor::insertPages(m_input, out, {0, 1, 2}, {90, 180, 270}, m_source, {0},
+                                        /*atSlot=*/1, &err),
+                 qPrintable(err));
+        QCOMPARE(pageCount(out), 4);
+        QCOMPARE(pageRotation(out, 0), 90);  // base page 0
+        QCOMPARE(pageRotation(out, 1), 0);   // inserted page
+        QCOMPARE(pageRotation(out, 2), 180); // base page 1
+        QCOMPARE(pageRotation(out, 3), 270); // base page 2
     }
 };
 

@@ -88,6 +88,7 @@ private:
     void rotateActivePage(int deltaDegrees);
     void deleteActivePage();
     void extractActivePages(); // save a chosen page subset to a new PDF (QPDF)
+    void insertPagesIntoActive(); // splice pages from another PDF, open the result
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
@@ -205,6 +206,7 @@ private:
     QAction* m_rotateRightAct = nullptr;
     QAction* m_deletePageAct = nullptr;
     QAction* m_extractPagesAct = nullptr;
+    QAction* m_insertPagesAct = nullptr;
     QUndoGroup* m_undoGroup = nullptr;
     QAction* m_zoomInAct = nullptr;
     QAction* m_zoomOutAct = nullptr;
