@@ -47,14 +47,16 @@ public:
         QColor color;             // the pen colour
     };
 
-    // A vector annotation drawn over a rectangle: a text-markup line (underline /
-    // strike-through) or a stroked rectangle.
+    // A vector annotation: text-markup (underline / strike-through), a stroked
+    // rectangle, a line/arrow given by two endpoints, or a free-text box.
     struct Shape {
-        enum class Kind { Underline, StrikeOut, Rectangle };
+        enum class Kind { Underline, StrikeOut, Rectangle, Line, Arrow, TextBox };
         int page = 0;  // original 0-based page index
         Kind kind = Kind::Rectangle;
-        QRectF rect;   // normalized [0,1] page rect (top-left origin, unrotated)
+        QRectF rect;   // normalized rect (top-left origin, unrotated) — box kinds
         QColor color;  // the stroke colour
+        QPointF a, b;  // normalized endpoints (Line / Arrow)
+        QString text;  // contents (TextBox)
     };
 
     // Add `highlights`, `notes`, `inks`, and `shapes` to `inputPath` and write the

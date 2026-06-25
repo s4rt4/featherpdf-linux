@@ -96,13 +96,17 @@ public:
     // Highlight tool drags rects; the Note tool clicks to drop a note (the click
     // emits noteRequested so the app can collect text, then calls addNote).
     // Marks are normalized to the displayed page.
-    enum class AnnotTool { Highlight, Note, Ink, Underline, StrikeOut, Rectangle };
+    enum class AnnotTool { Highlight, Note, Ink, Underline, StrikeOut, Rectangle, Line, Arrow,
+                           TextBox };
 
-    // A vector annotation drawn over a rectangle (markup line or stroked box).
+    // A vector annotation: a rect-based markup/box/text, or a line/arrow given by
+    // two endpoints. `rect`/`text` are used by box kinds; `a`/`b` by line kinds.
     struct ShapeMark {
         AnnotTool kind = AnnotTool::Rectangle;
-        QRectF rect;  // normalized, displayed-page fractions
+        QRectF rect;   // normalized, displayed-page fractions (box kinds)
         QColor color;
+        QPointF a, b;  // normalized endpoints (Line/Arrow)
+        QString text;  // contents (TextBox)
     };
     void setHighlightMode(bool on);  // really "annotation mode"; name kept for callers
     bool highlightMode() const { return m_highlightMode; }
@@ -119,7 +123,8 @@ public:
     int inkCount() const;
     int shapeCount() const;
     void addNote(int slot, const QPointF& pos, const QString& text);
-    void clearAnnotations(); // clears highlights, notes, and ink
+    void addTextBox(int slot, const QRectF& rect, const QString& text);
+    void clearAnnotations(); // clears highlights, notes, ink, and shapes
 
     // Form-field placement: drag one rectangle to say where a new field goes.
     // Unlike the other drag modes nothing is stored - the drawn rect (normalized
@@ -138,6 +143,7 @@ signals:
     void inksChanged(int count);
     void shapesChanged(int count);
     void noteRequested(int slot, QPointF normPos); // Note tool clicked at a point
+    void textBoxRequested(int slot, QRectF normRect); // TextBox drawn; needs its text
     void fieldRectDrawn(int slot, QRectF normRect); // form field placement finished
 
 protected:
@@ -238,5 +244,6 @@ private:
     bool m_dragging = false;
     int m_dragSlot = -1;
     QPointF m_dragStart;          // normalized start point
+    QPointF m_dragCur;            // normalized current point (for line tools)
     QRectF m_dragNorm;            // current drag rect, normalized
 };

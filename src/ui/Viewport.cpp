@@ -46,6 +46,8 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)
             [this](int count) { emit shapesChanged(count); });
     connect(m_view, &PageView::noteRequested, this,
             [this](int slot, QPointF pos) { emit noteRequested(slot, pos); });
+    connect(m_view, &PageView::textBoxRequested, this,
+            [this](int slot, QRectF rect) { emit textBoxRequested(slot, rect); });
     connect(m_view, &PageView::fieldRectDrawn, this,
             [this](int slot, QRectF rect) { emit fieldRectDrawn(slot, rect); });
 }
@@ -80,6 +82,9 @@ int Viewport::highlightCount() const { return m_view->highlightCount(); }
 int Viewport::noteCount() const { return m_view->noteCount(); }
 int Viewport::inkCount() const { return m_view->inkCount(); }
 int Viewport::shapeCount() const { return m_view->shapeCount(); }
+void Viewport::addTextBox(int slot, const QRectF& rect, const QString& text) {
+    m_view->addTextBox(slot, rect, text);
+}
 void Viewport::addNote(int slot, const QPointF& pos, const QString& text) {
     m_view->addNote(slot, pos, text);
 }

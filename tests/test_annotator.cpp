@@ -69,6 +69,43 @@ private slots:
         QVERIFY(subtypes.contains(QStringLiteral("/Square")));
     }
 
+    void writesLineArrowAndTextBox() {
+        const QString out = m_dir.filePath("vec.pdf");
+        Annotator::Shape line{0, Annotator::Shape::Kind::Line, {}, QColor(Qt::red)};
+        line.a = QPointF(0.1, 0.1);
+        line.b = QPointF(0.5, 0.3);
+        Annotator::Shape arrow{0, Annotator::Shape::Kind::Arrow, {}, QColor(Qt::blue)};
+        arrow.a = QPointF(0.2, 0.5);
+        arrow.b = QPointF(0.7, 0.5);
+        Annotator::Shape box{0, Annotator::Shape::Kind::TextBox, QRectF(0.1, 0.6, 0.4, 0.1),
+                             QColor(Qt::black)};
+        box.text = "Hello";
+        QString err;
+        QVERIFY2(Annotator::saveAnnotations(m_input, out, {}, {}, {}, {line, arrow, box}, &err),
+                 qPrintable(err));
+
+        QVERIFY(subtypesOnPage0(out).contains(QStringLiteral("/Line")));
+        QVERIFY(subtypesOnPage0(out).contains(QStringLiteral("/FreeText")));
+
+        // The arrow carries a line-ending array; the FreeText carries its text.
+        QPDF q;
+        q.processFile(out.toLocal8Bit().constData());
+        auto annots =
+            QPDFPageDocumentHelper(q).getAllPages().at(0).getObjectHandle().getKey("/Annots");
+        bool sawArrowLE = false, sawText = false;
+        for (int i = 0; i < annots.getArrayNItems(); ++i) {
+            QPDFObjectHandle an = annots.getArrayItem(i);
+            const QString sub = QString::fromStdString(an.getKey("/Subtype").getName());
+            if (sub == "/Line" && an.getKey("/LE").isArray())
+                sawArrowLE = true;
+            if (sub == "/FreeText" &&
+                QString::fromStdString(an.getKey("/Contents").getUTF8Value()) == "Hello")
+                sawText = true;
+        }
+        QVERIFY(sawArrowLE);
+        QVERIFY(sawText);
+    }
+
     void rejectsEmpty() {
         const QString out = m_dir.filePath("empty.pdf");
         QString err;

@@ -733,6 +733,9 @@ void MainWindow::wireSignals() {
                     : tool == 3 ? T::Underline
                     : tool == 4 ? T::StrikeOut
                     : tool == 5 ? T::Rectangle
+                    : tool == 6 ? T::Line
+                    : tool == 7 ? T::Arrow
+                    : tool == 8 ? T::TextBox
                                 : T::Highlight;
         m_viewport->setAnnotationTool(t);
     });
@@ -743,6 +746,12 @@ void MainWindow::wireSignals() {
         NoteDialog dialog(this);
         if (dialog.exec() == QDialog::Accepted)
             m_viewport->addNote(slot, pos, dialog.text());
+    });
+    // Text box drawn → collect its text, then add it in that rectangle.
+    connect(m_viewport, &Viewport::textBoxRequested, this, [this](int slot, QRectF rect) {
+        NoteDialog dialog(this);
+        if (dialog.exec() == QDialog::Accepted && !dialog.text().isEmpty())
+            m_viewport->addTextBox(slot, rect, dialog.text());
     });
 
     // Forms panel → fill and save via Poppler, then open the result.
@@ -1230,11 +1239,16 @@ void MainWindow::applyAnnotations() {
         }
     }
     QList<Annotator::Shape> shapes;
-    const auto toShapeKind = [](PageView::AnnotTool t) {
+    using AT = PageView::AnnotTool;
+    using SK = Annotator::Shape::Kind;
+    const auto toShapeKind = [](AT t) {
         switch (t) {
-        case PageView::AnnotTool::Underline: return Annotator::Shape::Kind::Underline;
-        case PageView::AnnotTool::StrikeOut: return Annotator::Shape::Kind::StrikeOut;
-        default: return Annotator::Shape::Kind::Rectangle;
+        case AT::Underline: return SK::Underline;
+        case AT::StrikeOut: return SK::StrikeOut;
+        case AT::Line: return SK::Line;
+        case AT::Arrow: return SK::Arrow;
+        case AT::TextBox: return SK::TextBox;
+        default: return SK::Rectangle;
         }
     };
     for (auto it = shapeMarks.constBegin(); it != shapeMarks.constEnd(); ++it) {
@@ -1242,9 +1256,20 @@ void MainWindow::applyAnnotations() {
         if (orig < 0)
             continue;
         const int rot = m_doc->rotation(it.key());
-        for (const PageView::ShapeMark& sm : it.value())
-            shapes.append(Annotator::Shape{orig, toShapeKind(sm.kind), toPageRect(sm.rect, rot),
-                                           sm.color});
+        for (const PageView::ShapeMark& sm : it.value()) {
+            Annotator::Shape s;
+            s.page = orig;
+            s.kind = toShapeKind(sm.kind);
+            s.color = sm.color;
+            if (sm.kind == AT::Line || sm.kind == AT::Arrow) {
+                s.a = mapPoint(sm.a, rot);
+                s.b = mapPoint(sm.b, rot);
+            } else {
+                s.rect = toPageRect(sm.rect, rot);
+                s.text = sm.text;
+            }
+            shapes.append(s);
+        }
     }
     if (highlights.isEmpty() && notes.isEmpty() && inks.isEmpty() && shapes.isEmpty())
         return;

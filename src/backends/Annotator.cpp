@@ -19,6 +19,8 @@
 #include <QFile>
 #include <QFileInfo>
 
+#include <algorithm>
+#include <cmath>
 #include <exception>
 
 #include <qpdf/QPDF.hh>
@@ -42,6 +44,18 @@ QPDFObjectHandle numberArray(std::initializer_list<double> vals) {
     for (double v : vals)
         a.appendItem(QPDFObjectHandle::newReal(num(v)));
     return a;
+}
+
+// Escape a string for a PDF literal-string operand in a content stream (Latin-1).
+std::string litStr(const QString& s) {
+    std::string o = "(";
+    for (char c : s.toLatin1()) {
+        if (c == '(' || c == ')' || c == '\\')
+            o += '\\';
+        o += c;
+    }
+    o += ")";
+    return o;
 }
 } // namespace
 
@@ -277,12 +291,102 @@ bool Annotator::saveAnnotations(const QString& inputPath, const QString& outputP
             const double w = mb.getArrayItem(2).getNumericValue() - llx;
             const double h = ury - mb.getArrayItem(1).getNumericValue();
 
+            const double r = sh.color.redF(), g = sh.color.greenF(), b = sh.color.blueF();
+            constexpr double penW = 1.5;
+
+            // Line / Arrow: two endpoints, optionally with an arrowhead at the end.
+            if (sh.kind == Shape::Kind::Line || sh.kind == Shape::Kind::Arrow) {
+                constexpr double len_pad = 12.0; // BBox padding for the arrowhead/pen
+                const double ax = llx + sh.a.x() * w, ay = ury - sh.a.y() * h;
+                const double bx = llx + sh.b.x() * w, by = ury - sh.b.y() * h;
+                std::string draw =
+                    num(r) + " " + num(g) + " " + num(b) + " RG " + num(penW) + " w 1 J " +
+                    num(ax) + " " + num(ay) + " m " + num(bx) + " " + num(by) + " l S";
+                if (sh.kind == Shape::Kind::Arrow) {
+                    const double ang = std::atan2(ay - by, ax - bx);
+                    constexpr double len = 10.0, spread = 0.45;
+                    const double h1x = bx + std::cos(ang + spread) * len;
+                    const double h1y = by + std::sin(ang + spread) * len;
+                    const double h2x = bx + std::cos(ang - spread) * len;
+                    const double h2y = by + std::sin(ang - spread) * len;
+                    draw += " " + num(r) + " " + num(g) + " " + num(b) + " rg " + num(bx) + " " +
+                            num(by) + " m " + num(h1x) + " " + num(h1y) + " l " + num(h2x) + " " +
+                            num(h2y) + " l f";
+                }
+                const double minX = std::min(ax, bx) - len_pad, minY = std::min(ay, by) - len_pad;
+                const double maxX = std::max(ax, bx) + len_pad, maxY = std::max(ay, by) + len_pad;
+                QPDFObjectHandle form = QPDFObjectHandle::newStream(&qpdf);
+                QPDFObjectHandle fd = form.getDict();
+                fd.replaceKey("/Type", QPDFObjectHandle::newName("/XObject"));
+                fd.replaceKey("/Subtype", QPDFObjectHandle::newName("/Form"));
+                fd.replaceKey("/BBox", numberArray({minX, minY, maxX, maxY}));
+                form.replaceStreamData(draw, QPDFObjectHandle::newNull(),
+                                       QPDFObjectHandle::newNull());
+                QPDFObjectHandle ap = QPDFObjectHandle::newDictionary();
+                ap.replaceKey("/N", form);
+                QPDFObjectHandle annot = QPDFObjectHandle::newDictionary();
+                annot.replaceKey("/Type", QPDFObjectHandle::newName("/Annot"));
+                annot.replaceKey("/Subtype", QPDFObjectHandle::newName("/Line"));
+                annot.replaceKey("/Rect", numberArray({minX, minY, maxX, maxY}));
+                annot.replaceKey("/L", numberArray({ax, ay, bx, by}));
+                if (sh.kind == Shape::Kind::Arrow) {
+                    QPDFObjectHandle le = QPDFObjectHandle::newArray();
+                    le.appendItem(QPDFObjectHandle::newName("/None"));
+                    le.appendItem(QPDFObjectHandle::newName("/ClosedArrow"));
+                    annot.replaceKey("/LE", le);
+                }
+                annot.replaceKey("/C", numberArray({r, g, b}));
+                annot.replaceKey("/F", QPDFObjectHandle::newInteger(4));
+                annot.replaceKey("/AP", ap);
+                appendAnnot(page, annot, qpdf);
+                continue;
+            }
+
             const double x0 = llx + sh.rect.left() * w;
             const double x1 = llx + sh.rect.right() * w;
             const double yTop = ury - sh.rect.top() * h;
             const double yBot = ury - sh.rect.bottom() * h;
-            const double r = sh.color.redF(), g = sh.color.greenF(), b = sh.color.blueF();
-            constexpr double penW = 1.5;
+
+            // Text box: a free-text annotation with a border and the typed text.
+            if (sh.kind == Shape::Kind::TextBox) {
+                const double size = std::max(7.0, std::min(12.0, (yTop - yBot) - 4));
+                QPDFObjectHandle helv = qpdf.makeIndirectObject(QPDFObjectHandle::newDictionary());
+                helv.replaceKey("/Type", QPDFObjectHandle::newName("/Font"));
+                helv.replaceKey("/Subtype", QPDFObjectHandle::newName("/Type1"));
+                helv.replaceKey("/BaseFont", QPDFObjectHandle::newName("/Helvetica"));
+                QPDFObjectHandle fonts = QPDFObjectHandle::newDictionary();
+                fonts.replaceKey("/Helv", helv);
+                QPDFObjectHandle res = QPDFObjectHandle::newDictionary();
+                res.replaceKey("/Font", fonts);
+                const std::string da = "/Helv " + num(size) + " Tf " + num(r) + " " + num(g) + " " +
+                                       num(b) + " rg";
+                std::string draw = num(r) + " " + num(g) + " " + num(b) + " RG " + num(penW) +
+                                   " w " + num(x0 + 0.75) + " " + num(yBot + 0.75) + " " +
+                                   num(x1 - x0 - penW) + " " + num(yTop - yBot - penW) + " re S\n" +
+                                   "BT " + da + " " + num(x0 + 3) + " " + num(yTop - size - 2) +
+                                   " Td " + litStr(sh.text) + " Tj ET";
+                QPDFObjectHandle form = QPDFObjectHandle::newStream(&qpdf);
+                QPDFObjectHandle fd = form.getDict();
+                fd.replaceKey("/Type", QPDFObjectHandle::newName("/XObject"));
+                fd.replaceKey("/Subtype", QPDFObjectHandle::newName("/Form"));
+                fd.replaceKey("/BBox", numberArray({x0, yBot, x1, yTop}));
+                fd.replaceKey("/Resources", res);
+                form.replaceStreamData(draw, QPDFObjectHandle::newNull(),
+                                       QPDFObjectHandle::newNull());
+                QPDFObjectHandle ap = QPDFObjectHandle::newDictionary();
+                ap.replaceKey("/N", form);
+                QPDFObjectHandle annot = QPDFObjectHandle::newDictionary();
+                annot.replaceKey("/Type", QPDFObjectHandle::newName("/Annot"));
+                annot.replaceKey("/Subtype", QPDFObjectHandle::newName("/FreeText"));
+                annot.replaceKey("/Rect", numberArray({x0, yBot, x1, yTop}));
+                annot.replaceKey("/Contents", QPDFObjectHandle::newUnicodeString(sh.text.toStdString()));
+                annot.replaceKey("/DA", QPDFObjectHandle::newString(da));
+                annot.replaceKey("/C", numberArray({r, g, b}));
+                annot.replaceKey("/F", QPDFObjectHandle::newInteger(4));
+                annot.replaceKey("/AP", ap);
+                appendAnnot(page, annot, qpdf);
+                continue;
+            }
 
             const char* subtype = "/Square";
             std::string draw =

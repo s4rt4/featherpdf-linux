@@ -89,6 +89,7 @@ public:
     int inkCount() const;
     int shapeCount() const;
     void addNote(int slot, const QPointF& pos, const QString& text);
+    void addTextBox(int slot, const QRectF& rect, const QString& text);
     void clearAnnotations();
 
 signals:
@@ -103,6 +104,7 @@ signals:
     void inksChanged(int count);
     void shapesChanged(int count);
     void noteRequested(int slot, QPointF normPos);
+    void textBoxRequested(int slot, QRectF normRect);
     void fieldRectDrawn(int slot, QRectF normRect); // form field placement finished
 
 private:

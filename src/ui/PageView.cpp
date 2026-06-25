@@ -350,6 +350,16 @@ void PageView::addNote(int slot, const QPointF& pos, const QString& text) {
     viewport()->update();
 }
 
+void PageView::addTextBox(int slot, const QRectF& rect, const QString& text) {
+    if (slot < 0 || slot >= pageCount() || text.isEmpty())
+        return;
+    ShapeMark sm{AnnotTool::TextBox, rect, m_highlightColor};
+    sm.text = text;
+    m_shapes[slot].append(sm);
+    emit shapesChanged(shapeCount());
+    viewport()->update();
+}
+
 void PageView::clearRedactions() {
     if (m_redactions.isEmpty())
         return;
@@ -406,6 +416,7 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
                 m_dragging = true;
                 m_dragSlot = slot;
                 m_dragStart = normInSlot(slot, me->pos());
+                m_dragCur = m_dragStart;
                 m_dragNorm = QRectF(m_dragStart, QSizeF(0, 0));
                 m_currentStroke.clear();
                 if (inkTool)
@@ -421,6 +432,7 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
             break;
         auto* me = static_cast<QMouseEvent*>(event);
         const QPointF cur = normInSlot(m_dragSlot, me->pos());
+        m_dragCur = cur;
         if (inkTool)
             m_currentStroke.append(cur);
         else
@@ -445,6 +457,15 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
             // A field placement is one-shot: report the rect, don't store it.
             if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004)
                 emit fieldRectDrawn(m_dragSlot, m_dragNorm);
+        } else if (m_highlightMode &&
+                   (m_annotTool == AnnotTool::Line || m_annotTool == AnnotTool::Arrow)) {
+            // A line is validated by its length, not a bounding rect.
+            const QPointF d = m_dragCur - m_dragStart;
+            if (d.x() * d.x() + d.y() * d.y() > 0.0001) {
+                m_shapes[m_dragSlot].append(
+                    ShapeMark{m_annotTool, QRectF(), m_highlightColor, m_dragStart, m_dragCur});
+                emit shapesChanged(shapeCount());
+            }
         } else if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004) {
             // Ignore accidental tiny marks (a click without a real drag).
             if (m_redactMode) {
@@ -455,6 +476,8 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
                                            m_annotTool == AnnotTool::Rectangle)) {
                 m_shapes[m_dragSlot].append(ShapeMark{m_annotTool, m_dragNorm, m_highlightColor});
                 emit shapesChanged(shapeCount());
+            } else if (m_highlightMode && m_annotTool == AnnotTool::TextBox) {
+                emit textBoxRequested(m_dragSlot, m_dragNorm);
             } else if (m_highlightMode) {
                 m_highlights[m_dragSlot].append(qMakePair(m_dragNorm, m_highlightColor));
                 emit highlightsChanged(highlightCount());
@@ -694,26 +717,62 @@ void PageView::paintEvent(QPaintEvent*) {
         if (auto it = m_inks.constFind(slot); it != m_inks.constEnd())
             for (const auto& ink : *it)
                 drawStroke(ink.first, ink.second);
-        // Vector markup/shapes: underline, strike-through, and stroked rectangles.
+        // Vector markup/shapes: markup lines, boxes, lines/arrows, and text boxes.
+        const auto toPt = [&](const QPointF& n) {
+            return QPointF(r.x() + n.x() * r.width(), r.y() + n.y() * r.height());
+        };
+        const auto drawArrowHead = [&](const QPointF& from, const QPointF& tip, const QColor& c) {
+            QLineF line(tip, from);
+            const double len = 10.0;
+            const double ang = std::atan2(line.dy(), line.dx());
+            const double spread = 0.45;
+            QPointF h1 = tip + QPointF(std::cos(ang + spread) * len, std::sin(ang + spread) * len);
+            QPointF h2 = tip + QPointF(std::cos(ang - spread) * len, std::sin(ang - spread) * len);
+            QPolygonF head{tip, h1, h2};
+            p.setBrush(c);
+            p.setPen(QPen(c, 1.0));
+            p.drawPolygon(head);
+        };
         if (auto it = m_shapes.constFind(slot); it != m_shapes.constEnd())
             for (const ShapeMark& sm : *it) {
-                const QRectF box(r.x() + sm.rect.x() * r.width(), r.y() + sm.rect.y() * r.height(),
-                                 sm.rect.width() * r.width(), sm.rect.height() * r.height());
                 p.setBrush(Qt::NoBrush);
                 p.setPen(QPen(sm.color, 1.6));
+                if (sm.kind == AnnotTool::Line || sm.kind == AnnotTool::Arrow) {
+                    const QPointF a = toPt(sm.a), b = toPt(sm.b);
+                    p.drawLine(a, b);
+                    if (sm.kind == AnnotTool::Arrow)
+                        drawArrowHead(a, b, sm.color);
+                    continue;
+                }
+                const QRectF box(r.x() + sm.rect.x() * r.width(), r.y() + sm.rect.y() * r.height(),
+                                 sm.rect.width() * r.width(), sm.rect.height() * r.height());
                 if (sm.kind == AnnotTool::Underline)
                     p.drawLine(QPointF(box.left(), box.bottom()), box.bottomRight());
                 else if (sm.kind == AnnotTool::StrikeOut)
                     p.drawLine(QPointF(box.left(), box.center().y()),
                                QPointF(box.right(), box.center().y()));
-                else // Rectangle
+                else if (sm.kind == AnnotTool::TextBox) {
+                    p.drawRect(box);
+                    p.setPen(sm.color);
+                    p.drawText(box.adjusted(3, 2, -3, -2), Qt::AlignTop | Qt::TextWordWrap, sm.text);
+                } else // Rectangle
                     p.drawRect(box);
             }
+        // Live preview for the line/arrow tools (the rect preview covers the rest).
+        if (m_dragging && slot == m_dragSlot && m_highlightMode &&
+            (m_annotTool == AnnotTool::Line || m_annotTool == AnnotTool::Arrow)) {
+            QColor c = m_highlightColor;
+            p.setBrush(Qt::NoBrush);
+            p.setPen(QPen(c, 1.6, Qt::DashLine));
+            p.drawLine(toPt(m_dragStart), toPt(m_dragCur));
+        }
         if (m_dragging && slot == m_dragSlot && !m_currentStroke.isEmpty())
             drawStroke(m_currentStroke, m_highlightColor);
         const bool dragRect =
             m_dragging && slot == m_dragSlot && m_dragNorm.isValid() &&
-            !(m_highlightMode && (m_annotTool == AnnotTool::Note || m_annotTool == AnnotTool::Ink));
+            !(m_highlightMode &&
+              (m_annotTool == AnnotTool::Note || m_annotTool == AnnotTool::Ink ||
+               m_annotTool == AnnotTool::Line || m_annotTool == AnnotTool::Arrow));
         if (dragRect) {
             QColor dragFill = m_fieldMode      ? QColor(17, 124, 111) // feather teal
                               : m_highlightMode ? m_highlightColor

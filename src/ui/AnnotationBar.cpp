@@ -35,8 +35,11 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     m_underlineTool = new QPushButton(tr("Underline"), this);
     m_strikeTool = new QPushButton(tr("Strikeout"), this);
     m_rectTool = new QPushButton(tr("Rectangle"), this);
-    for (QPushButton* b :
-         {m_highlightTool, m_noteTool, m_inkTool, m_underlineTool, m_strikeTool, m_rectTool}) {
+    m_lineTool = new QPushButton(tr("Line"), this);
+    m_arrowTool = new QPushButton(tr("Arrow"), this);
+    m_textTool = new QPushButton(tr("Text"), this);
+    for (QPushButton* b : {m_highlightTool, m_noteTool, m_inkTool, m_underlineTool, m_strikeTool,
+                           m_rectTool, m_lineTool, m_arrowTool, m_textTool}) {
         b->setObjectName(QStringLiteral("GhostBtn"));
         b->setCheckable(true);
         b->setCursor(Qt::PointingHandCursor);
@@ -78,6 +81,9 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     row->addWidget(m_underlineTool);
     row->addWidget(m_strikeTool);
     row->addWidget(m_rectTool);
+    row->addWidget(m_lineTool);
+    row->addWidget(m_arrowTool);
+    row->addWidget(m_textTool);
     row->addSpacing(8);
     for (QPushButton* sw : m_swatches)
         row->addWidget(sw);
@@ -91,8 +97,9 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     connect(m_save, &QPushButton::clicked, this, &AnnotationBar::saveRequested);
     connect(m_clear, &QPushButton::clicked, this, &AnnotationBar::clearRequested);
     connect(done, &QPushButton::clicked, this, &AnnotationBar::doneRequested);
-    const QVector<QPushButton*> tools{m_highlightTool, m_noteTool,     m_inkTool,
-                                      m_underlineTool, m_strikeTool, m_rectTool};
+    const QVector<QPushButton*> tools{m_highlightTool, m_noteTool,   m_inkTool,
+                                      m_underlineTool, m_strikeTool, m_rectTool,
+                                      m_lineTool,      m_arrowTool,  m_textTool};
     for (int i = 0; i < tools.size(); ++i)
         connect(tools[i], &QPushButton::clicked, this, [this, tools, i] {
             for (int j = 0; j < tools.size(); ++j)
