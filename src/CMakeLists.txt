@@ -40,6 +40,8 @@ qt_add_executable(feather-pdf
     backends/ImageExporter.h
     backends/PatternRedactor.cpp
     backends/PatternRedactor.h
+    backends/Sanitizer.cpp
+    backends/Sanitizer.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -82,6 +84,8 @@ qt_add_executable(feather-pdf
     ui/ExportImageDialog.h
     ui/FindRedactDialog.cpp
     ui/FindRedactDialog.h
+    ui/SanitizeDialog.cpp
+    ui/SanitizeDialog.h
     ui/InsertDialog.cpp
     ui/InsertDialog.h
     ui/CropDialog.cpp

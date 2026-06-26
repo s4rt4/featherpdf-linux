@@ -23,6 +23,7 @@
 #include "backends/Converter.h"
 #include "backends/ImageExporter.h"
 #include "backends/PatternRedactor.h"
+#include "backends/Sanitizer.h"
 #include "backends/Flattener.h"
 #include "backends/FormEditor.h"
 #include "backends/FormFiller.h"
@@ -45,6 +46,7 @@
 #include "ui/ExportImageDialog.h"
 #include "ui/ExtractDialog.h"
 #include "ui/FindRedactDialog.h"
+#include "ui/SanitizeDialog.h"
 #include "ui/FlattenDialog.h"
 #include "ui/FormFieldDialog.h"
 #include "ui/GoToPageDialog.h"
@@ -338,6 +340,8 @@ void MainWindow::buildMenus() {
     document->addSeparator();
     QAction* findRedact = document->addAction(tr("&Find && Redact…"));
     connect(findRedact, &QAction::triggered, this, &MainWindow::findAndRedact);
+    QAction* sanitize = document->addAction(tr("Remove &Hidden Information…"));
+    connect(sanitize, &QAction::triggered, this, &MainWindow::sanitizeDocument);
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
     struct ToolEntry {
@@ -1628,6 +1632,45 @@ void MainWindow::findAndRedact() {
     setRedactionMode(true);
     m_viewport->addRedactions(bySlot);
     m_toast->show(tr("Found %n match(es) — review the marks, then Apply.", "", total));
+}
+
+void MainWindow::sanitizeDocument() {
+    if (!hasActiveDoc())
+        return;
+
+    SanitizeDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    if (!dialog.anyChecked()) {
+        m_toast->show(tr("Choose at least one thing to remove."));
+        return;
+    }
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-clean.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save cleaned PDF"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    Sanitizer::Report report;
+    QString error;
+    const bool ok =
+        Sanitizer::sanitize(m_doc->filePath(), out, dialog.options(), &report, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't clean the document"), error);
+        return;
+    }
+    if (report.total() == 0)
+        m_toast->show(tr("Nothing hidden to remove — saved a clean copy."));
+    else
+        m_toast->show(tr("Removed %n hidden item(s) — saved %1", "", report.total())
+                          .arg(QFileInfo(out).fileName()));
+    openPath(out);
 }
 
 void MainWindow::activateTool(const QString& id) {

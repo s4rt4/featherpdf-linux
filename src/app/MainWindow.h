@@ -110,6 +110,7 @@ private:
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
     void applyRedactions();         // flatten marked pages, save, open the result
     void findAndRedact();           // find pattern matches, mark them for redaction (review then apply)
+    void sanitizeDocument();        // strip metadata/attachments/scripts, save, open the result
     void setHighlightMode(bool on); // enter/leave the annotation-authoring mode
     void applyAnnotations();        // write highlight + note annotations, save, open result
     void activateTool(const QString& id); // route a Tools entry (pane or menu) to its action

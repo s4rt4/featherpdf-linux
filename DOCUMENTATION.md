@@ -217,6 +217,13 @@ redaction using its position in the text layer. Review the marks (right-click to
 drop a false positive), then **Apply Redaction** as usual. Patterns are broad by
 design, so always review before applying; scanned PDFs need **OCR** first.
 
+### Remove hidden information (sanitize)
+Strip data that travels inside a PDF without showing on the page — **Document ▸
+Remove Hidden Information**. Choose any of: **document metadata** (Info dictionary +
+XMP), **embedded files and attachments**, and **JavaScript and automatic actions**
+(document/page). QPDF rewrites a clean copy and a note reports how much was removed.
+This targets invisible data only; to remove something *visible*, use **Redact**.
+
 ---
 
 ## Review & recognition

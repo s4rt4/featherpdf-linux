@@ -160,3 +160,18 @@ target_link_libraries(test_patternredactor PRIVATE
 )
 add_test(NAME patternredactor COMMAND test_patternredactor)
 set_tests_properties(patternredactor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+qt_add_executable(test_sanitizer
+    test_sanitizer.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Sanitizer.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Sanitizer.h
+)
+target_include_directories(test_sanitizer PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_sanitizer PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::QPDF
+)
+add_test(NAME sanitizer COMMAND test_sanitizer)
+set_tests_properties(sanitizer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

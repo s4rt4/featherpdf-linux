@@ -619,6 +619,28 @@ QList<Group> buildDocs() {
               "Find, tinjau tanda, lalu <b>Apply Redaction</b>.</li></ul>",
               "<p>Pola sengaja dibuat luas - periksa tanda sebelum menerapkan, dan buang yang salah "
               "lewat klik-kanan. PDF hasil pindai tak punya lapisan teks, jalankan OCR dulu.</p>")});
+    security.topics.append(
+        {"sanitize", "Remove hidden information", "Hapus info tersembunyi",
+         sect("en", "<p>Strip what isn't visible before you share.</p>",
+              "<p>Remove document metadata, embedded files, and scripts that travel inside a PDF "
+              "without showing on the page.</p>",
+              "<p>The catalog and trailer are rewritten without the chosen pieces - the Info "
+              "dictionary and XMP packet, the embedded-files name tree and file-attachment "
+              "annotations, and JavaScript names plus document/page actions.</p>",
+              "<ul><li><b>Document ▸ Remove Hidden Information</b>. Tick what to strip, then Clean; "
+              "the cleaned copy opens and a note says how much was removed.</li></ul>",
+              "<p>This is about invisible data, not visible content - to remove something you can "
+              "see on the page, use Redact instead. Visible text and graphics are untouched.</p>"),
+         sect("id", "<p>Buang yang tak terlihat sebelum kamu membagikan.</p>",
+              "<p>Hapus metadata dokumen, berkas tertanam, dan skrip yang ikut di dalam PDF tanpa "
+              "tampil di halaman.</p>",
+              "<p>Katalog dan trailer ditulis ulang tanpa bagian terpilih - dictionary Info dan paket "
+              "XMP, name tree berkas tertanam dan anotasi lampiran, serta nama JavaScript plus aksi "
+              "dokumen/halaman.</p>",
+              "<ul><li><b>Document ▸ Remove Hidden Information</b>. Centang yang ingin dibuang, lalu "
+              "Clean; salinan bersih terbuka dan catatan menyebut berapa yang dihapus.</li></ul>",
+              "<p>Ini soal data tak terlihat, bukan konten terlihat - untuk menghapus yang tampak di "
+              "halaman, pakai Redact. Teks dan grafik terlihat tak disentuh.</p>")});
     g.append(security);
 
     // ── Review & recognition ─────────────────────────────────────────────────
