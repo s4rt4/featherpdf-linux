@@ -86,6 +86,8 @@ qt_add_executable(feather-pdf
     ui/ExportImageDialog.h
     ui/FindRedactDialog.cpp
     ui/FindRedactDialog.h
+    ui/HeaderFooterDialog.cpp
+    ui/HeaderFooterDialog.h
     ui/SanitizeDialog.cpp
     ui/SanitizeDialog.h
     ui/LinkUrlDialog.cpp

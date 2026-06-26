@@ -171,6 +171,13 @@ Stamp sequential identifiers on every page (with an optional prefix/suffix and a
 chosen corner) — for legal or archival sets. Run it on the final assembled
 document so numbering stays continuous.
 
+### Header & footer
+Add running headers, footers, and page numbers — **Document ▸ Header & Footer**.
+Fill any of six slots (left/centre/right of the header and footer); text is stamped
+as a lossless overlay. Tokens expand per page: **{n}** page number, **{p}** total
+pages, **{date}** today, **{file}** file name. Set the font size and where **{n}**
+starts. The default centred footer is `Page {n} of {p}`; empty boxes are skipped.
+
 ### Optimize
 Rewrite the file more compactly (QPDF packs objects into object streams and
 recompresses losslessly); the before/after sizes are reported. Savings vary —

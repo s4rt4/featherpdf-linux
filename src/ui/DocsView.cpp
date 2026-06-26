@@ -514,6 +514,28 @@ QList<Group> buildDocs() {
               "akhiran, dan posisi, lalu simpan.</li></ul>",
               "<p>Jalankan pada dokumen final agar penomoran tetap kontinu.</p>")});
     output.topics.append(
+        {"header-footer", "Header & footer", "Header & footer",
+         sect("en", "<p>Add running headers, footers, and page numbers.</p>",
+              "<p>Put text in six slots - left, centre, and right of both the header and the "
+              "footer - with tokens that change per page.</p>",
+              "<p>The text is stamped as a lossless overlay (the same engine as the watermark and "
+              "Bates tools); tokens are expanded for each page before stamping.</p>",
+              "<ul><li><b>Document ▸ Header &amp; Footer</b>. Fill any of the six boxes - use "
+              "<b>{n}</b> page number, <b>{p}</b> total pages, <b>{date}</b> today, <b>{file}</b> "
+              "file name - set the font size and where {n} starts, then Apply.</li></ul>",
+              "<p>The default centred footer is <i>Page {n} of {p}</i>. Leave a box empty to skip "
+              "it. Run it on the final document so the page count is right.</p>"),
+         sect("id", "<p>Tambah header, footer, dan nomor halaman berjalan.</p>",
+              "<p>Isi teks di enam slot - kiri, tengah, kanan untuk header dan footer - dengan token "
+              "yang berubah tiap halaman.</p>",
+              "<p>Teks dibubuhkan sebagai overlay lossless (mesin yang sama dengan watermark dan "
+              "Bates); token diperluas untuk tiap halaman sebelum dibubuhkan.</p>",
+              "<ul><li><b>Document ▸ Header &amp; Footer</b>. Isi salah satu dari enam kotak - pakai "
+              "<b>{n}</b> nomor halaman, <b>{p}</b> total halaman, <b>{date}</b> hari ini, "
+              "<b>{file}</b> nama berkas - atur ukuran font dan awal {n}, lalu Apply.</li></ul>",
+              "<p>Footer tengah default adalah <i>Page {n} of {p}</i>. Kosongkan kotak untuk "
+              "melewatinya. Jalankan pada dokumen final agar jumlah halaman benar.</p>")});
+    output.topics.append(
         {"optimize", "Optimize", "Optimasi",
          sect("en", "<p>Rewrite the file more compactly.</p>",
               "<p>Shrink the file size without changing how it looks.</p>",

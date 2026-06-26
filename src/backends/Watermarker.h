@@ -63,4 +63,20 @@ public:
     // Stamp a sequential Bates number on every page (start, start+1, …).
     static bool addBates(const QString& inputPath, const QString& outputPath,
                          const BatesOptions& opts, QString* error);
+
+    struct HeaderFooterOptions {
+        // Six independent slots. Each may contain tokens substituted per page:
+        //   {n} page number · {p} total pages · {date} today · {file} file name
+        QString headerLeft, headerCenter, headerRight;
+        QString footerLeft, footerCenter, footerRight;
+        QColor color = QColor(40, 40, 40);
+        double fontSize = 10.0; // points
+        double margin = 24.0;   // distance from the page edge, points
+        int startNumber = 1;    // value of {n} on the first page
+    };
+
+    // Stamp header/footer text on every page, expanding the tokens above. The
+    // file name shown by {file} comes from `inputPath`.
+    static bool addHeaderFooter(const QString& inputPath, const QString& outputPath,
+                                const HeaderFooterOptions& opts, QString* error);
 };

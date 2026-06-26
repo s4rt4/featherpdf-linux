@@ -190,3 +190,19 @@ target_link_libraries(test_linkeditor PRIVATE
 )
 add_test(NAME linkeditor COMMAND test_linkeditor)
 set_tests_properties(linkeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+qt_add_executable(test_headerfooter
+    test_headerfooter.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Watermarker.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Watermarker.h
+)
+target_include_directories(test_headerfooter PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_headerfooter PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::QPDF
+    PkgConfig::POPPLER_QT6
+)
+add_test(NAME headerfooter COMMAND test_headerfooter)
+set_tests_properties(headerfooter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

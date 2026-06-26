@@ -16,8 +16,11 @@
 
 #include "backends/Watermarker.h"
 
+#include <QDate>
 #include <QFile>
+#include <QFileInfo>
 #include <QImage>
+#include <QLocale>
 
 #include <cmath>
 #include <exception>
@@ -259,6 +262,93 @@ bool Watermarker::addImageWatermark(const QString& inputPath, const QString& out
             // q/Q wrap so the original page state can't displace the overlay.
             ph.addPageContents(QPDFObjectHandle::newStream(&qpdf, "q\n"), /*first=*/true);
             ph.addPageContents(QPDFObjectHandle::newStream(&qpdf, "Q\n" + content), /*first=*/false);
+        }
+        return writeOut(qpdf, outputPath, error);
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        return false;
+    }
+}
+
+namespace {
+// Expand the per-page tokens in a header/footer slot.
+QString expandTokens(const QString& tmpl, int pageNumber, int totalPages, const QString& file) {
+    QString s = tmpl;
+    s.replace(QStringLiteral("{n}"), QString::number(pageNumber));
+    s.replace(QStringLiteral("{p}"), QString::number(totalPages));
+    s.replace(QStringLiteral("{date}"),
+              QLocale().toString(QDate::currentDate(), QLocale::ShortFormat));
+    s.replace(QStringLiteral("{file}"), file);
+    return s;
+}
+
+// One BT/ET text run drawing `label` at (x,y) in the current colour/font.
+std::string textRun(const QString& label, double x, double y, double fontSize) {
+    return "BT\n/FtStamp " + num(fontSize) + " Tf\n1 0 0 1 " + num(x) + " " + num(y) + " Tm\n" +
+           pdfStr(label) + " Tj\nET\n";
+}
+} // namespace
+
+bool Watermarker::addHeaderFooter(const QString& inputPath, const QString& outputPath,
+                                  const HeaderFooterOptions& opts, QString* error) {
+    const bool anySlot = !(opts.headerLeft.isEmpty() && opts.headerCenter.isEmpty() &&
+                           opts.headerRight.isEmpty() && opts.footerLeft.isEmpty() &&
+                           opts.footerCenter.isEmpty() && opts.footerRight.isEmpty());
+    if (!anySlot) {
+        if (error)
+            *error = QStringLiteral("Enter some header or footer text.");
+        return false;
+    }
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData());
+        QPDFPageDocumentHelper dh(qpdf);
+        dh.pushInheritedAttributesToPage();
+
+        const QString file = QFileInfo(inputPath).fileName();
+        const double r = opts.color.redF(), g = opts.color.greenF(), b = opts.color.blueF();
+        std::vector<QPDFPageObjectHelper> pages = dh.getAllPages();
+        const int total = int(pages.size());
+
+        int pageIndex = 0;
+        for (QPDFPageObjectHelper& ph : pages) {
+            double w, h, llx, lly;
+            if (!pageBox(ph.getObjectHandle(), w, h, llx, lly)) {
+                ++pageIndex;
+                continue;
+            }
+            const int pageNumber = opts.startNumber + pageIndex;
+            const double yTop = lly + h - opts.margin - opts.fontSize;
+            const double yBot = lly + opts.margin;
+
+            // Width estimate to right-align/centre (Helvetica-Bold ≈ 0.5em/char).
+            const auto widthOf = [&](const QString& s) { return 0.5 * opts.fontSize * s.length(); };
+            const auto place = [&](const QString& tmpl, int align, double y, std::string& out) {
+                const QString label = expandTokens(tmpl, pageNumber, total, file);
+                if (label.isEmpty())
+                    return;
+                double x = llx + opts.margin; // left
+                if (align == 1)               // centre
+                    x = llx + (w - widthOf(label)) / 2.0;
+                else if (align == 2) // right
+                    x = llx + w - opts.margin - widthOf(label);
+                out += textRun(label, x, y, opts.fontSize);
+            };
+
+            std::string runs;
+            place(opts.headerLeft, 0, yTop, runs);
+            place(opts.headerCenter, 1, yTop, runs);
+            place(opts.headerRight, 2, yTop, runs);
+            place(opts.footerLeft, 0, yBot, runs);
+            place(opts.footerCenter, 1, yBot, runs);
+            place(opts.footerRight, 2, yBot, runs);
+            if (!runs.empty()) {
+                std::string content =
+                    "q\n" + num(r) + " " + num(g) + " " + num(b) + " rg\n" + runs + "Q\n";
+                stampPage(qpdf, ph, content, /*withGs=*/false, 1.0);
+            }
+            ++pageIndex;
         }
         return writeOut(qpdf, outputPath, error);
     } catch (const std::exception& e) {

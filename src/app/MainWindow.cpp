@@ -47,6 +47,7 @@
 #include "ui/ExportImageDialog.h"
 #include "ui/ExtractDialog.h"
 #include "ui/FindRedactDialog.h"
+#include "ui/HeaderFooterDialog.h"
 #include "ui/LinkUrlDialog.h"
 #include "ui/LinksDialog.h"
 #include "ui/SanitizeDialog.h"
@@ -344,6 +345,8 @@ void MainWindow::buildMenus() {
     connect(optimize, &QAction::triggered, this, &MainWindow::optimizeDocument);
     QAction* compare = document->addAction(tr("Co&mpare with…"));
     connect(compare, &QAction::triggered, this, &MainWindow::compareDocuments);
+    QAction* headerFooter = document->addAction(tr("Header && &Footer…"));
+    connect(headerFooter, &QAction::triggered, this, &MainWindow::addHeaderFooter);
     document->addSeparator();
     QAction* findRedact = document->addAction(tr("&Find && Redact…"));
     connect(findRedact, &QAction::triggered, this, &MainWindow::findAndRedact);
@@ -2180,6 +2183,37 @@ void MainWindow::batesNumber() {
         return;
     }
     m_toast->show(tr("Bates numbering added"));
+    openPath(out);
+}
+
+void MainWindow::addHeaderFooter() {
+    if (!hasActiveDoc())
+        return;
+    HeaderFooterDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    if (!dialog.anyText()) {
+        m_toast->show(tr("Enter some header or footer text."));
+        return;
+    }
+
+    const QFileInfo info(m_doc->filePath());
+    const QString out = QFileDialog::getSaveFileName(
+        this, tr("Save with header & footer"),
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-headerfooter.pdf")),
+        tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = Watermarker::addHeaderFooter(m_doc->filePath(), out, dialog.options(), &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't add header & footer"), error);
+        return;
+    }
+    m_toast->show(tr("Header & footer added"));
     openPath(out);
 }
 
