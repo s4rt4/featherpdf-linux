@@ -360,6 +360,20 @@ void PageView::addTextBox(int slot, const QRectF& rect, const QString& text) {
     viewport()->update();
 }
 
+void PageView::addRedactions(const QHash<int, QList<QRectF>>& marks) {
+    bool any = false;
+    for (auto it = marks.constBegin(); it != marks.constEnd(); ++it) {
+        if (it.value().isEmpty())
+            continue;
+        m_redactions[it.key()] += it.value();
+        any = true;
+    }
+    if (!any)
+        return;
+    emit redactionsChanged(redactionCount());
+    viewport()->update();
+}
+
 void PageView::clearRedactions() {
     if (m_redactions.isEmpty())
         return;

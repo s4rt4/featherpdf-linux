@@ -59,6 +59,9 @@ bool Viewport::redactionMode() const { return m_view->redactionMode(); }
 void Viewport::setFieldPlacementMode(bool on) { m_view->setFieldPlacementMode(on); }
 bool Viewport::fieldPlacementMode() const { return m_view->fieldPlacementMode(); }
 QHash<int, QList<QRectF>> Viewport::redactionMarks() const { return m_view->redactionMarks(); }
+void Viewport::addRedactions(const QHash<int, QList<QRectF>>& marks) {
+    m_view->addRedactions(marks);
+}
 int Viewport::redactionCount() const { return m_view->redactionCount(); }
 void Viewport::clearRedactions() { m_view->clearRedactions(); }
 

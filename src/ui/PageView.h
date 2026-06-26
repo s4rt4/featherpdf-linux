@@ -89,6 +89,7 @@ public:
     bool redactionMode() const { return m_redactMode; }
     // slot → normalized rects (each in [0,1] of the displayed page).
     QHash<int, QList<QRectF>> redactionMarks() const { return m_redactions; }
+    void addRedactions(const QHash<int, QList<QRectF>>& marks); // merge in marks (e.g. found text)
     int redactionCount() const; // total rectangles across all pages
     void clearRedactions();
 

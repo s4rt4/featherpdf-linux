@@ -597,6 +597,28 @@ QList<Group> buildDocs() {
               "Redaction</b> dan simpan.</li></ul>",
               "<p>Konsekuensi: halaman teredaksi jadi image-only, sehingga teksnya tak bisa "
               "diseleksi lagi. Selalu verifikasi berkas tersimpan sebelum dibagikan.</p>")});
+    security.topics.append(
+        {"find-redact", "Find & Redact", "Cari & Redaksi",
+         sect("en", "<p>Find sensitive text by pattern and redact it.</p>",
+              "<p>Search the whole document for emails, phone numbers, ID/card numbers, or your own "
+              "regular expression, and mark every hit for redaction.</p>",
+              "<p>Text positions come from the document's own text layer; matching words are turned "
+              "into redaction boxes you can review before they're applied with the normal "
+              "rasterising redaction engine.</p>",
+              "<ul><li><b>Document ▸ Find &amp; Redact</b>. Tick the patterns (or type a regex), press "
+              "Find, review the marks, then <b>Apply Redaction</b>.</li></ul>",
+              "<p>Patterns are deliberately broad - check the marks before applying, and remove any "
+              "false positives by right-clicking them. A scanned PDF has no text layer, so run OCR "
+              "first.</p>"),
+         sect("id", "<p>Temukan teks sensitif berdasarkan pola lalu redaksi.</p>",
+              "<p>Cari email, nomor telepon, nomor ID/kartu, atau ekspresi reguler buatanmu di "
+              "seluruh dokumen, dan tandai tiap temuan untuk diredaksi.</p>",
+              "<p>Posisi teks diambil dari lapisan teks dokumen; kata yang cocok dijadikan kotak "
+              "redaksi yang bisa kamu tinjau sebelum diterapkan dengan mesin redaksi biasa.</p>",
+              "<ul><li><b>Document ▸ Find &amp; Redact</b>. Centang pola (atau ketik regex), tekan "
+              "Find, tinjau tanda, lalu <b>Apply Redaction</b>.</li></ul>",
+              "<p>Pola sengaja dibuat luas - periksa tanda sebelum menerapkan, dan buang yang salah "
+              "lewat klik-kanan. PDF hasil pindai tak punya lapisan teks, jalankan OCR dulu.</p>")});
     g.append(security);
 
     // ── Review & recognition ─────────────────────────────────────────────────

@@ -38,6 +38,8 @@ qt_add_executable(feather-pdf
     backends/CmykConverter.h
     backends/ImageExporter.cpp
     backends/ImageExporter.h
+    backends/PatternRedactor.cpp
+    backends/PatternRedactor.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -78,6 +80,8 @@ qt_add_executable(feather-pdf
     ui/ExtractDialog.h
     ui/ExportImageDialog.cpp
     ui/ExportImageDialog.h
+    ui/FindRedactDialog.cpp
+    ui/FindRedactDialog.h
     ui/InsertDialog.cpp
     ui/InsertDialog.h
     ui/CropDialog.cpp

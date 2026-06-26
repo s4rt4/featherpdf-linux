@@ -22,6 +22,7 @@
 #include "backends/Comparer.h"
 #include "backends/Converter.h"
 #include "backends/ImageExporter.h"
+#include "backends/PatternRedactor.h"
 #include "backends/Flattener.h"
 #include "backends/FormEditor.h"
 #include "backends/FormFiller.h"
@@ -43,6 +44,7 @@
 #include "ui/DocsView.h"
 #include "ui/ExportImageDialog.h"
 #include "ui/ExtractDialog.h"
+#include "ui/FindRedactDialog.h"
 #include "ui/FlattenDialog.h"
 #include "ui/FormFieldDialog.h"
 #include "ui/GoToPageDialog.h"
@@ -333,6 +335,9 @@ void MainWindow::buildMenus() {
     connect(optimize, &QAction::triggered, this, &MainWindow::optimizeDocument);
     QAction* compare = document->addAction(tr("Co&mpare with…"));
     connect(compare, &QAction::triggered, this, &MainWindow::compareDocuments);
+    document->addSeparator();
+    QAction* findRedact = document->addAction(tr("&Find && Redact…"));
+    connect(findRedact, &QAction::triggered, this, &MainWindow::findAndRedact);
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
     struct ToolEntry {
@@ -1564,6 +1569,65 @@ void MainWindow::applyRedactions() {
     m_toast->show(tr("Saved redacted copy to %1").arg(QFileInfo(out).fileName()));
     setRedactionMode(false);
     openPath(out); // open the flattened result
+}
+
+namespace {
+// Map a normalized rect from a page's natural orientation into the displayed
+// orientation after an in-session clockwise rotation of `deg` (0/90/180/270),
+// staying within the unit square.
+QRectF rotateNormRect(const QRectF& r, int deg) {
+    switch (((deg % 360) + 360) % 360) {
+    case 90: return QRectF(1.0 - r.y() - r.height(), r.x(), r.height(), r.width());
+    case 180: return QRectF(1.0 - r.x() - r.width(), 1.0 - r.y() - r.height(), r.width(), r.height());
+    case 270: return QRectF(r.y(), 1.0 - r.x() - r.width(), r.height(), r.width());
+    default: return r;
+    }
+}
+}
+
+void MainWindow::findAndRedact() {
+    if (!hasActiveDoc())
+        return;
+
+    FindRedactDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    if (!dialog.hasPattern()) {
+        m_toast->show(tr("Choose at least one pattern to search for."));
+        return;
+    }
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    int total = 0;
+    QString error;
+    const QHash<int, QList<QRectF>> byOrig =
+        PatternRedactor::findMatches(m_doc->filePath(), dialog.pattern(), &total, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (byOrig.isEmpty()) {
+        if (!error.isEmpty())
+            QMessageBox::warning(this, tr("Couldn't search"), error);
+        else
+            m_toast->show(tr("No matching text found."));
+        return;
+    }
+
+    // Found rects are in each page's natural orientation; place them on the
+    // matching display slots, honouring any in-session rotation.
+    QHash<int, QList<QRectF>> bySlot;
+    for (int slot = 0; slot < m_doc->pageCount(); ++slot) {
+        const auto it = byOrig.constFind(m_doc->originalPageAt(slot));
+        if (it == byOrig.constEnd())
+            continue;
+        const int rot = m_doc->rotation(slot);
+        QList<QRectF>& dst = bySlot[slot];
+        for (const QRectF& r : it.value())
+            dst.push_back(rot ? rotateNormRect(r, rot) : r);
+    }
+
+    setRedactionMode(true);
+    m_viewport->addRedactions(bySlot);
+    m_toast->show(tr("Found %n match(es) — review the marks, then Apply.", "", total));
 }
 
 void MainWindow::activateTool(const QString& id) {

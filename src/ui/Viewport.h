@@ -67,6 +67,7 @@ public:
     void setRedactionMode(bool on);
     bool redactionMode() const;
     QHash<int, QList<QRectF>> redactionMarks() const;
+    void addRedactions(const QHash<int, QList<QRectF>>& marks);
     int redactionCount() const;
     void clearRedactions();
 

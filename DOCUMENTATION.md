@@ -209,6 +209,14 @@ Permanently remove sensitive content (not just hide it).
 - Redacted pages are **rasterized** so the underlying text/graphics are physically
   gone, then saved to a new file.
 
+### Find & Redact
+Redact by pattern instead of by hand — **Document ▸ Find & Redact**. Tick built-in
+patterns (email, phone, 16-digit ID/NIK, card numbers) and/or type a custom regular
+expression, press **Find**, and every match across the document is marked for
+redaction using its position in the text layer. Review the marks (right-click to
+drop a false positive), then **Apply Redaction** as usual. Patterns are broad by
+design, so always review before applying; scanned PDFs need **OCR** first.
+
 ---
 
 ## Review & recognition
