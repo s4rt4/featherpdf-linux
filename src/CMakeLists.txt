@@ -36,6 +36,8 @@ qt_add_executable(feather-pdf
     backends/Splitter.h
     backends/CmykConverter.cpp
     backends/CmykConverter.h
+    backends/ImageExporter.cpp
+    backends/ImageExporter.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -74,6 +76,8 @@ qt_add_executable(feather-pdf
     ui/SplitDialog.h
     ui/ExtractDialog.cpp
     ui/ExtractDialog.h
+    ui/ExportImageDialog.cpp
+    ui/ExportImageDialog.h
     ui/InsertDialog.cpp
     ui/InsertDialog.h
     ui/CropDialog.cpp

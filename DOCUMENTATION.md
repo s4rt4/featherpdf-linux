@@ -122,6 +122,13 @@ Turn a PDF back into an editable document — **File ▸ Export to…** (or the
 
 Scanned PDFs without a text layer export little — run **OCR** first.
 
+### Export pages as images
+Render whole pages to **PNG**, **JPEG**, or **TIFF** — **File ▸ Export Pages as
+Images…**. Choose a format, a resolution (DPI), and an optional page range (blank
+= every page), then pick a folder; files are named `name-01.png`, `name-02.png`, …
+Rendering is in-process via PDFium (no external tools) and honours any rotation,
+deletion, or reordering made this session. Higher DPI gives sharper, larger files.
+
 ### Print
 A custom print dialog that opens instantly (printers are discovered in the
 background). **File ▸ Print** (Ctrl+P): choose a printer or Print to File, page

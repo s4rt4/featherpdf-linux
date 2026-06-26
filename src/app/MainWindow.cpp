@@ -21,6 +21,7 @@
 #include "backends/CmykConverter.h"
 #include "backends/Comparer.h"
 #include "backends/Converter.h"
+#include "backends/ImageExporter.h"
 #include "backends/Flattener.h"
 #include "backends/FormEditor.h"
 #include "backends/FormFiller.h"
@@ -40,6 +41,7 @@
 #include "ui/CropDialog.h"
 #include "ui/CommandBar.h"
 #include "ui/DocsView.h"
+#include "ui/ExportImageDialog.h"
 #include "ui/ExtractDialog.h"
 #include "ui/FlattenDialog.h"
 #include "ui/FormFieldDialog.h"
@@ -251,6 +253,8 @@ void MainWindow::buildMenus() {
     connect(createAct, &QAction::triggered, this, &MainWindow::createPdf);
     m_exportAct = file->addAction(tr("&Export to…"));
     connect(m_exportAct, &QAction::triggered, this, &MainWindow::exportDocument);
+    m_exportImagesAct = file->addAction(tr("Export Pages as &Images…"));
+    connect(m_exportImagesAct, &QAction::triggered, this, &MainWindow::exportPagesAsImages);
     file->addSeparator();
     file->addAction(m_saveAct);
     file->addAction(m_saveAsAct);
@@ -1728,6 +1732,46 @@ void MainWindow::exportDocument() {
     }));
 }
 
+void MainWindow::exportPagesAsImages() {
+    if (!hasActiveDoc())
+        return;
+
+    ExportImageDialog dialog(m_doc->pageCount(), m_viewport->currentPage() + 1, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    const QVector<int> pageSlots = dialog.selectedPages();
+    if (pageSlots.isEmpty()) {
+        m_toast->show(tr("No pages in that range to export."));
+        return;
+    }
+
+    const QFileInfo info(m_doc->filePath());
+    const QString dir = QFileDialog::getExistingDirectory(this, tr("Choose a folder for the images"),
+                                                          info.absolutePath());
+    if (dir.isEmpty())
+        return;
+
+    // Map display slots back to source pages + session rotation, so the images
+    // honour any in-session rotate/delete/reorder (mirrors Extract Pages).
+    QVector<ImageExporter::PageSpec> specs;
+    specs.reserve(pageSlots.size());
+    for (int slot : pageSlots)
+        specs.push_back({m_doc->originalPageAt(slot), m_doc->rotation(slot), slot + 1});
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const int n = ImageExporter::renderPages(m_doc->pdf(), specs, dir, info.completeBaseName(),
+                                              dialog.format(), dialog.dpi(), &error);
+    QApplication::restoreOverrideCursor();
+
+    if (n == 0) {
+        QMessageBox::warning(this, tr("Couldn't export images"), error);
+        return;
+    }
+    m_toast->show(tr("Exported %n image(s) to %1", "", n).arg(QDir(dir).dirName()));
+}
+
 void MainWindow::optimizeDocument() {
     if (!hasActiveDoc())
         return;
@@ -2586,6 +2630,7 @@ void MainWindow::updateChromeState() {
     m_saveAsAct->setEnabled(loaded);
     m_protectAct->setEnabled(loaded);
     m_exportAct->setEnabled(loaded);
+    m_exportImagesAct->setEnabled(loaded);
     m_removeProtectionAct->setEnabled(loaded && m_doc && m_doc->isEncrypted());
     m_printAct->setEnabled(loaded);
     m_rotateLeftAct->setEnabled(loaded);

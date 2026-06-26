@@ -359,6 +359,28 @@ QList<Group> buildDocs() {
               "biasa tidak butuh apa-apa. PDF hasil pindai tanpa lapisan teks mengekspor sedikit; "
               "jalankan OCR dulu.</p>")});
     editing.topics.append(
+        {"export-images", "Export pages as images", "Ekspor halaman jadi gambar",
+         sect("en", "<p>Save pages as PNG, JPEG, or TIFF pictures.</p>",
+              "<p>Render whole pages to image files at a resolution you choose.</p>",
+              "<p>Pages are rendered in-process with the same engine used on screen (PDFium), so "
+              "no external tools are needed; each image is flattened onto white.</p>",
+              "<ul><li><b>File ▸ Export Pages as Images…</b>. Pick a format, a DPI, and an optional "
+              "page range (blank = every page), then choose a folder. Files are named "
+              "<i>name-01.png</i>, <i>name-02.png</i>, …</li></ul>",
+              "<p>Higher DPI means sharper, larger files. The range honours any rotation, deletion, "
+              "or reordering you've made this session. This renders pages as pictures - to pull out "
+              "the photos embedded in a PDF instead, that's a separate job.</p>"),
+         sect("id", "<p>Simpan halaman sebagai gambar PNG, JPEG, atau TIFF.</p>",
+              "<p>Render halaman penuh ke berkas gambar pada resolusi pilihanmu.</p>",
+              "<p>Halaman di-render dalam proses dengan mesin yang sama seperti di layar (PDFium), "
+              "jadi tak butuh alat luar; tiap gambar diratakan ke latar putih.</p>",
+              "<ul><li><b>File ▸ Export Pages as Images…</b>. Pilih format, DPI, dan rentang halaman "
+              "opsional (kosong = semua halaman), lalu pilih folder. Berkas dinamai "
+              "<i>nama-01.png</i>, <i>nama-02.png</i>, …</li></ul>",
+              "<p>DPI lebih tinggi berarti lebih tajam dan berkas lebih besar. Rentang menghormati "
+              "rotasi, penghapusan, atau pengurutan ulang pada sesi ini. Ini me-render halaman jadi "
+              "gambar - untuk mengambil foto yang tertanam di PDF, itu pekerjaan terpisah.</p>")});
+    editing.topics.append(
         {"print", "Print", "Cetak",
          sect("en", "<p>A custom print dialog with a live preview.</p>",
               "<p>Print to a printer or to a PDF file with fine control.</p>",
