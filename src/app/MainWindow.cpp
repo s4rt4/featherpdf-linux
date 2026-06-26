@@ -249,6 +249,8 @@ void MainWindow::buildMenus() {
     m_recentMenu = file->addMenu(tr("Open &Recent"));
     QAction* createAct = file->addAction(tr("Create PDF &from…"));
     connect(createAct, &QAction::triggered, this, &MainWindow::createPdf);
+    m_exportAct = file->addAction(tr("&Export to…"));
+    connect(m_exportAct, &QAction::triggered, this, &MainWindow::exportDocument);
     file->addSeparator();
     file->addAction(m_saveAct);
     file->addAction(m_saveAsAct);
@@ -1601,6 +1603,8 @@ void MainWindow::activateTool(const QString& id) {
         recognizeText();
     } else if (id == QLatin1String("create")) {
         createPdf();
+    } else if (id == QLatin1String("export")) {
+        exportDocument();
     } else {
         notImplemented(id.left(1).toUpper() + id.mid(1));
     }
@@ -1675,6 +1679,52 @@ void MainWindow::createPdf() {
     watcher->setFuture(QtConcurrent::run([input, out] {
         QString error;
         return Converter::officeToPdf(input, out, &error);
+    }));
+}
+
+void MainWindow::exportDocument() {
+    if (!hasActiveDoc())
+        return;
+    if (!Converter::hasOfficeConverter()) {
+        QMessageBox::information(
+            this, tr("Export"),
+            tr("Exporting to an editable document needs LibreOffice, which isn't installed."));
+        return;
+    }
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral(".docx"));
+    const QString out = QFileDialog::getSaveFileName(
+        this, tr("Export to editable document"), suggested,
+        tr("Word document (*.docx);;OpenDocument Text (*.odt);;Rich Text (*.rtf);;"
+           "Plain text (*.txt)"));
+    if (out.isEmpty())
+        return;
+
+    // LibreOffice can take several seconds - convert off the UI thread.
+    m_toast->show(tr("Exporting…"));
+    const QString input = m_doc->filePath();
+    const bool isText = QFileInfo(out).suffix().compare(QStringLiteral("txt"),
+                                                        Qt::CaseInsensitive) == 0;
+    auto* watcher = new QFutureWatcher<bool>(this);
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [this, watcher, out, isText] {
+        const bool ok = watcher->result();
+        watcher->deleteLater();
+        if (!ok) {
+            QMessageBox::warning(this, tr("Couldn't export"),
+                                 tr("The document couldn't be exported."));
+            return;
+        }
+        // Word/ODT come from LibreOffice's PDF import, which approximates layout
+        // and can repeat text - say so once so the result isn't a surprise.
+        m_toast->show(isText ? tr("Exported %1").arg(QFileInfo(out).fileName())
+                             : tr("Exported %1 — check the layout; conversion is approximate")
+                                   .arg(QFileInfo(out).fileName()));
+    });
+    watcher->setFuture(QtConcurrent::run([input, out] {
+        QString error;
+        return Converter::pdfToOffice(input, out, &error);
     }));
 }
 
@@ -2535,6 +2585,7 @@ void MainWindow::updateChromeState() {
     m_saveAct->setEnabled(loaded);
     m_saveAsAct->setEnabled(loaded);
     m_protectAct->setEnabled(loaded);
+    m_exportAct->setEnabled(loaded);
     m_removeProtectionAct->setEnabled(loaded && m_doc && m_doc->isEncrypted());
     m_printAct->setEnabled(loaded);
     m_rotateLeftAct->setEnabled(loaded);

@@ -19,6 +19,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QHash>
 #include <QImage>
 #include <QPageSize>
 #include <QPainter>
@@ -27,8 +28,80 @@
 #include <QStandardPaths>
 #include <QTemporaryDir>
 
+#include <memory>
+
+#include <poppler-qt6.h>
+
 namespace {
 const QStringList kImageExts{"png", "jpg", "jpeg", "bmp", "gif", "tif", "tiff", "webp"};
+
+QString findSoffice() {
+    QString s = QStandardPaths::findExecutable(QStringLiteral("soffice"));
+    if (s.isEmpty())
+        s = QStandardPaths::findExecutable(QStringLiteral("libreoffice"));
+    return s;
+}
+
+// Run `soffice --headless --convert-to <target>` on `inputPath` inside a private
+// temp profile, then copy the produced `<base>.<outExt>` file to `outputPath`.
+// `outExt` is the extension LibreOffice writes (used to find its output file).
+// `inFilter`, when non-empty, forces the import filter (e.g. "writer_pdf_import"
+// so a PDF loads into Writer instead of Draw, which can't export text formats).
+bool runSoffice(const QString& inputPath, const QString& outputPath, const QString& target,
+                const QString& outExt, const QString& inFilter, QString* error) {
+    const QString soffice = findSoffice();
+    if (soffice.isEmpty()) {
+        if (error)
+            *error = QStringLiteral("LibreOffice isn't installed, so this can't be converted.");
+        return false;
+    }
+
+    // Convert into an isolated temp dir with a private profile (so it works even
+    // if a LibreOffice instance is already running).
+    QTemporaryDir tmp;
+    if (!tmp.isValid()) {
+        if (error)
+            *error = QStringLiteral("Couldn't create a temporary working directory.");
+        return false;
+    }
+    const QString outDir = tmp.path();
+    const QString profile = QStringLiteral("file://") + outDir + QStringLiteral("/profile");
+
+    QStringList args{QStringLiteral("--headless")};
+    if (!inFilter.isEmpty())
+        args << QStringLiteral("--infilter=") + inFilter;
+    args << QStringLiteral("--convert-to") << target << QStringLiteral("--outdir") << outDir
+         << QStringLiteral("-env:UserInstallation=") + profile << inputPath;
+
+    QProcess proc;
+    proc.start(soffice, args);
+    if (!proc.waitForStarted(15000)) {
+        if (error)
+            *error = QStringLiteral("LibreOffice couldn't be started.");
+        return false;
+    }
+    if (!proc.waitForFinished(120000) || proc.exitStatus() != QProcess::NormalExit ||
+        proc.exitCode() != 0) {
+        if (error)
+            *error = QStringLiteral("The document couldn't be converted.");
+        return false;
+    }
+
+    const QString produced =
+        QDir(outDir).filePath(QFileInfo(inputPath).completeBaseName() + QStringLiteral(".") + outExt);
+    if (!QFile::exists(produced)) {
+        if (error)
+            *error = QStringLiteral("LibreOffice produced no output.");
+        return false;
+    }
+    QFile::remove(outputPath);
+    if (!QFile::copy(produced, outputPath)) {
+        if (error)
+            *error = QStringLiteral("The converted file couldn't be saved.");
+        return false;
+    }
+    return true;
+}
 }
 
 bool Converter::isImage(const QString& path) {
@@ -84,55 +157,62 @@ bool Converter::imagesToPdf(const QStringList& images, const QString& outputPath
 }
 
 bool Converter::officeToPdf(const QString& inputPath, const QString& outputPath, QString* error) {
-    QString soffice = QStandardPaths::findExecutable(QStringLiteral("soffice"));
-    if (soffice.isEmpty())
-        soffice = QStandardPaths::findExecutable(QStringLiteral("libreoffice"));
-    if (soffice.isEmpty()) {
+    return runSoffice(inputPath, outputPath, QStringLiteral("pdf"), QStringLiteral("pdf"),
+                      QString(), error);
+}
+
+bool Converter::pdfToOffice(const QString& inputPath, const QString& outputPath, QString* error) {
+    const QString ext = QFileInfo(outputPath).suffix().toLower();
+
+    // Plain text comes straight from Poppler (which we already link) - clean,
+    // in-process, and far better than LibreOffice's text export for PDFs.
+    if (ext == QLatin1String("txt"))
+        return pdfToText(inputPath, outputPath, error);
+
+    // A PDF loads into Draw by default, which can't write Writer formats, so force
+    // the Writer PDF import filter and name the matching export filter explicitly.
+    static const QHash<QString, QString> kExportFilter{
+        {QStringLiteral("docx"), QStringLiteral("MS Word 2007 XML")},
+        {QStringLiteral("odt"), QStringLiteral("writer8")},
+        {QStringLiteral("rtf"), QStringLiteral("Rich Text Format")},
+    };
+    const auto it = kExportFilter.constFind(ext);
+    if (it == kExportFilter.constEnd()) {
         if (error)
-            *error = QStringLiteral("LibreOffice isn't installed, so this document can't be "
-                                    "converted.");
+            *error = QStringLiteral("Unsupported export format.");
+        return false;
+    }
+    const QString target = ext + QStringLiteral(":") + it.value();
+    return runSoffice(inputPath, outputPath, target, ext, QStringLiteral("writer_pdf_import"),
+                      error);
+}
+
+bool Converter::pdfToText(const QString& inputPath, const QString& outputPath, QString* error) {
+    std::unique_ptr<Poppler::Document> doc = Poppler::Document::load(inputPath);
+    if (!doc || doc->isLocked()) {
+        if (error)
+            *error = QStringLiteral("The PDF couldn't be opened for text extraction.");
         return false;
     }
 
-    // Convert into an isolated temp dir with a private profile (so it works even
-    // if a LibreOffice instance is already running).
-    QTemporaryDir tmp;
-    if (!tmp.isValid()) {
-        if (error)
-            *error = QStringLiteral("Couldn't create a temporary working directory.");
-        return false;
-    }
-    const QString outDir = tmp.path();
-    const QString profile = QStringLiteral("file://") + outDir + QStringLiteral("/profile");
-
-    QProcess proc;
-    proc.start(soffice, {QStringLiteral("--headless"), QStringLiteral("--convert-to"),
-                         QStringLiteral("pdf"), QStringLiteral("--outdir"), outDir,
-                         QStringLiteral("-env:UserInstallation=") + profile, inputPath});
-    if (!proc.waitForStarted(15000)) {
-        if (error)
-            *error = QStringLiteral("LibreOffice couldn't be started.");
-        return false;
-    }
-    if (!proc.waitForFinished(120000) || proc.exitStatus() != QProcess::NormalExit ||
-        proc.exitCode() != 0) {
-        if (error)
-            *error = QStringLiteral("The document couldn't be converted.");
-        return false;
+    QString text;
+    const int pages = doc->numPages();
+    for (int i = 0; i < pages; ++i) {
+        std::unique_ptr<Poppler::Page> page = doc->page(i);
+        if (!page)
+            continue;
+        text += page->text(QRectF()); // whole-page text in reading order
+        if (i + 1 < pages)
+            text += QStringLiteral("\n\f"); // form feed between pages
     }
 
-    const QString produced =
-        QDir(outDir).filePath(QFileInfo(inputPath).completeBaseName() + QStringLiteral(".pdf"));
-    if (!QFile::exists(produced)) {
+    QFile out(outputPath);
+    if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         if (error)
-            *error = QStringLiteral("LibreOffice produced no PDF.");
+            *error = QStringLiteral("The text file couldn't be written.");
         return false;
     }
-    QFile::remove(outputPath);
-    if (!QFile::copy(produced, outputPath)) {
-        if (error)
-            *error = QStringLiteral("The converted PDF couldn't be saved.");
-        return false;
-    }
+    out.write(text.toUtf8());
+    out.close();
     return true;
 }

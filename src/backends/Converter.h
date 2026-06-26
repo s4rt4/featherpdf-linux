@@ -34,4 +34,13 @@ public:
     // Convert one office document (docx/odt/xlsx/…) to `outputPath` via LibreOffice
     // headless. Blocking - run it off the UI thread. Returns true on success.
     static bool officeToPdf(const QString& inputPath, const QString& outputPath, QString* error);
+
+    // Export a PDF to an editable document. The target is taken from `outputPath`'s
+    // extension: .txt extracts text via Poppler; .docx/.odt/.rtf convert via
+    // LibreOffice headless (Writer import). Blocking - run it off the UI thread.
+    static bool pdfToOffice(const QString& inputPath, const QString& outputPath, QString* error);
+
+private:
+    // Extract a PDF's text to `outputPath` using Poppler (in-process).
+    static bool pdfToText(const QString& inputPath, const QString& outputPath, QString* error);
 };

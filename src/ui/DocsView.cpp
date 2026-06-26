@@ -334,6 +334,31 @@ QList<Group> buildDocs() {
               "<p>Konversi Office butuh LibreOffice terpasang; jalan pertama bisa beberapa detik. "
               "Jika gagal, buka berkas di LibreOffice untuk memastikan valid.</p>")});
     editing.topics.append(
+        {"export", "Export to editable", "Ekspor ke dokumen",
+         sect("en", "<p>Turn a PDF back into an editable document.</p>",
+              "<p>Export the open PDF to Word (.docx), OpenDocument Text (.odt), Rich Text (.rtf), "
+              "or plain text (.txt).</p>",
+              "<p>Plain text is extracted in-process with Poppler - clean and exact. The Word/ODT/RTF "
+              "formats are produced by LibreOffice's PDF import, which rebuilds an editable document "
+              "from the page layout.</p>",
+              "<ul><li><b>File ▸ Export to…</b> (or Tools ▸ Export). Choose the format from the Save "
+              "dialog's file type and save.</li></ul>",
+              "<p>Word/ODT/RTF need LibreOffice installed and approximate the original layout - "
+              "spacing can shift and some lines may repeat, so review the result. Plain text needs "
+              "nothing extra. Scanned PDFs without a text layer export little; run OCR first.</p>"),
+         sect("id", "<p>Ubah PDF kembali menjadi dokumen yang bisa disunting.</p>",
+              "<p>Ekspor PDF terbuka ke Word (.docx), OpenDocument Text (.odt), Rich Text (.rtf), "
+              "atau teks biasa (.txt).</p>",
+              "<p>Teks biasa diekstrak dalam proses dengan Poppler - bersih dan tepat. Format "
+              "Word/ODT/RTF dibuat oleh impor PDF LibreOffice, yang menyusun ulang dokumen yang bisa "
+              "disunting dari tata letak halaman.</p>",
+              "<ul><li><b>File ▸ Export to…</b> (atau Tools ▸ Export). Pilih format dari jenis berkas "
+              "di dialog Simpan lalu simpan.</li></ul>",
+              "<p>Word/ODT/RTF butuh LibreOffice terpasang dan hanya mendekati tata letak asli - "
+              "spasi bisa bergeser dan sebagian baris bisa berulang, jadi periksa hasilnya. Teks "
+              "biasa tidak butuh apa-apa. PDF hasil pindai tanpa lapisan teks mengekspor sedikit; "
+              "jalankan OCR dulu.</p>")});
+    editing.topics.append(
         {"print", "Print", "Cetak",
          sect("en", "<p>A custom print dialog with a live preview.</p>",
               "<p>Print to a printer or to a PDF file with fine control.</p>",

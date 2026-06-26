@@ -54,8 +54,8 @@ move or delete existing fields.
 bridge for heavier layout work.
 
 **More** — OCR (Tesseract) and image→PDF, document signing & verification
-(PAdES), office/image conversion (LibreOffice), AES-256 encryption, redaction,
-and flattening.
+(PAdES), office/image conversion (LibreOffice), **export back to Word/ODT/RTF/text**,
+AES-256 encryption, redaction, and flattening.
 
 ## Building
 

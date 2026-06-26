@@ -111,6 +111,17 @@ copied losslessly with QPDF.
 Make a PDF from office documents (via LibreOffice) or from images. Pick the
 source files and an output path.
 
+### Export to editable
+Turn a PDF back into an editable document — **File ▸ Export to…** (or the
+**Export** tool). Choose the format from the Save dialog:
+- **Plain text (.txt)** is extracted in-process with Poppler — clean and exact.
+- **Word (.docx)**, **OpenDocument Text (.odt)**, and **Rich Text (.rtf)** are
+  rebuilt by LibreOffice's PDF import. These need LibreOffice installed and only
+  *approximate* the original layout: spacing can shift and some lines may repeat,
+  so review the result.
+
+Scanned PDFs without a text layer export little — run **OCR** first.
+
 ### Print
 A custom print dialog that opens instantly (printers are discovered in the
 background). **File ▸ Print** (Ctrl+P): choose a printer or Print to File, page
@@ -118,8 +129,8 @@ range, odd/even subset, copies, and grayscale.
 
 ### Save & export
 Write your edits to disk, in place or as a copy.
-- **Save** (Ctrl+S) writes back to the current file; **Save As** (Ctrl+Shift+S),
-  or the **Export** tool, writes a copy.
+- **Save** (Ctrl+S) writes back to the current file; **Save As** (Ctrl+Shift+S)
+  writes a copy. (To convert to Word/text, see **Export to editable** above.)
 - Page edits (rotate/delete/reorder) save losslessly via QPDF; most other tools
   write a new file and open it, leaving the original untouched until you save.
 - A dot on the tab marks unsaved page edits.

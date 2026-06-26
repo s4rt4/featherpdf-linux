@@ -115,3 +115,18 @@ target_include_directories(test_document PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(test_document PRIVATE Qt6::Core Qt6::Gui Qt6::Pdf Qt6::Test)
 add_test(NAME document COMMAND test_document)
 set_tests_properties(document PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+qt_add_executable(test_converter
+    test_converter.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Converter.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Converter.h
+)
+target_include_directories(test_converter PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_converter PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::POPPLER_QT6
+)
+add_test(NAME converter COMMAND test_converter)
+set_tests_properties(converter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
