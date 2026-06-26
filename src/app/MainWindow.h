@@ -115,6 +115,7 @@ private:
     void createPdf();         // make a PDF from images (native) or an office doc (LibreOffice)
     void exportDocument();    // export the PDF to an editable office doc (LibreOffice)
     void exportPagesAsImages(); // render selected pages to PNG/JPEG/TIFF (QPdfDocument)
+    void extractEmbeddedImages(); // pull the raster images embedded in the PDF (pdfimages)
     void optimizeDocument();  // rewrite more compactly (QPDF)
     void convertToCmyk();     // convert all colors to process CMYK (Ghostscript)
     void compareDocuments();  // visual diff against another PDF
@@ -216,6 +217,7 @@ private:
     QAction* m_protectAct = nullptr;
     QAction* m_exportAct = nullptr;
     QAction* m_exportImagesAct = nullptr;
+    QAction* m_extractImagesAct = nullptr;
     QAction* m_removeProtectionAct = nullptr;
     QAction* m_printAct = nullptr;
     QAction* m_closeAct = nullptr;

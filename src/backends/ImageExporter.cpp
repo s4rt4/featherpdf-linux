@@ -21,6 +21,9 @@
 #include <QPainter>
 #include <QPdfDocument>
 #include <QPdfDocumentRenderOptions>
+#include <QProcess>
+#include <QStandardPaths>
+#include <QTemporaryDir>
 
 #include <cmath>
 
@@ -115,4 +118,61 @@ int ImageExporter::renderPages(QPdfDocument* doc, const QVector<PageSpec>& pages
     if (written == 0 && error)
         *error = QStringLiteral("None of the pages could be rendered.");
     return written;
+}
+
+bool ImageExporter::hasImageExtractor() {
+    return !QStandardPaths::findExecutable(QStringLiteral("pdfimages")).isEmpty();
+}
+
+int ImageExporter::extractEmbedded(const QString& inputPath, const QString& outDir,
+                                   const QString& baseName, QString* error) {
+    const QString tool = QStandardPaths::findExecutable(QStringLiteral("pdfimages"));
+    if (tool.isEmpty()) {
+        if (error)
+            *error = QStringLiteral("Extracting embedded images needs pdfimages (Poppler).");
+        return 0;
+    }
+    QDir od(outDir);
+    if (!od.exists()) {
+        if (error)
+            *error = QStringLiteral("The output folder doesn't exist.");
+        return 0;
+    }
+
+    // Extract into a private temp dir first, then move the results out, so the
+    // count is exact and we never clobber unrelated files in the target folder.
+    QTemporaryDir tmp;
+    if (!tmp.isValid()) {
+        if (error)
+            *error = QStringLiteral("Couldn't create a temporary working directory.");
+        return 0;
+    }
+
+    QProcess proc;
+    // -all keeps each image's native format (JPEG stays JPEG, others become PNG).
+    proc.start(tool, {QStringLiteral("-all"), inputPath, QDir(tmp.path()).filePath(baseName)});
+    if (!proc.waitForStarted(15000)) {
+        if (error)
+            *error = QStringLiteral("pdfimages couldn't be started.");
+        return 0;
+    }
+    if (!proc.waitForFinished(120000) || proc.exitStatus() != QProcess::NormalExit ||
+        proc.exitCode() != 0) {
+        if (error)
+            *error = QStringLiteral("The images couldn't be extracted.");
+        return 0;
+    }
+
+    const QFileInfoList produced =
+        QDir(tmp.path()).entryInfoList(QStringList{baseName + QStringLiteral("-*")}, QDir::Files,
+                                       QDir::Name);
+    int moved = 0;
+    for (const QFileInfo& f : produced) {
+        const QString dst = od.filePath(f.fileName());
+        QFile::remove(dst);
+        if (QFile::copy(f.absoluteFilePath(), dst))
+            ++moved;
+    }
+    // moved == 0 with no error means the PDF simply had no embedded images.
+    return moved;
 }

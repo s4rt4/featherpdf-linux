@@ -368,8 +368,9 @@ QList<Group> buildDocs() {
               "page range (blank = every page), then choose a folder. Files are named "
               "<i>name-01.png</i>, <i>name-02.png</i>, …</li></ul>",
               "<p>Higher DPI means sharper, larger files. The range honours any rotation, deletion, "
-              "or reordering you've made this session. This renders pages as pictures - to pull out "
-              "the photos embedded in a PDF instead, that's a separate job.</p>"),
+              "or reordering you've made this session. This renders pages as pictures; to pull out "
+              "the photos already embedded in a PDF, use <b>File ▸ Extract Embedded Images…</b> "
+              "(needs the pdfimages tool from Poppler).</p>"),
          sect("id", "<p>Simpan halaman sebagai gambar PNG, JPEG, atau TIFF.</p>",
               "<p>Render halaman penuh ke berkas gambar pada resolusi pilihanmu.</p>",
               "<p>Halaman di-render dalam proses dengan mesin yang sama seperti di layar (PDFium), "
@@ -379,7 +380,8 @@ QList<Group> buildDocs() {
               "<i>nama-01.png</i>, <i>nama-02.png</i>, …</li></ul>",
               "<p>DPI lebih tinggi berarti lebih tajam dan berkas lebih besar. Rentang menghormati "
               "rotasi, penghapusan, atau pengurutan ulang pada sesi ini. Ini me-render halaman jadi "
-              "gambar - untuk mengambil foto yang tertanam di PDF, itu pekerjaan terpisah.</p>")});
+              "gambar; untuk mengambil foto yang sudah tertanam di PDF, pakai <b>File ▸ Extract "
+              "Embedded Images…</b> (butuh alat pdfimages dari Poppler).</p>")});
     editing.topics.append(
         {"print", "Print", "Cetak",
          sect("en", "<p>A custom print dialog with a live preview.</p>",

@@ -33,6 +33,17 @@ private:
         painter.end();
     }
 
+    // A PDF that embeds an actual raster image (an XObject pdfimages can pull out).
+    void makeWithImage(const QString& path) {
+        QImage pic(64, 48, QImage::Format_RGB32);
+        pic.fill(Qt::darkCyan);
+        QPdfWriter writer(path);
+        writer.setPageSize(QPageSize(QPageSize::A4));
+        QPainter painter(&writer);
+        painter.drawImage(QRect(500, 500, 2000, 1500), pic);
+        painter.end();
+    }
+
 private slots:
     void initTestCase() {
         QVERIFY(m_dir.isValid());
@@ -97,6 +108,36 @@ private slots:
         // A4 portrait is taller than wide; a 90° turn makes it wider than tall.
         QVERIFY(portrait.height() > portrait.width());
         QVERIFY(landscape.width() > landscape.height());
+    }
+
+    void extractsEmbeddedImages() {
+        if (!ImageExporter::hasImageExtractor())
+            QSKIP("pdfimages not installed");
+        const QString withImg = m_dir.filePath("withimg.pdf");
+        makeWithImage(withImg);
+
+        QTemporaryDir out;
+        QVERIFY(out.isValid());
+        QString err;
+        const int n = ImageExporter::extractEmbedded(withImg, out.path(), QStringLiteral("img"),
+                                                     &err);
+        QVERIFY2(n >= 1, qPrintable(QStringLiteral("expected >=1 image, got %1 (%2)")
+                                        .arg(n)
+                                        .arg(err)));
+        const QStringList files = QDir(out.path()).entryList(QStringList{"img-*"}, QDir::Files);
+        QVERIFY(!files.isEmpty());
+    }
+
+    void extractFromImagelessPdfFindsNothing() {
+        if (!ImageExporter::hasImageExtractor())
+            QSKIP("pdfimages not installed");
+        // m_pdf is text-only - no embedded raster XObjects.
+        QTemporaryDir out;
+        QString err;
+        const int n = ImageExporter::extractEmbedded(m_pdf, out.path(), QStringLiteral("none"),
+                                                     &err);
+        QCOMPARE(n, 0);
+        QVERIFY2(err.isEmpty(), qPrintable(err)); // "none found" is not an error
     }
 
     void emptySelectionFails() {

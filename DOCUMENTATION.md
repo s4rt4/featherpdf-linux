@@ -129,6 +129,12 @@ Images…**. Choose a format, a resolution (DPI), and an optional page range (bl
 Rendering is in-process via PDFium (no external tools) and honours any rotation,
 deletion, or reordering made this session. Higher DPI gives sharper, larger files.
 
+### Extract embedded images
+Pull the raster images **already embedded** in a PDF out to files — **File ▸
+Extract Embedded Images…**. Pick a folder; each image is saved keeping its own
+format (JPEG stays JPEG, others become PNG). This needs the `pdfimages` tool from
+Poppler. (Different from *Export pages as images*, which rasterises whole pages.)
+
 ### Print
 A custom print dialog that opens instantly (printers are discovered in the
 background). **File ▸ Print** (Ctrl+P): choose a printer or Print to File, page

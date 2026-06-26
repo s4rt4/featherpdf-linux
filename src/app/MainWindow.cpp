@@ -255,6 +255,8 @@ void MainWindow::buildMenus() {
     connect(m_exportAct, &QAction::triggered, this, &MainWindow::exportDocument);
     m_exportImagesAct = file->addAction(tr("Export Pages as &Images…"));
     connect(m_exportImagesAct, &QAction::triggered, this, &MainWindow::exportPagesAsImages);
+    m_extractImagesAct = file->addAction(tr("Extract Embedded I&mages…"));
+    connect(m_extractImagesAct, &QAction::triggered, this, &MainWindow::extractEmbeddedImages);
     file->addSeparator();
     file->addAction(m_saveAct);
     file->addAction(m_saveAsAct);
@@ -1772,6 +1774,39 @@ void MainWindow::exportPagesAsImages() {
     m_toast->show(tr("Exported %n image(s) to %1", "", n).arg(QDir(dir).dirName()));
 }
 
+void MainWindow::extractEmbeddedImages() {
+    if (!hasActiveDoc())
+        return;
+    if (!ImageExporter::hasImageExtractor()) {
+        QMessageBox::information(
+            this, tr("Extract Embedded Images"),
+            tr("Extracting embedded images needs the pdfimages tool (from Poppler), which "
+               "isn't installed."));
+        return;
+    }
+
+    const QFileInfo info(m_doc->filePath());
+    const QString dir = QFileDialog::getExistingDirectory(this, tr("Choose a folder for the images"),
+                                                          info.absolutePath());
+    if (dir.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const int n = ImageExporter::extractEmbedded(m_doc->filePath(), dir, info.completeBaseName(),
+                                                 &error);
+    QApplication::restoreOverrideCursor();
+
+    if (n == 0) {
+        if (!error.isEmpty())
+            QMessageBox::warning(this, tr("Couldn't extract images"), error);
+        else
+            m_toast->show(tr("This PDF has no embedded images."));
+        return;
+    }
+    m_toast->show(tr("Extracted %n image(s) to %1", "", n).arg(QDir(dir).dirName()));
+}
+
 void MainWindow::optimizeDocument() {
     if (!hasActiveDoc())
         return;
@@ -2631,6 +2666,7 @@ void MainWindow::updateChromeState() {
     m_protectAct->setEnabled(loaded);
     m_exportAct->setEnabled(loaded);
     m_exportImagesAct->setEnabled(loaded);
+    m_extractImagesAct->setEnabled(loaded);
     m_removeProtectionAct->setEnabled(loaded && m_doc && m_doc->isEncrypted());
     m_printAct->setEnabled(loaded);
     m_rotateLeftAct->setEnabled(loaded);

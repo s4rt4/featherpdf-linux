@@ -40,4 +40,14 @@ public:
     // failure.
     static int renderPages(QPdfDocument* doc, const QVector<PageSpec>& pages, const QString& outDir,
                            const QString& baseName, Format fmt, int dpi, QString* error);
+
+    // True if `pdfimages` (Poppler util) is installed for embedded-image extraction.
+    static bool hasImageExtractor();
+
+    // Extract the raster images embedded in `inputPath` into `outDir` as
+    // `baseName`-NNN.<ext> via `pdfimages -all`, keeping each image's own format.
+    // Returns the number of files written. Returns 0 with *error empty when the
+    // PDF simply has no embedded images; sets *error and returns 0 on real failure.
+    static int extractEmbedded(const QString& inputPath, const QString& outDir,
+                               const QString& baseName, QString* error);
 };
