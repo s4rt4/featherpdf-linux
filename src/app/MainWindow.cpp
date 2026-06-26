@@ -22,6 +22,7 @@
 #include "backends/Comparer.h"
 #include "backends/Converter.h"
 #include "backends/ImageExporter.h"
+#include "backends/LinkEditor.h"
 #include "backends/PatternRedactor.h"
 #include "backends/Sanitizer.h"
 #include "backends/Flattener.h"
@@ -46,6 +47,8 @@
 #include "ui/ExportImageDialog.h"
 #include "ui/ExtractDialog.h"
 #include "ui/FindRedactDialog.h"
+#include "ui/LinkUrlDialog.h"
+#include "ui/LinksDialog.h"
 #include "ui/SanitizeDialog.h"
 #include "ui/FlattenDialog.h"
 #include "ui/FormFieldDialog.h"
@@ -322,6 +325,10 @@ void MainWindow::buildMenus() {
     connect(editText, &QAction::triggered, this, &MainWindow::editTextBoxes);
     QAction* loDraw = document->addAction(tr("Open in &LibreOffice Draw…"));
     connect(loDraw, &QAction::triggered, this, &MainWindow::editInLibreOffice);
+    QAction* addLinkAct = document->addAction(tr("Add &Link…"));
+    connect(addLinkAct, &QAction::triggered, this, &MainWindow::addLink);
+    QAction* editLinksAct = document->addAction(tr("Edit Lin&ks…"));
+    connect(editLinksAct, &QAction::triggered, this, &MainWindow::editLinks);
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
     connect(props, &QAction::triggered, this, &MainWindow::showProperties);
@@ -1275,6 +1282,10 @@ void MainWindow::applyViewDefaults() {
 }
 
 void MainWindow::placeFormField(int slot, const QRectF& normRect) {
+    if (m_placingLink) { // the same drag mode is reused for placing links
+        finishAddLink(slot, normRect);
+        return;
+    }
     if (!m_placingField || !hasActiveDoc())
         return;
     m_placingField = false;
@@ -1670,6 +1681,82 @@ void MainWindow::sanitizeDocument() {
     else
         m_toast->show(tr("Removed %n hidden item(s) — saved %1", "", report.total())
                           .arg(QFileInfo(out).fileName()));
+    openPath(out);
+}
+
+void MainWindow::addLink() {
+    if (!hasActiveDoc())
+        return;
+    m_placingLink = true;
+    setRedactionMode(false); // the drag modes are mutually exclusive
+    setHighlightMode(false);
+    m_viewport->setFieldPlacementMode(true);
+    m_toast->show(tr("Draw the area the link should cover."));
+}
+
+void MainWindow::finishAddLink(int slot, const QRectF& normRect) {
+    m_placingLink = false;
+    m_viewport->setFieldPlacementMode(false);
+    if (!hasActiveDoc())
+        return;
+
+    LinkUrlDialog dialog(QString(), this);
+    if (dialog.exec() != QDialog::Accepted || dialog.url().isEmpty()) {
+        m_toast->show(tr("Link cancelled."));
+        return;
+    }
+
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save with link"), m_doc->filePath(),
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    const int page = std::max(0, m_doc->originalPageAt(slot));
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok =
+        LinkEditor::addUriLink(m_doc->filePath(), out, page, normRect, dialog.url(), &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't add link"), error);
+        return;
+    }
+    m_toast->show(tr("Added link to %1").arg(QFileInfo(out).fileName()));
+    openPath(out);
+}
+
+void MainWindow::editLinks() {
+    if (!hasActiveDoc())
+        return;
+
+    const QList<LinkEditor::Link> links = LinkEditor::read(m_doc->filePath());
+    LinksDialog dialog(links, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const QList<LinkEditor::Edit> edits = dialog.edits();
+    if (edits.isEmpty()) {
+        m_toast->show(tr("No link changes to apply."));
+        return;
+    }
+
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save with edited links"),
+                                                     m_doc->filePath(),
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = LinkEditor::applyEdits(m_doc->filePath(), out, edits, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't update links"), error);
+        return;
+    }
+    m_toast->show(tr("Updated %n link(s) — saved %1", "", int(edits.size()))
+                      .arg(QFileInfo(out).fileName()));
     openPath(out);
 }
 

@@ -274,6 +274,28 @@ QList<Group> buildDocs() {
               "<p>Jika Save nonaktif, tak ada dokumen terbuka. Perubahan belum tersimpan sampai kamu "
               "menyimpan.</p>")});
     editing.topics.append(
+        {"links", "Hyperlinks", "Tautan",
+         sect("en", "<p>Add, edit, and remove clickable links.</p>",
+              "<p>Place a URL link anywhere on a page, change where existing links point, or delete "
+              "them.</p>",
+              "<p>Links are /Link annotations written with QPDF; a new one is mapped onto the page "
+              "rotation-aware, and edits are applied in a single rewrite.</p>",
+              "<ul><li><b>Document ▸ Add Link</b>, draw the clickable area, then type the URL.</li>"
+              "<li><b>Document ▸ Edit Links</b> lists every link - change a URL or tick Delete, then "
+              "Apply.</li></ul>",
+              "<p>Links covering existing text turn that text into a clickable region; internal "
+              "(go-to-page) links are listed but shown read-only.</p>"),
+         sect("id", "<p>Tambah, sunting, dan hapus tautan yang bisa diklik.</p>",
+              "<p>Letakkan tautan URL di mana saja pada halaman, ubah tujuan tautan yang ada, atau "
+              "hapus.</p>",
+              "<p>Tautan adalah anotasi /Link yang ditulis dengan QPDF; tautan baru dipetakan ke "
+              "halaman dengan sadar-rotasi, dan suntingan diterapkan dalam satu penulisan ulang.</p>",
+              "<ul><li><b>Document ▸ Add Link</b>, gambar area klik, lalu ketik URL-nya.</li>"
+              "<li><b>Document ▸ Edit Links</b> menampilkan tiap tautan - ubah URL atau centang "
+              "Delete, lalu Apply.</li></ul>",
+              "<p>Tautan di atas teks menjadikan teks itu area yang bisa diklik; tautan internal "
+              "(ke-halaman) ditampilkan tapi hanya-baca.</p>")});
+    editing.topics.append(
         {"edit-text", "Edit text", "Edit teks",
          sect("en", "<p>Edit the text you added with the Text tool, and a bridge to LibreOffice "
               "Draw for heavier edits.</p>",

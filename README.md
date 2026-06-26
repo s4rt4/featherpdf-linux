@@ -50,12 +50,13 @@ with a comment sidebar. Import/export form data as **XFDF**.
 (text, checkbox, dropdown, radio, push button) by drawing them on the page;
 move or delete existing fields.
 
-**Editing** — edit the text you've added; an **Open in LibreOffice Draw**
-bridge for heavier layout work.
+**Editing** — edit the text you've added; add, edit, and remove **hyperlinks**;
+an **Open in LibreOffice Draw** bridge for heavier layout work.
 
 **More** — OCR (Tesseract) and image→PDF, document signing & verification
 (PAdES), office/image conversion (LibreOffice), **export back to Word/ODT/RTF/text**
-or **to PNG/JPEG/TIFF images**, AES-256 encryption, redaction, and flattening.
+or **to PNG/JPEG/TIFF images**, AES-256 encryption, redaction (manual or
+**pattern-based Find & Redact**), **sanitize / remove hidden info**, and flattening.
 
 ## Building
 

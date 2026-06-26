@@ -111,6 +111,9 @@ private:
     void applyRedactions();         // flatten marked pages, save, open the result
     void findAndRedact();           // find pattern matches, mark them for redaction (review then apply)
     void sanitizeDocument();        // strip metadata/attachments/scripts, save, open the result
+    void addLink();                 // draw a rectangle, then make it a URL hyperlink
+    void finishAddLink(int slot, const QRectF& normRect); // rect drawn → prompt URL → write
+    void editLinks();               // list/edit/delete the document's hyperlinks
     void setHighlightMode(bool on); // enter/leave the annotation-authoring mode
     void applyAnnotations();        // write highlight + note annotations, save, open result
     void activateTool(const QString& id); // route a Tools entry (pane or menu) to its action
@@ -238,6 +241,7 @@ private:
     FormEditor::NewField m_pendingField; // field being placed (after the dialog)
     bool m_placingField = false;         // viewport is in field-placement mode
     QString m_movingField;               // non-empty: placing repositions this field
+    bool m_placingLink = false;          // viewport drag is placing a new hyperlink
     QUndoGroup* m_undoGroup = nullptr;
     QAction* m_zoomInAct = nullptr;
     QAction* m_zoomOutAct = nullptr;

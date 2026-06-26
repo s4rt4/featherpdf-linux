@@ -246,6 +246,14 @@ Fill interactive AcroForm fields — and author new ones.
 - Each field row has **Move** (draw a new spot) and **×** (delete). A radio group
   needs at least two options.
 
+### Hyperlinks
+Add, edit, and remove clickable links (`/Link` annotations, via QPDF).
+- **Document ▸ Add Link**: draw the clickable area on the page, then type the URL.
+  Placement is rotation-aware.
+- **Document ▸ Edit Links**: lists every link in the document — change a URL or tick
+  **Delete**, then **Apply** (all changes in one rewrite). Internal go-to-page links
+  are listed read-only.
+
 ### Digital signatures
 Sign documents and verify existing signatures.
 - **Document ▸ Sign**: pick a certificate (from your system's NSS store,

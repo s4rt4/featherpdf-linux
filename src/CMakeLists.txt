@@ -42,6 +42,8 @@ qt_add_executable(feather-pdf
     backends/PatternRedactor.h
     backends/Sanitizer.cpp
     backends/Sanitizer.h
+    backends/LinkEditor.cpp
+    backends/LinkEditor.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -86,6 +88,10 @@ qt_add_executable(feather-pdf
     ui/FindRedactDialog.h
     ui/SanitizeDialog.cpp
     ui/SanitizeDialog.h
+    ui/LinkUrlDialog.cpp
+    ui/LinkUrlDialog.h
+    ui/LinksDialog.cpp
+    ui/LinksDialog.h
     ui/InsertDialog.cpp
     ui/InsertDialog.h
     ui/CropDialog.cpp
