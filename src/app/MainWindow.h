@@ -124,6 +124,7 @@ private:
     void optimizeDocument();  // rewrite more compactly (QPDF)
     void convertToCmyk();     // convert all colors to process CMYK (Ghostscript)
     void compareDocuments();  // visual diff against another PDF
+    void compareText();       // word-level text diff against another PDF
     void watermarkDocument(); // stamp a text watermark on every page
     void batesNumber();       // stamp sequential Bates numbers
     void addHeaderFooter();   // stamp header/footer text + page numbers

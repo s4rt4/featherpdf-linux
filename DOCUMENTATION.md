@@ -281,6 +281,11 @@ with…). Both files are rendered and their pages compared, with differences
 highlighted side by side. Comparison is visual, so heavily reflowed documents
 show many differences even for small edits.
 
+For a layout-independent view, use **Document ▸ Compare Text with…**: it extracts
+each page's text and diffs it **word by word** (longest-common-subsequence), then
+shows a report of every changed page with removed words in red and added words in
+green. Pages are matched by position; scanned PDFs need **OCR** first.
+
 ---
 
 ## Keyboard shortcuts

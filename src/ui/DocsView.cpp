@@ -794,6 +794,28 @@ QList<Group> buildDocs() {
               "lainnya.</li></ul>",
               "<p>Perbandingan bersifat visual - dokumen yang banyak reflow akan menampilkan banyak "
               "perbedaan walau suntingannya kecil.</p>")});
+    review.topics.append(
+        {"compare-text", "Compare text", "Bandingkan teks",
+         sect("en", "<p>Compare two PDFs word by word.</p>",
+              "<p>See exactly which words were added or removed, page by page - regardless of "
+              "layout shifts.</p>",
+              "<p>The text of each page is extracted and diffed word-level (a longest-common-"
+              "subsequence), so moved or reflowed text isn't flagged the way the visual compare "
+              "would.</p>",
+              "<ul><li><b>Document ▸ Compare Text with…</b> and pick the other PDF. A report lists "
+              "each changed page with removed words in red and added words in green.</li></ul>",
+              "<p>Pages are matched by position (page 1 to page 1, …). Scanned PDFs without a text "
+              "layer compare as empty - run OCR first.</p>"),
+         sect("id", "<p>Bandingkan dua PDF kata demi kata.</p>",
+              "<p>Lihat persis kata mana yang ditambah atau dihapus, per halaman - terlepas dari "
+              "pergeseran tata letak.</p>",
+              "<p>Teks tiap halaman diekstrak dan dibandingkan tingkat-kata (longest-common-"
+              "subsequence), jadi teks yang dipindah atau reflow tak ditandai seperti pada "
+              "perbandingan visual.</p>",
+              "<ul><li><b>Document ▸ Compare Text with…</b> lalu pilih PDF lain. Laporan menampilkan "
+              "tiap halaman berubah dengan kata terhapus merah dan kata ditambah hijau.</li></ul>",
+              "<p>Halaman dicocokkan per posisi (hal 1 ke hal 1, …). PDF pindai tanpa lapisan teks "
+              "dibandingkan kosong - jalankan OCR dulu.</p>")});
     g.append(review);
 
     return g;

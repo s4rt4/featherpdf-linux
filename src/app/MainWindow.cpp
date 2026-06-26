@@ -25,6 +25,7 @@
 #include "backends/LinkEditor.h"
 #include "backends/PatternRedactor.h"
 #include "backends/Sanitizer.h"
+#include "backends/TextComparer.h"
 #include "backends/Flattener.h"
 #include "backends/FormEditor.h"
 #include "backends/FormFiller.h"
@@ -47,6 +48,7 @@
 #include "ui/ExportImageDialog.h"
 #include "ui/ExtractDialog.h"
 #include "ui/FindRedactDialog.h"
+#include "ui/CompareReportDialog.h"
 #include "ui/HeaderFooterDialog.h"
 #include "ui/LinkUrlDialog.h"
 #include "ui/LinksDialog.h"
@@ -345,6 +347,8 @@ void MainWindow::buildMenus() {
     connect(optimize, &QAction::triggered, this, &MainWindow::optimizeDocument);
     QAction* compare = document->addAction(tr("Co&mpare with…"));
     connect(compare, &QAction::triggered, this, &MainWindow::compareDocuments);
+    QAction* compareText = document->addAction(tr("Compare &Text with…"));
+    connect(compareText, &QAction::triggered, this, &MainWindow::compareText);
     QAction* headerFooter = document->addAction(tr("Header && &Footer…"));
     connect(headerFooter, &QAction::triggered, this, &MainWindow::addHeaderFooter);
     document->addSeparator();
@@ -2111,6 +2115,39 @@ void MainWindow::compareDocuments() {
     watcher->setFuture(QtConcurrent::run([baseline, current, out, changed] {
         QString error;
         return Comparer::compare(baseline, current, out, changed, &error);
+    }));
+}
+
+void MainWindow::compareText() {
+    if (!hasActiveDoc())
+        return;
+    const QString other = QFileDialog::getOpenFileName(
+        this, tr("Compare text with…"), QFileInfo(m_doc->filePath()).absolutePath(),
+        tr("PDF documents (*.pdf)"));
+    if (other.isEmpty())
+        return;
+
+    // The current document is the newer one; the picked file is the baseline.
+    const QString baseline = other;
+    const QString current = m_doc->filePath();
+    m_toast->show(tr("Comparing text…"));
+    auto* watcher = new QFutureWatcher<TextComparer::Result>(this);
+    connect(watcher, &QFutureWatcher<TextComparer::Result>::finished, this,
+            [this, watcher, baseline, current] {
+                const TextComparer::Result result = watcher->result();
+                watcher->deleteLater();
+                if (!result.changed() && result.pageCount == 0) {
+                    QMessageBox::warning(this, tr("Couldn't compare"),
+                                         tr("One of the PDFs couldn't be read for comparison."));
+                    return;
+                }
+                CompareReportDialog dialog(result, QFileInfo(baseline).fileName(),
+                                           QFileInfo(current).fileName(), this);
+                dialog.exec();
+            });
+    watcher->setFuture(QtConcurrent::run([baseline, current] {
+        QString error;
+        return TextComparer::compare(baseline, current, &error);
     }));
 }
 

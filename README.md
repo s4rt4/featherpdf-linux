@@ -56,7 +56,8 @@ an **Open in LibreOffice Draw** bridge for heavier layout work.
 **More** — OCR (Tesseract) and image→PDF, document signing & verification
 (PAdES), office/image conversion (LibreOffice), **export back to Word/ODT/RTF/text**
 or **to PNG/JPEG/TIFF images**, AES-256 encryption, redaction (manual or
-**pattern-based Find & Redact**), **sanitize / remove hidden info**, and flattening.
+**pattern-based Find & Redact**), **sanitize / remove hidden info**, watermarks,
+**headers/footers & page numbers**, **visual or word-level compare**, and flattening.
 
 ## Building
 
