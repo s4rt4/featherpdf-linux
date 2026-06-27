@@ -22,6 +22,7 @@
 #include <QHBoxLayout>
 #include <QHash>
 #include <QLabel>
+#include <QScrollArea>
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QSettings>
@@ -106,10 +107,9 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
     setObjectName("ToolsPane");
     setFixedWidth(232);
 
-    auto* col = new QVBoxLayout(this);
-    col->setContentsMargins(0, 0, 0, 0);
-    col->setSpacing(0);
-    m_col = col;
+    auto* outer = new QVBoxLayout(this);
+    outer->setContentsMargins(0, 0, 0, 0);
+    outer->setSpacing(0);
 
     // Header: the TOOLS label and a collapse/expand toggle.
     auto* header = new QWidget(this);
@@ -128,7 +128,27 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
     m_toggle->setToolTip(tr("Collapse the tools pane"));
     connect(m_toggle, &QToolButton::clicked, this, [this] { setCollapsed(!m_collapsed); });
     headerRow->addWidget(m_toggle);
-    col->addWidget(header);
+    outer->addWidget(header);
+
+    // The tool rows live in a scroll area so the pane can shrink vertically. A
+    // pane that demanded the full height of all rows gave the window a huge
+    // minimum height, which blocked GNOME window tiling/snapping.
+    auto* scroll = new QScrollArea(this);
+    scroll->setObjectName("ToolsScroll");
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setWidgetResizable(true);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->viewport()->setStyleSheet(QStringLiteral("background:transparent;"));
+    auto* rowsHost = new QWidget(scroll);
+    rowsHost->setObjectName("ToolsRowsHost");
+    rowsHost->setStyleSheet(QStringLiteral("#ToolsRowsHost { background:transparent; }"));
+    auto* col = new QVBoxLayout(rowsHost);
+    col->setContentsMargins(0, 0, 0, 0);
+    col->setSpacing(0);
+    m_col = col;
+    scroll->setWidget(rowsHost);
+    outer->addWidget(scroll, 1);
 
     struct Def {
         const char* id;
@@ -171,7 +191,7 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
     m_customize->setObjectName("CustomizeTools");
     m_customize->setCursor(Qt::PointingHandCursor);
     connect(m_customize, &QPushButton::clicked, this, &ToolsPane::openCustomize);
-    col->addWidget(m_customize);
+    outer->addWidget(m_customize);
 
     loadOrder();
     applyOrder();
@@ -213,7 +233,7 @@ void ToolsPane::applyOrder() {
         m_col->removeWidget(r);
         r->hide();
     }
-    int idx = 1; // 0 is the header widget
+    int idx = 0; // rows host holds only rows (+ a trailing stretch)
     for (const QString& id : m_order) {
         ToolRow* r = byId.value(id, nullptr);
         if (!r)
