@@ -47,6 +47,8 @@ public:
         m_row->setContentsMargins(16, 9, 16, 9);
         m_row->setSpacing(11);
 
+        m_row->addStretch(0); // leading spacer (index 0): only active when compact
+
         m_chip = new QLabel(this);
         m_chip->setObjectName("ToolChip");
         m_chip->setFixedSize(26, 26);
@@ -62,14 +64,20 @@ public:
             m_chev->setAlignment(Qt::AlignCenter);
             m_row->addWidget(m_chev);
         }
+
+        m_row->addStretch(0); // trailing spacer: only active when compact
+        m_trailIdx = m_row->count() - 1;
     }
 
-    // Icon-only: hide the label and chevron, centre the chip.
+    // Icon-only: hide the label and chevron, centre the chip with the leading
+    // and trailing spacers so it stays clear of the pane's scrollbar.
     void setCompact(bool compact) {
         m_name->setVisible(!compact);
         if (m_chev)
             m_chev->setVisible(!compact);
-        m_row->setContentsMargins(compact ? 13 : 16, 9, compact ? 13 : 16, 9);
+        m_row->setContentsMargins(compact ? 0 : 16, 9, compact ? 0 : 16, 9);
+        m_row->setStretch(0, compact ? 1 : 0);
+        m_row->setStretch(m_trailIdx, compact ? 1 : 0);
     }
 
     void refresh() {
@@ -101,6 +109,7 @@ private:
     QLabel* m_chip = nullptr;
     QLabel* m_name = nullptr;
     QLabel* m_chev = nullptr;
+    int m_trailIdx = -1;
 };
 
 ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
