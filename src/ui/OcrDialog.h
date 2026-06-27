@@ -21,16 +21,26 @@
 #include <QStringList>
 
 class QComboBox;
+class QCheckBox;
 
-// Picks the language for text recognition (OCR).
+// Picks the language and the pre-processing clean-up for text recognition (OCR).
 class OcrDialog : public QDialog {
     Q_OBJECT
 
 public:
     OcrDialog(const QStringList& languageCodes, QWidget* parent = nullptr);
 
-    QString language() const; // selected Tesseract code, e.g. "eng"
+    QString language() const; // selected Tesseract code, e.g. "eng" (also the fallback)
+
+    bool deskew() const;       // straighten skewed scans
+    bool despeckle() const;    // drop isolated specks
+    bool binarize() const;     // grayscale + Otsu black/white
+    bool autoLanguage() const; // detect the script and pick a language
 
 private:
     QComboBox* m_lang = nullptr;
+    QCheckBox* m_deskew = nullptr;
+    QCheckBox* m_despeckle = nullptr;
+    QCheckBox* m_binarize = nullptr;
+    QCheckBox* m_autoLang = nullptr;
 };

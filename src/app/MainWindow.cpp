@@ -2612,6 +2612,11 @@ void MainWindow::recognizeText() {
     if (dialog.exec() != QDialog::Accepted)
         return;
     const QString language = dialog.language();
+    Ocr::Options ocrOptions;
+    ocrOptions.deskew = dialog.deskew();
+    ocrOptions.despeckle = dialog.despeckle();
+    ocrOptions.binarize = dialog.binarize();
+    ocrOptions.autoLanguage = dialog.autoLanguage();
 
     const QFileInfo info(m_doc->filePath());
     const QString suggested =
@@ -2636,9 +2641,9 @@ void MainWindow::recognizeText() {
         m_toast->show(tr("Recognized text - saved to %1").arg(QFileInfo(out).fileName()));
         openPath(out);
     });
-    watcher->setFuture(QtConcurrent::run([input, out, language] {
+    watcher->setFuture(QtConcurrent::run([input, out, language, ocrOptions] {
         QString error;
-        return Ocr::addTextLayer(input, out, language, &error);
+        return Ocr::addTextLayer(input, out, language, ocrOptions, &error);
     }));
 }
 

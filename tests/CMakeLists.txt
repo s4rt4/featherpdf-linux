@@ -281,6 +281,20 @@ target_link_libraries(test_stamplibrary PRIVATE
 add_test(NAME stamplibrary COMMAND test_stamplibrary)
 set_tests_properties(stamplibrary PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_ocrpreprocess
+    test_ocrpreprocess.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/OcrPreprocess.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/OcrPreprocess.h
+)
+target_include_directories(test_ocrpreprocess PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_ocrpreprocess PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+)
+add_test(NAME ocrpreprocess COMMAND test_ocrpreprocess)
+set_tests_properties(ocrpreprocess PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_translations test_translations.cpp)
 target_include_directories(test_translations PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_compile_definitions(test_translations PRIVATE

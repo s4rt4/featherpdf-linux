@@ -26,6 +26,8 @@ qt_add_executable(feather-pdf
     backends/Converter.h
     backends/Ocr.cpp
     backends/Ocr.h
+    backends/OcrPreprocess.cpp
+    backends/OcrPreprocess.h
     backends/Comparer.cpp
     backends/Comparer.h
     backends/Watermarker.cpp

@@ -18,6 +18,7 @@
 
 #include "ui/Theme.h"
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
@@ -50,7 +51,9 @@ OcrDialog::OcrDialog(const QStringList& languageCodes, QWidget* parent) : QDialo
             "QComboBox::drop-down { border:none; width:26px; }"
             "QComboBox::down-arrow { image:url(%6); width:13px; height:13px; }"
             "QComboBox QAbstractItemView { background:%1; border:1px solid %3; border-radius:8px;"
-            " padding:4px; outline:0; selection-background-color:%7; selection-color:%4; }")
+            " padding:4px; outline:0; selection-background-color:%7; selection-color:%4; }"
+            "QCheckBox { color:%4; }"
+            "QLabel#Section { color:%2; font-size:12px; }")
             .arg(css(p.surface), css(p.dim), css(ctlBorder), css(p.text), css(p.accent), chev,
                  css(p.accentTint)));
 
@@ -77,6 +80,24 @@ OcrDialog::OcrDialog(const QStringList& languageCodes, QWidget* parent) : QDialo
     form->addRow(tr("Language"), m_lang);
     root->addLayout(form);
 
+    auto* section = new QLabel(tr("Clean up pages before recognition"), this);
+    section->setObjectName(QStringLiteral("Section"));
+    root->addSpacing(2);
+    root->addWidget(section);
+
+    m_deskew = new QCheckBox(tr("Straighten skewed pages (deskew)"), this);
+    m_despeckle = new QCheckBox(tr("Remove specks (despeckle)"), this);
+    m_binarize = new QCheckBox(tr("Sharpen to black and white (binarize)"), this);
+    m_autoLang = new QCheckBox(tr("Detect language automatically"), this);
+    m_deskew->setChecked(true);
+    m_despeckle->setChecked(true);
+    m_binarize->setChecked(true);
+    m_autoLang->setChecked(false);
+    root->addWidget(m_deskew);
+    root->addWidget(m_despeckle);
+    root->addWidget(m_binarize);
+    root->addWidget(m_autoLang);
+
     root->addStretch(1);
 
     auto* buttons = new QDialogButtonBox(this);
@@ -94,4 +115,20 @@ OcrDialog::OcrDialog(const QStringList& languageCodes, QWidget* parent) : QDialo
 
 QString OcrDialog::language() const {
     return m_lang->currentData().toString();
+}
+
+bool OcrDialog::deskew() const {
+    return m_deskew->isChecked();
+}
+
+bool OcrDialog::despeckle() const {
+    return m_despeckle->isChecked();
+}
+
+bool OcrDialog::binarize() const {
+    return m_binarize->isChecked();
+}
+
+bool OcrDialog::autoLanguage() const {
+    return m_autoLang->isChecked();
 }

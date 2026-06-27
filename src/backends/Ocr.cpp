@@ -16,14 +16,21 @@
 
 #include "backends/Ocr.h"
 
+#include "backends/OcrPreprocess.h"
+
 #include <QDir>
 #include <QFile>
 #include <QImage>
+#include <QMap>
 #include <QPainter>
 #include <QPdfDocument>
+#include <QPointF>
 #include <QProcess>
 #include <QStandardPaths>
 #include <QTemporaryDir>
+#include <QTransform>
+
+#include <vector>
 
 #include <exception>
 
@@ -53,6 +60,27 @@ std::string pdfString(const QString& text) {
     out += ')';
     return out;
 }
+
+// Candidate Tesseract language codes for an OSD-reported script, best first.
+QStringList scriptCandidates(const QString& script) {
+    static const QMap<QString, QStringList> map{
+        {QStringLiteral("Latin"), {"eng", "ind", "fra", "deu", "spa", "ita", "por", "nld"}},
+        {QStringLiteral("Cyrillic"), {"rus", "ukr", "bul", "srp"}},
+        {QStringLiteral("Arabic"), {"ara", "fas", "urd"}},
+        {QStringLiteral("Han"), {"chi_sim", "chi_tra"}},
+        {QStringLiteral("HanS"), {"chi_sim"}},
+        {QStringLiteral("HanT"), {"chi_tra"}},
+        {QStringLiteral("Hangul"), {"kor"}},
+        {QStringLiteral("Japanese"), {"jpn"}},
+        {QStringLiteral("Hiragana"), {"jpn"}},
+        {QStringLiteral("Katakana"), {"jpn"}},
+        {QStringLiteral("Devanagari"), {"hin", "mar", "san", "nep"}},
+        {QStringLiteral("Greek"), {"ell", "grc"}},
+        {QStringLiteral("Hebrew"), {"heb"}},
+        {QStringLiteral("Thai"), {"tha"}},
+    };
+    return map.value(script);
+}
 } // namespace
 
 bool Ocr::isAvailable() {
@@ -75,8 +103,50 @@ QStringList Ocr::languages() {
     return langs;
 }
 
+QString Ocr::detectLanguage(const QImage& sample, const QString& fallback) {
+    const QString tess = tesseract();
+    if (tess.isEmpty() || sample.isNull())
+        return fallback;
+
+    QTemporaryDir tmp;
+    if (!tmp.isValid())
+        return fallback;
+    const QString imgPath = tmp.filePath(QStringLiteral("osd.png"));
+    if (!sample.save(imgPath, "PNG"))
+        return fallback;
+
+    QProcess proc;
+    proc.start(tess, {imgPath, QStringLiteral("stdout"), QStringLiteral("--psm"),
+                      QStringLiteral("0")});
+    if (!proc.waitForFinished(30000) || proc.exitStatus() != QProcess::NormalExit)
+        return fallback;
+    const QString out = QString::fromUtf8(proc.readAllStandardOutput()) +
+                        QString::fromUtf8(proc.readAllStandardError());
+
+    QString script;
+    for (const QString& line : out.split('\n', Qt::SkipEmptyParts)) {
+        if (line.startsWith(QStringLiteral("Script:"))) {
+            script = line.section(':', 1).trimmed();
+            break;
+        }
+    }
+    if (script.isEmpty())
+        return fallback;
+
+    const QStringList installed = languages();
+    // Keep the user's pick when it already fits the detected script (e.g. Latin).
+    const QStringList candidates = scriptCandidates(script);
+    if (candidates.contains(fallback))
+        return fallback;
+    for (const QString& code : candidates) {
+        if (installed.contains(code))
+            return code;
+    }
+    return fallback;
+}
+
 bool Ocr::addTextLayer(const QString& inputPath, const QString& outputPath,
-                       const QString& language, QString* error) {
+                       const QString& language, const Options& options, QString* error) {
     const QString tess = tesseract();
     if (tess.isEmpty()) {
         if (error)
@@ -110,6 +180,9 @@ bool Ocr::addTextLayer(const QString& inputPath, const QString& outputPath,
         std::vector<QPDFPageObjectHelper> pages = dh.getAllPages();
         const int n = std::min<int>(doc.pageCount(), static_cast<int>(pages.size()));
 
+        QString lang = language;
+        bool langResolved = !options.autoLanguage;
+
         for (int i = 0; i < n; ++i) {
             QSizeF pt = doc.pagePointSize(i);
             if (pt.width() <= 0 || pt.height() <= 0)
@@ -124,16 +197,40 @@ bool Ocr::addTextLayer(const QString& inputPath, const QString& outputPath,
                 QPainter pp(&flat);
                 pp.drawImage(0, 0, rendered);
             }
+
+            // In-process clean-up before Tesseract. Deskew may rotate (and resize)
+            // the image, so remember the flat->processed transform to map word
+            // boxes back onto the original page coordinates afterwards.
+            QImage proc = flat;
+            QTransform flatToProc; // identity unless deskew rotates
+            if (options.deskew) {
+                const double angle = OcrPreprocess::estimateSkew(proc);
+                proc = OcrPreprocess::rotated(proc, angle, &flatToProc);
+            }
+            if (options.binarize)
+                proc = OcrPreprocess::binarize(proc);
+            else if (options.despeckle)
+                proc = OcrPreprocess::grayscale(proc);
+            if (options.despeckle)
+                proc = OcrPreprocess::despeckle(proc);
+            const QTransform procToFlat = flatToProc.inverted();
+
             const QString imgPath = tmp.filePath(QStringLiteral("p%1.png").arg(i));
-            if (!flat.save(imgPath, "PNG"))
+            if (!proc.save(imgPath, "PNG"))
                 continue;
 
-            QProcess proc;
-            proc.start(tess, {imgPath, QStringLiteral("stdout"), QStringLiteral("-l"), language,
-                              QStringLiteral("tsv")});
-            if (!proc.waitForFinished(180000) || proc.exitStatus() != QProcess::NormalExit)
+            // Auto language: detect the script once, from the first cleaned page.
+            if (!langResolved) {
+                lang = detectLanguage(proc, language);
+                langResolved = true;
+            }
+
+            QProcess proc2;
+            proc2.start(tess, {imgPath, QStringLiteral("stdout"), QStringLiteral("-l"), lang,
+                               QStringLiteral("tsv")});
+            if (!proc2.waitForFinished(180000) || proc2.exitStatus() != QProcess::NormalExit)
                 continue;
-            const QString tsv = QString::fromUtf8(proc.readAllStandardOutput());
+            const QString tsv = QString::fromUtf8(proc2.readAllStandardOutput());
 
             const double sx = pt.width() / px.width();
             const double sy = pt.height() / px.height();
@@ -155,8 +252,11 @@ bool Ocr::addTextLayer(const QString& inputPath, const QString& outputPath,
                 const double fs = h * sy;
                 if (fs <= 0)
                     continue;
-                const double x = left * sx;
-                const double y = pt.height() - (top + h) * sy; // baseline near box bottom
+                // Box baseline (bottom-left) in processed-image pixels, mapped back
+                // to the un-deskewed page image, then to PDF points.
+                const QPointF fp = procToFlat.map(QPointF(left, top + h));
+                const double x = fp.x() * sx;
+                const double y = pt.height() - fp.y() * sy; // baseline near box bottom
                 content += "/FtOCR " + num(fs) + " Tf 1 0 0 1 " + num(x) + " " + num(y) +
                            " Tm " + pdfString(word) + " Tj\n";
                 any = true;
