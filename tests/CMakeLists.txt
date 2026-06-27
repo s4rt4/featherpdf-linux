@@ -146,6 +146,21 @@ target_link_libraries(test_imageexporter PRIVATE
 add_test(NAME imageexporter COMMAND test_imageexporter)
 set_tests_properties(imageexporter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_snapshotexporter
+    test_snapshotexporter.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/SnapshotExporter.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/SnapshotExporter.h
+)
+target_include_directories(test_snapshotexporter PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_snapshotexporter PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Pdf
+    Qt6::Test
+)
+add_test(NAME snapshotexporter COMMAND test_snapshotexporter)
+set_tests_properties(snapshotexporter PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_patternredactor
     test_patternredactor.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/PatternRedactor.cpp

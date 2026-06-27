@@ -50,6 +50,8 @@ Viewport::Viewport(QWidget* parent) : QWidget(parent), m_view(new PageView(this)
             [this](int slot, QRectF rect) { emit textBoxRequested(slot, rect); });
     connect(m_view, &PageView::fieldRectDrawn, this,
             [this](int slot, QRectF rect) { emit fieldRectDrawn(slot, rect); });
+    connect(m_view, &PageView::snapshotRegion, this,
+            [this](int slot, QRectF rect) { emit snapshotRegion(slot, rect); });
 }
 
 Viewport::~Viewport() = default;
@@ -58,6 +60,8 @@ void Viewport::setRedactionMode(bool on) { m_view->setRedactionMode(on); }
 bool Viewport::redactionMode() const { return m_view->redactionMode(); }
 void Viewport::setFieldPlacementMode(bool on) { m_view->setFieldPlacementMode(on); }
 bool Viewport::fieldPlacementMode() const { return m_view->fieldPlacementMode(); }
+void Viewport::setSnapshotMode(bool on) { m_view->setSnapshotMode(on); }
+bool Viewport::snapshotMode() const { return m_view->snapshotMode(); }
 QHash<int, QList<QRectF>> Viewport::redactionMarks() const { return m_view->redactionMarks(); }
 void Viewport::addRedactions(const QHash<int, QList<QRectF>>& marks) {
     m_view->addRedactions(marks);

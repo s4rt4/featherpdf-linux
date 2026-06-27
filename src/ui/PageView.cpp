@@ -268,6 +268,7 @@ void PageView::setRedactionMode(bool on) {
     if (on) {
         m_highlightMode = false; // the drag modes are mutually exclusive
         m_fieldMode = false;
+        m_snapshotMode = false;
     }
     m_dragging = false;
     m_dragSlot = -1;
@@ -282,6 +283,7 @@ void PageView::setHighlightMode(bool on) {
     if (on) {
         m_redactMode = false;
         m_fieldMode = false;
+        m_snapshotMode = false;
     }
     m_dragging = false;
     m_dragSlot = -1;
@@ -296,6 +298,22 @@ void PageView::setFieldPlacementMode(bool on) {
     if (on) {
         m_redactMode = false;
         m_highlightMode = false;
+        m_snapshotMode = false;
+    }
+    m_dragging = false;
+    m_dragSlot = -1;
+    viewport()->setCursor(dragModeActive() ? Qt::CrossCursor : Qt::ArrowCursor);
+    viewport()->update();
+}
+
+void PageView::setSnapshotMode(bool on) {
+    if (m_snapshotMode == on)
+        return;
+    m_snapshotMode = on;
+    if (on) {
+        m_redactMode = false;
+        m_highlightMode = false;
+        m_fieldMode = false;
     }
     m_dragging = false;
     m_dragSlot = -1;
@@ -471,6 +489,10 @@ bool PageView::eventFilter(QObject* obj, QEvent* event) {
             // A field placement is one-shot: report the rect, don't store it.
             if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004)
                 emit fieldRectDrawn(m_dragSlot, m_dragNorm);
+        } else if (m_snapshotMode) {
+            // A snapshot is one-shot too: report the region, don't store it.
+            if (m_dragNorm.width() > 0.004 && m_dragNorm.height() > 0.004)
+                emit snapshotRegion(m_dragSlot, m_dragNorm);
         } else if (m_highlightMode &&
                    (m_annotTool == AnnotTool::Line || m_annotTool == AnnotTool::Arrow)) {
             // A line is validated by its length, not a bounding rect.
@@ -788,9 +810,9 @@ void PageView::paintEvent(QPaintEvent*) {
               (m_annotTool == AnnotTool::Note || m_annotTool == AnnotTool::Ink ||
                m_annotTool == AnnotTool::Line || m_annotTool == AnnotTool::Arrow));
         if (dragRect) {
-            QColor dragFill = m_fieldMode      ? QColor(17, 124, 111) // feather teal
-                              : m_highlightMode ? m_highlightColor
-                                                : QColor(200, 30, 30);
+            QColor dragFill = (m_fieldMode || m_snapshotMode) ? QColor(17, 124, 111) // feather teal
+                              : m_highlightMode               ? m_highlightColor
+                                                              : QColor(200, 30, 30);
             dragFill.setAlpha(110);
             drawMark(m_dragNorm, dragFill, true);
         }

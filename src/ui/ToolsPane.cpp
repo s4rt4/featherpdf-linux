@@ -183,6 +183,7 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
         {"flatten", QT_TR_NOOP("Flatten"), "layers", false},
         {"organize", QT_TR_NOOP("Organize"), "organize", true},
         {"redact", QT_TR_NOOP("Redact"), "redact", false},
+        {"snapshot", QT_TR_NOOP("Snapshot"), "crop", false},
         {"sign", QT_TR_NOOP("Sign"), "sign", false},
     };
     for (const Def& d : defs) {

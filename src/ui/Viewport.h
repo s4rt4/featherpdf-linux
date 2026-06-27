@@ -76,6 +76,11 @@ public:
     void setFieldPlacementMode(bool on);
     bool fieldPlacementMode() const;
 
+    // Snapshot region select (forwarded to PageView): drag one rectangle; the drawn
+    // region arrives via snapshotRegion, then the mode ends.
+    void setSnapshotMode(bool on);
+    bool snapshotMode() const;
+
     // Annotation authoring (forwarded to PageView).
     void setHighlightMode(bool on);
     bool highlightMode() const;
@@ -107,6 +112,7 @@ signals:
     void noteRequested(int slot, QPointF normPos);
     void textBoxRequested(int slot, QRectF normRect);
     void fieldRectDrawn(int slot, QRectF normRect); // form field placement finished
+    void snapshotRegion(int slot, QRectF normRect); // snapshot region selected
 
 private:
     FeatherDocument* m_doc = nullptr;

@@ -22,6 +22,7 @@
 #include "backends/Comparer.h"
 #include "backends/Converter.h"
 #include "backends/ImageExporter.h"
+#include "backends/SnapshotExporter.h"
 #include "backends/LinkEditor.h"
 #include "backends/PatternRedactor.h"
 #include "backends/Sanitizer.h"
@@ -46,6 +47,7 @@
 #include "ui/CommandBar.h"
 #include "ui/DocsView.h"
 #include "ui/ExportImageDialog.h"
+#include "ui/SnapshotDialog.h"
 #include "ui/ExtractDialog.h"
 #include "ui/FindRedactDialog.h"
 #include "ui/CompareReportDialog.h"
@@ -86,6 +88,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
+#include <QClipboard>
 #include <QCloseEvent>
 #include <QEasingCurve>
 #include <QParallelAnimationGroup>
@@ -369,6 +372,7 @@ void MainWindow::buildMenus() {
         {"forms", tr("Forms"), true},
         {"combine", tr("Combine…"), false},    {"split", tr("Split…"), true},
         {"comment", tr("Comment"), false},     {"redact", tr("Redact"), false},
+        {"snapshot", tr("Snapshot"), false},
         {"watermark", tr("Watermark…"), false}, {"bates", tr("Bates Numbering…"), false},
         {"organize", tr("Organize"), true},    {"compare", tr("Compare…"), false},
         {"optimize", tr("Optimize…"), false},  {"cmyk", tr("RGB to CMYK…"), false},
@@ -756,6 +760,7 @@ void MainWindow::wireSignals() {
 
     // Form-field placement: a drawn rectangle becomes a new (or moved) field.
     connect(m_viewport, &Viewport::fieldRectDrawn, this, &MainWindow::placeFormField);
+    connect(m_viewport, &Viewport::snapshotRegion, this, &MainWindow::snapshotRegion);
     connect(m_forms, &FormPanel::addFieldRequested, this, &MainWindow::addFormField);
     connect(m_forms, &FormPanel::moveFieldRequested, this, &MainWindow::moveFormField);
     connect(m_forms, &FormPanel::deleteFieldRequested, this, &MainWindow::deleteFormField);
@@ -1808,6 +1813,8 @@ void MainWindow::activateTool(const QString& id) {
     } else if (id == QLatin1String("comment")) {
         if (hasActiveDoc())
             setHighlightMode(!m_viewport->highlightMode());
+    } else if (id == QLatin1String("snapshot")) {
+        startSnapshot();
     } else if (id == QLatin1String("sign")) {
         signDocument();
     } else if (id == QLatin1String("edit")) {
@@ -1982,6 +1989,63 @@ void MainWindow::exportPagesAsImages() {
         return;
     }
     m_toast->show(tr("Exported %n image(s) to %1", "", n).arg(QDir(dir).dirName()));
+}
+
+void MainWindow::startSnapshot() {
+    if (!hasActiveDoc())
+        return;
+    setRedactionMode(false); // the drag modes are mutually exclusive
+    setHighlightMode(false);
+    m_viewport->setSnapshotMode(true);
+    m_toast->show(tr("Drag to select a region to copy as an image."));
+}
+
+void MainWindow::snapshotRegion(int slot, const QRectF& normRect) {
+    m_viewport->setSnapshotMode(false); // one-shot: leave the mode after a capture
+    if (!hasActiveDoc())
+        return;
+
+    // Map the display slot back to its source page + session rotation, so the
+    // snapshot honours any in-session rotate/reorder (mirrors Export as Images).
+    const int source = m_doc->originalPageAt(slot);
+    const int rotation = m_doc->rotation(slot);
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    // 200 DPI gives a crisp clipboard image and a usable PNG.
+    const QImage image =
+        SnapshotExporter::renderRegion(m_doc->pdf(), source, rotation, normRect, 200, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, tr("Couldn't snapshot"), error);
+        return;
+    }
+
+    // Always copy to the clipboard; then offer to save a PNG as well.
+    QApplication::clipboard()->setImage(image);
+
+    SnapshotDialog dialog(image, this);
+    if (dialog.exec() != QDialog::Accepted) {
+        m_toast->show(tr("Snapshot copied to the clipboard."));
+        return;
+    }
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-snapshot.png"));
+    const QString out =
+        QFileDialog::getSaveFileName(this, tr("Save snapshot"), suggested, tr("PNG image (*.png)"));
+    if (out.isEmpty()) {
+        m_toast->show(tr("Snapshot copied to the clipboard."));
+        return;
+    }
+    if (!image.save(out, "PNG")) {
+        QMessageBox::warning(this, tr("Couldn't save snapshot"),
+                             tr("The image couldn't be written to that location."));
+        return;
+    }
+    m_toast->show(tr("Saved snapshot to %1").arg(QFileInfo(out).fileName()));
 }
 
 void MainWindow::extractEmbeddedImages() {

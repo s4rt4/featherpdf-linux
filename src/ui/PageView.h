@@ -133,6 +133,12 @@ public:
     void setFieldPlacementMode(bool on);
     bool fieldPlacementMode() const { return m_fieldMode; }
 
+    // Snapshot: a one-shot region select. Like field placement, nothing is stored -
+    // drag one rectangle and the drawn rect (normalized to the displayed page) is
+    // emitted via snapshotRegion, then the mode ends.
+    void setSnapshotMode(bool on);
+    bool snapshotMode() const { return m_snapshotMode; }
+
 signals:
     void currentPageChanged(int page);
     void zoomChanged(double zoom);
@@ -146,6 +152,7 @@ signals:
     void noteRequested(int slot, QPointF normPos); // Note tool clicked at a point
     void textBoxRequested(int slot, QRectF normRect); // TextBox drawn; needs its text
     void fieldRectDrawn(int slot, QRectF normRect); // form field placement finished
+    void snapshotRegion(int slot, QRectF normRect); // snapshot region selected
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -230,10 +237,13 @@ private:
     // active at a time). normInSlot maps a viewport point to page fractions.
     QPointF normInSlot(int slot, const QPoint& vpPt) const;
     bool deleteMarkAt(int slot, const QPointF& norm); // remove the topmost mark under a point
-    bool dragModeActive() const { return m_redactMode || m_highlightMode || m_fieldMode; }
+    bool dragModeActive() const {
+        return m_redactMode || m_highlightMode || m_fieldMode || m_snapshotMode;
+    }
     bool m_redactMode = false;
     bool m_highlightMode = false;
     bool m_fieldMode = false;
+    bool m_snapshotMode = false;
     QHash<int, QList<QRectF>> m_redactions;             // slot → normalized rects
     QHash<int, QList<QPair<QRectF, QColor>>> m_highlights; // slot → [(rect, colour)]
     QHash<int, QList<QPair<QPointF, QString>>> m_notes; // slot → [(pos, text)]

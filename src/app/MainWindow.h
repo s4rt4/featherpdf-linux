@@ -107,6 +107,8 @@ private:
     void applyViewDefaults(); // apply the saved default layout/zoom to the viewport
     bool saveActiveAs();      // export the edited document to a chosen path (QPDF)
     bool saveActive();        // write edits back to the current file (QPDF)
+    void startSnapshot();           // enter the drag-to-snapshot region mode
+    void snapshotRegion(int slot, const QRectF& normRect); // region drawn → clip + offer PNG
     void setRedactionMode(bool on); // enter/leave the draw-to-redact mode
     void applyRedactions();         // flatten marked pages, save, open the result
     void findAndRedact();           // find pattern matches, mark them for redaction (review then apply)
