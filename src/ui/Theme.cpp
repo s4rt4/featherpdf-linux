@@ -265,6 +265,11 @@ QString Theme::styleSheet() const {
     // accent even inside a QDialogButtonBox. One subtle control outline (`ctl`).
     QColor ctl = p.text;
     ctl.setAlpha(46);
+    // Text on the accent-filled primary: dark on a light accent, white on a dark
+    // one (per-theme contrast - the dark theme's brighter teal needs dark text).
+    const int accentLuma =
+        (p.accent.red() * 299 + p.accent.green() * 587 + p.accent.blue() * 114) / 1000;
+    const QColor onAccent = accentLuma >= 128 ? QColor(0x24, 0x24, 0x24) : QColor(0xFF, 0xFF, 0xFF);
     qss += QStringLiteral(
                // Neutral/secondary buttons: dialog button boxes + opt-in #GhostBtn.
                "QDialogButtonBox QPushButton, QPushButton#GhostBtn { background:%3;"
@@ -277,12 +282,12 @@ QString Theme::styleSheet() const {
                // The accent-filled primary - listed AFTER and with an explicit
                // button-box variant so it always beats the neutral rule above.
                "QPushButton#Share, QDialogButtonBox QPushButton#Share { background:%1;"
-               " color:#FFFFFF; border:none; border-radius:8px; padding:7px 16px;"
+               " color:%8; border:none; border-radius:8px; padding:7px 16px;"
                " min-width:64px; font-weight:600; }"
                "QPushButton#Share:hover, QDialogButtonBox QPushButton#Share:hover {"
                " background:%2; }")
                .arg(css(p.accent), css(p.accentHover), css(p.surface), css(ctl), css(p.text),
-                    css(p.canvas), css(p.dim));
+                    css(p.canvas), css(p.dim), css(onAccent));
 
     // Left navigation rail - surface with hairline edge; active button is accent.
     qss += QStringLiteral(
@@ -357,7 +362,7 @@ QString Theme::styleSheet() const {
                "#HomeView { background:%1; }"
                "#HomeSidebar { background:%4; border-right:1px solid %5; }"
                "#HomeBrandName { color:%6; font-size:15px; font-weight:700; }"
-               "QPushButton#HomeOpen { background:%2; color:#FFFFFF; border:none;"
+               "QPushButton#HomeOpen { background:%2; color:%8; border:none;"
                " border-radius:9px; padding:10px 14px; font-size:14px; font-weight:600;"
                " text-align:left; }"
                "QPushButton#HomeOpen:hover { background:%3; }"
@@ -375,7 +380,7 @@ QString Theme::styleSheet() const {
                "#RecentTile { background:%4; border:1px solid %5; border-radius:14px; }"
                "#RecentTile:hover { border:1px solid %2; }")
                .arg(css(p.canvas), css(p.accent), css(p.accentHover), css(p.surface),
-                    css(p.hairline), css(p.text), css(p.accentTint));
+                    css(p.hairline), css(p.text), css(p.accentTint), css(onAccent));
 
     return qss;
 }
