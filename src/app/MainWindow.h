@@ -115,6 +115,7 @@ private:
     void applyRedactions();         // flatten marked pages, save, open the result
     void findAndRedact();           // find pattern matches, mark them for redaction (review then apply)
     void sanitizeDocument();        // strip metadata/attachments/scripts, save, open the result
+    void convertToPdfA();           // tag toward PDF/A-1b + optional veraPDF preflight
     void addLink();                 // draw a rectangle, then make it a URL hyperlink
     void finishAddLink(int slot, const QRectF& normRect); // rect drawn → prompt URL → write
     void editLinks();               // list/edit/delete the document's hyperlinks

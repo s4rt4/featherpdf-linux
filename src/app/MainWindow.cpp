@@ -58,6 +58,7 @@
 #include "ui/LinksDialog.h"
 #include "ui/OptimizeDialog.h"
 #include "ui/SanitizeDialog.h"
+#include "ui/PdfADialog.h"
 #include "ui/StampDialog.h"
 #include "ui/FlattenDialog.h"
 #include "ui/FormFieldDialog.h"
@@ -367,6 +368,8 @@ void MainWindow::buildMenus() {
     connect(findRedact, &QAction::triggered, this, &MainWindow::findAndRedact);
     QAction* sanitize = document->addAction(tr("Remove &Hidden Information…"));
     connect(sanitize, &QAction::triggered, this, &MainWindow::sanitizeDocument);
+    QAction* pdfa = document->addAction(tr("PDF/A && &Preflight…"));
+    connect(pdfa, &QAction::triggered, this, &MainWindow::convertToPdfA);
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
     struct ToolEntry {
@@ -386,7 +389,7 @@ void MainWindow::buildMenus() {
         {"optimize", tr("Optimize…"), false},  {"cmyk", tr("RGB to CMYK…"), false},
         {"flatten", tr("Flatten…"), false},
         {"protect", tr("Protect…"), false},    {"sign", tr("Sign…"), false},
-        {"stamp", tr("Stamp…"), true},
+        {"stamp", tr("Stamp…"), false},        {"pdfa", tr("PDF/A & Preflight…"), true},
     };
     for (const ToolEntry& e : toolEntries) {
         const QString id = QString::fromLatin1(e.id);
@@ -1756,6 +1759,14 @@ void MainWindow::sanitizeDocument() {
     openPath(out);
 }
 
+void MainWindow::convertToPdfA() {
+    if (!hasActiveDoc())
+        return;
+    // The dialog owns the convert + preflight work and shows the report inline.
+    PdfADialog dialog(m_doc->filePath(), this);
+    dialog.exec();
+}
+
 void MainWindow::addLink() {
     if (!hasActiveDoc())
         return;
@@ -1931,6 +1942,8 @@ void MainWindow::activateTool(const QString& id) {
             m_rail->setCurrentPanel(NavigationRail::Panel::Forms);
     } else if (id == QLatin1String("ocr")) {
         recognizeText();
+    } else if (id == QLatin1String("pdfa")) {
+        convertToPdfA();
     } else if (id == QLatin1String("create")) {
         createPdf();
     } else if (id == QLatin1String("export")) {

@@ -46,6 +46,8 @@ qt_add_executable(feather-pdf
     backends/PatternRedactor.h
     backends/Sanitizer.cpp
     backends/Sanitizer.h
+    backends/PdfA.cpp
+    backends/PdfA.h
     backends/Optimizer.cpp
     backends/Optimizer.h
     backends/LinkEditor.cpp
@@ -106,6 +108,8 @@ qt_add_executable(feather-pdf
     ui/CompareReportDialog.h
     ui/SanitizeDialog.cpp
     ui/SanitizeDialog.h
+    ui/PdfADialog.cpp
+    ui/PdfADialog.h
     ui/OptimizeDialog.cpp
     ui/OptimizeDialog.h
     ui/LinkUrlDialog.cpp

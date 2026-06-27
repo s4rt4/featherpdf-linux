@@ -13,6 +13,7 @@
   <file alias="crop.svg">icons/crop.svg</file>
   <file alias="watermark.svg">icons/watermark.svg</file>
   <file alias="bates.svg">icons/bates.svg</file>
+  <file alias="badge-check.svg">icons/badge-check.svg</file>
   <file alias="optimize.svg">icons/optimize.svg</file>
   <file alias="cmyk.svg">icons/cmyk.svg</file>
   <file alias="comment.svg">icons/comment.svg</file>
