@@ -251,6 +251,21 @@ target_link_libraries(test_measurer PRIVATE
 add_test(NAME measurer COMMAND test_measurer)
 set_tests_properties(measurer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_stamplibrary
+    test_stamplibrary.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/StampLibrary.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/StampLibrary.h
+)
+target_include_directories(test_stamplibrary PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_stamplibrary PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::QPDF
+)
+add_test(NAME stamplibrary COMMAND test_stamplibrary)
+set_tests_properties(stamplibrary PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_translations test_translations.cpp)
 target_include_directories(test_translations PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_compile_definitions(test_translations PRIVATE

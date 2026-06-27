@@ -50,6 +50,8 @@ qt_add_executable(feather-pdf
     backends/TextComparer.h
     backends/Measurer.cpp
     backends/Measurer.h
+    backends/StampLibrary.cpp
+    backends/StampLibrary.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -102,6 +104,8 @@ qt_add_executable(feather-pdf
     ui/SanitizeDialog.h
     ui/LinkUrlDialog.cpp
     ui/LinkUrlDialog.h
+    ui/StampDialog.cpp
+    ui/StampDialog.h
     ui/LinksDialog.cpp
     ui/LinksDialog.h
     ui/InsertDialog.cpp

@@ -31,6 +31,7 @@
 #include "backends/FormEditor.h"
 #include "backends/FormFiller.h"
 #include "backends/Splitter.h"
+#include "backends/StampLibrary.h"
 #include "backends/TextEditor.h"
 #include "backends/Ocr.h"
 #include "backends/Signer.h"
@@ -55,6 +56,7 @@
 #include "ui/LinkUrlDialog.h"
 #include "ui/LinksDialog.h"
 #include "ui/SanitizeDialog.h"
+#include "ui/StampDialog.h"
 #include "ui/FlattenDialog.h"
 #include "ui/FormFieldDialog.h"
 #include "ui/GoToPageDialog.h"
@@ -91,6 +93,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QCloseEvent>
+#include <QDate>
 #include <QEasingCurve>
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
@@ -336,6 +339,8 @@ void MainWindow::buildMenus() {
     connect(addLinkAct, &QAction::triggered, this, &MainWindow::addLink);
     QAction* editLinksAct = document->addAction(tr("Edit Lin&ks…"));
     connect(editLinksAct, &QAction::triggered, this, &MainWindow::editLinks);
+    QAction* addStampAct = document->addAction(tr("Add S&tamp…"));
+    connect(addStampAct, &QAction::triggered, this, &MainWindow::addStamp);
     document->addSeparator();
     QAction* props = document->addAction(tr("Properties…"));
     connect(props, &QAction::triggered, this, &MainWindow::showProperties);
@@ -378,7 +383,8 @@ void MainWindow::buildMenus() {
         {"organize", tr("Organize"), true},    {"compare", tr("Compare…"), false},
         {"optimize", tr("Optimize…"), false},  {"cmyk", tr("RGB to CMYK…"), false},
         {"flatten", tr("Flatten…"), false},
-        {"protect", tr("Protect…"), false},    {"sign", tr("Sign…"), true},
+        {"protect", tr("Protect…"), false},    {"sign", tr("Sign…"), false},
+        {"stamp", tr("Stamp…"), true},
     };
     for (const ToolEntry& e : toolEntries) {
         const QString id = QString::fromLatin1(e.id);
@@ -1327,6 +1333,10 @@ void MainWindow::placeFormField(int slot, const QRectF& normRect) {
         finishAddLink(slot, normRect);
         return;
     }
+    if (m_placingStamp) { // and for placing stamps
+        finishAddStamp(slot, normRect);
+        return;
+    }
     if (!m_placingField || !hasActiveDoc())
         return;
     m_placingField = false;
@@ -1821,6 +1831,56 @@ void MainWindow::editLinks() {
     openPath(out);
 }
 
+void MainWindow::addStamp() {
+    if (!hasActiveDoc())
+        return;
+
+    StampDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    // Remember the chosen stamp; the date is resolved now so the caption matches
+    // what the preview showed. Then let the user drag where it goes.
+    m_pendingStampPreset = dialog.preset();
+    m_pendingStampDate =
+        dialog.includeDate() ? QDate::currentDate().toString(Qt::ISODate) : QString();
+    m_pendingStampName = dialog.name();
+    m_placingStamp = true;
+
+    setRedactionMode(false); // the drag modes are mutually exclusive
+    setHighlightMode(false);
+    setMeasureMode(false);
+    m_viewport->setFieldPlacementMode(true);
+    m_toast->show(tr("Draw where the stamp goes."));
+}
+
+void MainWindow::finishAddStamp(int slot, const QRectF& normRect) {
+    m_placingStamp = false;
+    m_viewport->setFieldPlacementMode(false);
+    if (!hasActiveDoc())
+        return;
+
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save with stamp"), m_doc->filePath(),
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    const int page = std::max(0, m_doc->originalPageAt(slot));
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const bool ok = StampLibrary::addStamp(m_doc->filePath(), out, page, normRect,
+                                           m_pendingStampPreset, m_pendingStampDate,
+                                           m_pendingStampName, &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't add stamp"), error);
+        return;
+    }
+    m_toast->show(tr("Added stamp to %1").arg(QFileInfo(out).fileName()));
+    openPath(out);
+}
+
 void MainWindow::activateTool(const QString& id) {
     // Route a Tools entry (from the pane or the Tools menu) to its action. Only
     // "edit" (M8 text editing) is still a placeholder.
@@ -1860,6 +1920,8 @@ void MainWindow::activateTool(const QString& id) {
             setMeasureMode(!m_viewport->measureMode());
     } else if (id == QLatin1String("sign")) {
         signDocument();
+    } else if (id == QLatin1String("stamp")) {
+        addStamp();
     } else if (id == QLatin1String("edit")) {
         editTextBoxes();
     } else if (id == QLatin1String("forms")) {

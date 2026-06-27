@@ -186,6 +186,7 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
         {"snapshot", QT_TR_NOOP("Snapshot"), "crop", false},
         {"measure", QT_TR_NOOP("Measure"), "ruler", false},
         {"sign", QT_TR_NOOP("Sign"), "sign", false},
+        {"stamp", QT_TR_NOOP("Stamp"), "stamp", false},
     };
     for (const Def& d : defs) {
         m_catalog.append({QString::fromLatin1(d.id), tr(d.label), QString::fromLatin1(d.icon),

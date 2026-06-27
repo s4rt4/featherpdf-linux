@@ -25,6 +25,7 @@
 
 #include "backends/FormEditor.h"
 #include "backends/PdfEditor.h"
+#include "backends/StampLibrary.h"
 
 class FeatherDocument;
 class Viewport;
@@ -117,6 +118,8 @@ private:
     void addLink();                 // draw a rectangle, then make it a URL hyperlink
     void finishAddLink(int slot, const QRectF& normRect); // rect drawn → prompt URL → write
     void editLinks();               // list/edit/delete the document's hyperlinks
+    void addStamp();                // pick a stamp preset, then draw where it goes
+    void finishAddStamp(int slot, const QRectF& normRect); // rect drawn → write the stamp
     void setHighlightMode(bool on); // enter/leave the annotation-authoring mode
     void applyAnnotations();        // write highlight + note annotations, save, open result
     void setMeasureMode(bool on);   // enter/leave the click-to-measure mode
@@ -249,6 +252,10 @@ private:
     bool m_placingField = false;         // viewport is in field-placement mode
     QString m_movingField;               // non-empty: placing repositions this field
     bool m_placingLink = false;          // viewport drag is placing a new hyperlink
+    bool m_placingStamp = false;         // viewport drag is placing a new stamp
+    StampLibrary::Preset m_pendingStampPreset = StampLibrary::Preset::Approved;
+    QString m_pendingStampDate;          // resolved date add-on (empty = none)
+    QString m_pendingStampName;          // name add-on (empty = none)
     QUndoGroup* m_undoGroup = nullptr;
     QAction* m_zoomInAct = nullptr;
     QAction* m_zoomOutAct = nullptr;
