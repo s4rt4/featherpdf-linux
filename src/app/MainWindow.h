@@ -41,6 +41,7 @@ class CommandBar;
 class FindBar;
 class RedactionBar;
 class AnnotationBar;
+class MeasureBar;
 class NavigationRail;
 class ToolsPane;
 class FloatingPill;
@@ -118,6 +119,7 @@ private:
     void editLinks();               // list/edit/delete the document's hyperlinks
     void setHighlightMode(bool on); // enter/leave the annotation-authoring mode
     void applyAnnotations();        // write highlight + note annotations, save, open result
+    void setMeasureMode(bool on);   // enter/leave the click-to-measure mode
     void activateTool(const QString& id); // route a Tools entry (pane or menu) to its action
     void createPdf();         // make a PDF from images (native) or an office doc (LibreOffice)
     void exportDocument();    // export the PDF to an editable office doc (LibreOffice)
@@ -213,6 +215,7 @@ private:
     FindBar* m_findBar = nullptr;
     RedactionBar* m_redactionBar = nullptr;
     AnnotationBar* m_annotationBar = nullptr;
+    MeasureBar* m_measureBar = nullptr;
     int m_searchIndex = 0;
     NavigationRail* m_rail = nullptr;
     ToolsPane* m_toolsPane = nullptr;

@@ -60,5 +60,6 @@
   <file alias="arrow-up-right.svg">icons/arrow-up-right.svg</file>
   <file alias="type.svg">icons/type.svg</file>
   <file alias="info.svg">icons/info.svg</file>
+  <file alias="ruler.svg">icons/ruler.svg</file>
 </qresource>
 </RCC>

@@ -81,6 +81,14 @@ public:
     void setSnapshotMode(bool on);
     bool snapshotMode() const;
 
+    // Measure tools (forwarded to PageView): click points on a page; a live
+    // overlay reports the distance / perimeter / area in the chosen unit.
+    void setMeasureMode(bool on);
+    bool measureMode() const;
+    void setMeasureKind(PageView::MeasureKind kind);
+    void setMeasureUnit(Measurer::Unit unit);
+    void clearMeasure();
+
     // Annotation authoring (forwarded to PageView).
     void setHighlightMode(bool on);
     bool highlightMode() const;

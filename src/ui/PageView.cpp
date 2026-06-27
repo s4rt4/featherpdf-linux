@@ -269,6 +269,7 @@ void PageView::setRedactionMode(bool on) {
         m_highlightMode = false; // the drag modes are mutually exclusive
         m_fieldMode = false;
         m_snapshotMode = false;
+        m_measureMode = false;
     }
     m_dragging = false;
     m_dragSlot = -1;
@@ -284,6 +285,7 @@ void PageView::setHighlightMode(bool on) {
         m_redactMode = false;
         m_fieldMode = false;
         m_snapshotMode = false;
+        m_measureMode = false;
     }
     m_dragging = false;
     m_dragSlot = -1;
@@ -299,6 +301,7 @@ void PageView::setFieldPlacementMode(bool on) {
         m_redactMode = false;
         m_highlightMode = false;
         m_snapshotMode = false;
+        m_measureMode = false;
     }
     m_dragging = false;
     m_dragSlot = -1;
@@ -314,10 +317,68 @@ void PageView::setSnapshotMode(bool on) {
         m_redactMode = false;
         m_highlightMode = false;
         m_fieldMode = false;
+        m_measureMode = false;
     }
     m_dragging = false;
     m_dragSlot = -1;
     viewport()->setCursor(dragModeActive() ? Qt::CrossCursor : Qt::ArrowCursor);
+    viewport()->update();
+}
+
+void PageView::setMeasureMode(bool on) {
+    if (m_measureMode == on)
+        return;
+    m_measureMode = on;
+    if (on) {
+        m_redactMode = false; // measuring is mutually exclusive with the drag modes
+        m_highlightMode = false;
+        m_fieldMode = false;
+        m_snapshotMode = false;
+    }
+    m_measurePoints.clear();
+    m_measureSlot = -1;
+    m_measureDone = false;
+    m_dragging = false;
+    m_dragSlot = -1;
+    viewport()->setCursor((m_measureMode || dragModeActive()) ? Qt::CrossCursor : Qt::ArrowCursor);
+    viewport()->update();
+}
+
+void PageView::setMeasureKind(MeasureKind kind) {
+    if (m_measureKind == kind)
+        return;
+    m_measureKind = kind;
+    // Switching the kind starts a fresh measurement (point counts differ).
+    m_measurePoints.clear();
+    m_measureSlot = -1;
+    m_measureDone = false;
+    viewport()->update();
+}
+
+void PageView::setMeasureUnit(Measurer::Unit unit) {
+    m_measureUnit = unit;
+    viewport()->update(); // only the label changes; the points stand
+}
+
+void PageView::clearMeasure() {
+    m_measurePoints.clear();
+    m_measureSlot = -1;
+    m_measureDone = false;
+    viewport()->update();
+}
+
+QSizeF PageView::displayedPointSize(int slot) const {
+    const int r = rotationOf(slot);
+    const QSizeF& s = sizeOf(slot);
+    return (r == 90 || r == 270) ? QSizeF(s.height(), s.width()) : s;
+}
+
+void PageView::finishMeasure() {
+    if (m_measurePoints.isEmpty() || m_measureDone)
+        return;
+    const int needed = (m_measureKind == MeasureKind::Distance) ? 2 : 3;
+    if (m_measurePoints.size() >= needed)
+        m_measureDone = true;
     viewport()->update();
 }
 
@@ -426,7 +487,11 @@ void PageView::clearAnnotations() {
 }
 
 bool PageView::eventFilter(QObject* obj, QEvent* event) {
-    if (obj != viewport() || !dragModeActive())
+    if (obj != viewport())
+        return QAbstractScrollArea::eventFilter(obj, event);
+    if (m_measureMode)
+        return handleMeasureEvent(event);
+    if (!dragModeActive())
         return QAbstractScrollArea::eventFilter(obj, event);
 
     const bool inkTool = m_highlightMode && m_annotTool == AnnotTool::Ink;
@@ -584,6 +649,61 @@ bool PageView::deleteMarkAt(int slot, const QPointF& norm) {
         }
     }
     return false;
+}
+
+bool PageView::handleMeasureEvent(QEvent* event) {
+    switch (event->type()) {
+    case QEvent::MouseButtonPress: {
+        auto* me = static_cast<QMouseEvent*>(event);
+        if (me->button() != Qt::LeftButton)
+            break;
+        // A click after a finished measurement starts a fresh one.
+        if (m_measureDone) {
+            m_measurePoints.clear();
+            m_measureSlot = -1;
+            m_measureDone = false;
+        }
+        // Measuring is constrained to a single page: find the one under the cursor.
+        int slot = -1;
+        for (int s = 0; s < pageCount(); ++s)
+            if (pageRect(s).contains(me->pos())) {
+                slot = s;
+                break;
+            }
+        if (slot < 0)
+            break;
+        if (m_measurePoints.isEmpty())
+            m_measureSlot = slot;
+        else if (slot != m_measureSlot)
+            break; // ignore clicks on another page mid-measurement
+        const QPointF n = normInSlot(slot, me->pos());
+        m_measurePoints.append(n);
+        m_measureCursor = n;
+        if (m_measureKind == MeasureKind::Distance && m_measurePoints.size() >= 2)
+            m_measureDone = true;
+        viewport()->update();
+        return true;
+    }
+    case QEvent::MouseMove: {
+        if (m_measurePoints.isEmpty() || m_measureDone)
+            break;
+        auto* me = static_cast<QMouseEvent*>(event);
+        m_measureCursor = normInSlot(m_measureSlot, me->pos());
+        viewport()->update();
+        return true;
+    }
+    case QEvent::MouseButtonDblClick: {
+        // Double-click finishes a polygon (the preceding press added its last vertex).
+        if (m_measureKind != MeasureKind::Distance) {
+            finishMeasure();
+            return true;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return QAbstractScrollArea::eventFilter(viewport(), event);
 }
 
 void PageView::updateCurrentPage() {
@@ -817,6 +937,86 @@ void PageView::paintEvent(QPaintEvent*) {
             drawMark(m_dragNorm, dragFill, true);
         }
 
+        // Measure overlay: live segments, vertex dots, and the running value, on
+        // the page that owns the current measurement.
+        if (m_measureMode && slot == m_measureSlot && !m_measurePoints.isEmpty()) {
+            const QColor accent = pal.accent;
+            const auto toVp = [&](const QPointF& n) {
+                return QPointF(r.x() + n.x() * r.width(), r.y() + n.y() * r.height());
+            };
+            // The committed vertices, and the set used for live values/preview.
+            QVector<QPointF> vp;
+            vp.reserve(m_measurePoints.size());
+            for (const QPointF& n : m_measurePoints)
+                vp.append(toVp(n));
+            QVector<QPointF> live = m_measurePoints;
+            if (!m_measureDone)
+                live.append(m_measureCursor);
+
+            // Translucent fill for an in-progress / finished area polygon.
+            if (m_measureKind == MeasureKind::Area && live.size() >= 3) {
+                QPolygonF poly;
+                for (const QPointF& n : live)
+                    poly << toVp(n);
+                QColor fill = accent;
+                fill.setAlpha(40);
+                p.setPen(Qt::NoPen);
+                p.setBrush(fill);
+                p.drawPolygon(poly);
+            }
+
+            // Committed segments (solid).
+            p.setBrush(Qt::NoBrush);
+            p.setPen(QPen(accent, 1.8));
+            for (int i = 1; i < vp.size(); ++i)
+                p.drawLine(vp[i - 1], vp[i]);
+            if (m_measureKind == MeasureKind::Area && m_measureDone && vp.size() >= 3)
+                p.drawLine(vp.last(), vp.first());
+
+            // Live rubber segment(s) to the cursor while still placing points.
+            if (!m_measureDone) {
+                const QPointF cur = toVp(m_measureCursor);
+                p.setPen(QPen(accent, 1.4, Qt::DashLine));
+                p.drawLine(vp.last(), cur);
+                if (m_measureKind == MeasureKind::Area && vp.size() >= 2)
+                    p.drawLine(cur, vp.first()); // preview the closing edge
+            }
+
+            // Vertex dots.
+            p.setPen(Qt::NoPen);
+            p.setBrush(accent);
+            for (const QPointF& q : vp)
+                p.drawEllipse(q, 3.0, 3.0);
+
+            // The running value, in the chosen unit.
+            const QSizeF pagePts = displayedPointSize(slot);
+            const QVector<QPointF>& valSet = m_measureDone ? m_measurePoints : live;
+            QString label;
+            if (m_measureKind == MeasureKind::Distance)
+                label = Measurer::formatLength(Measurer::distance(valSet, pagePts, m_measureUnit),
+                                               m_measureUnit);
+            else if (m_measureKind == MeasureKind::Perimeter)
+                label = Measurer::formatLength(
+                    Measurer::perimeter(valSet, pagePts, m_measureUnit, m_measureDone),
+                    m_measureUnit);
+            else
+                label = Measurer::formatArea(Measurer::area(valSet, pagePts, m_measureUnit),
+                                             m_measureUnit);
+
+            const QPointF anchor = m_measureDone ? vp.last() : toVp(m_measureCursor);
+            QFont f = p.font();
+            f.setPointSizeF(9);
+            p.setFont(f);
+            const QFontMetrics fm(f);
+            QRectF chip(anchor.x() + 10, anchor.y() - fm.height() - 8,
+                        fm.horizontalAdvance(label) + 14, fm.height() + 6);
+            p.setPen(Qt::NoPen);
+            p.setBrush(QColor(0, 0, 0, 180));
+            p.drawRoundedRect(chip, 4, 4);
+            p.setPen(QColor(255, 255, 255));
+            p.drawText(chip, Qt::AlignCenter, label);
+        }
+
         p.setBrush(Qt::NoBrush);
         p.setPen(pal.hairline);
         p.drawRect(r);
@@ -901,6 +1101,18 @@ void PageView::wheelEvent(QWheelEvent* event) {
 }
 
 void PageView::keyPressEvent(QKeyEvent* event) {
+    // While measuring, Esc finishes the current polygon (or abandons a partial one).
+    if (m_measureMode && event->key() == Qt::Key_Escape) {
+        if (m_measureDone || m_measurePoints.isEmpty()) {
+            clearMeasure();
+        } else {
+            finishMeasure();
+            if (!m_measureDone)
+                clearMeasure();
+        }
+        return;
+    }
+
     if (event->key() == Qt::Key_D && (event->modifiers() & Qt::ControlModifier) &&
         (event->modifiers() & Qt::ShiftModifier)) {
         setHudVisible(!m_hud);

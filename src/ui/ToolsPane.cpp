@@ -184,6 +184,7 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
         {"organize", QT_TR_NOOP("Organize"), "organize", true},
         {"redact", QT_TR_NOOP("Redact"), "redact", false},
         {"snapshot", QT_TR_NOOP("Snapshot"), "crop", false},
+        {"measure", QT_TR_NOOP("Measure"), "ruler", false},
         {"sign", QT_TR_NOOP("Sign"), "sign", false},
     };
     for (const Def& d : defs) {

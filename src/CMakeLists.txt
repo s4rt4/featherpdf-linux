@@ -48,6 +48,8 @@ qt_add_executable(feather-pdf
     backends/LinkEditor.h
     backends/TextComparer.cpp
     backends/TextComparer.h
+    backends/Measurer.cpp
+    backends/Measurer.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -124,6 +126,8 @@ qt_add_executable(feather-pdf
     ui/RedactionBar.h
     ui/AnnotationBar.cpp
     ui/AnnotationBar.h
+    ui/MeasureBar.cpp
+    ui/MeasureBar.h
     ui/NoteDialog.cpp
     ui/NoteDialog.h
     ui/PrintDialog.cpp

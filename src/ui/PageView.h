@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "backends/Measurer.h"
+
 #include <QAbstractScrollArea>
 #include <QColor>
 #include <QHash>
@@ -23,6 +25,7 @@
 #include <QPolygonF>
 #include <QSet>
 #include <QSizeF>
+#include <QVector>
 
 class QPdfDocument;
 class QPdfPageRenderer;
@@ -139,6 +142,17 @@ public:
     void setSnapshotMode(bool on);
     bool snapshotMode() const { return m_snapshotMode; }
 
+    // Measure: a click-based tool that enters a mode where the user drops points
+    // on a single page and a live overlay shows the running distance / perimeter /
+    // area in real-world units (converted from the page's PDF point size). The
+    // points are normalized to the displayed page; nothing is written to the PDF.
+    enum class MeasureKind { Distance, Perimeter, Area };
+    void setMeasureMode(bool on);
+    bool measureMode() const { return m_measureMode; }
+    void setMeasureKind(MeasureKind kind);
+    void setMeasureUnit(Measurer::Unit unit);
+    void clearMeasure();
+
 signals:
     void currentPageChanged(int page);
     void zoomChanged(double zoom);
@@ -240,10 +254,22 @@ private:
     bool dragModeActive() const {
         return m_redactMode || m_highlightMode || m_fieldMode || m_snapshotMode;
     }
+    // Effective displayed page size in PDF points (width/height swapped for
+    // 90°/270° rotation) - the scale the measure overlay converts against.
+    QSizeF displayedPointSize(int slot) const;
+    bool handleMeasureEvent(QEvent* event); // click-based input while measuring
+    void finishMeasure();                   // end the current polygon (perimeter/area)
     bool m_redactMode = false;
     bool m_highlightMode = false;
     bool m_fieldMode = false;
     bool m_snapshotMode = false;
+    bool m_measureMode = false;
+    MeasureKind m_measureKind = MeasureKind::Distance;
+    Measurer::Unit m_measureUnit = Measurer::Unit::Millimeter;
+    QVector<QPointF> m_measurePoints; // normalized vertices on m_measureSlot
+    int m_measureSlot = -1;           // the page the current measurement lives on
+    QPointF m_measureCursor;          // normalized live cursor (for the rubber segment)
+    bool m_measureDone = false;       // the current measurement is complete
     QHash<int, QList<QRectF>> m_redactions;             // slot → normalized rects
     QHash<int, QList<QPair<QRectF, QColor>>> m_highlights; // slot → [(rect, colour)]
     QHash<int, QList<QPair<QPointF, QString>>> m_notes; // slot → [(pos, text)]

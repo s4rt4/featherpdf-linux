@@ -73,6 +73,7 @@
 #include "ui/PasswordDialog.h"
 #include "ui/PrintDialog.h"
 #include "ui/ProtectDialog.h"
+#include "ui/MeasureBar.h"
 #include "ui/RedactionBar.h"
 #include "ui/SignDialog.h"
 #include "ui/SignaturesDialog.h"
@@ -372,7 +373,7 @@ void MainWindow::buildMenus() {
         {"forms", tr("Forms"), true},
         {"combine", tr("Combine…"), false},    {"split", tr("Split…"), true},
         {"comment", tr("Comment"), false},     {"redact", tr("Redact"), false},
-        {"snapshot", tr("Snapshot"), false},
+        {"snapshot", tr("Snapshot"), false},   {"measure", tr("Measure"), false},
         {"watermark", tr("Watermark…"), false}, {"bates", tr("Bates Numbering…"), false},
         {"organize", tr("Organize"), true},    {"compare", tr("Compare…"), false},
         {"optimize", tr("Optimize…"), false},  {"cmyk", tr("RGB to CMYK…"), false},
@@ -410,11 +411,14 @@ void MainWindow::buildShell() {
     m_redactionBar->hide();
     m_annotationBar = new AnnotationBar(shell);
     m_annotationBar->hide();
+    m_measureBar = new MeasureBar(shell);
+    m_measureBar->hide();
     outer->addWidget(m_tabStrip);
     outer->addWidget(m_commandBar);
     outer->addWidget(m_findBar);
     outer->addWidget(m_redactionBar);
     outer->addWidget(m_annotationBar);
+    outer->addWidget(m_measureBar);
 
     auto* body = new QWidget(shell);
     auto* bodyRow = new QHBoxLayout(body);
@@ -476,6 +480,8 @@ void MainWindow::showHome() {
         setRedactionMode(false);
     if (m_viewport->highlightMode())
         setHighlightMode(false);
+    if (m_viewport->measureMode())
+        setMeasureMode(false);
     if (m_immersive)
         m_immersiveAct->setChecked(false); // leave immersive before showing Home
     m_home->refresh();
@@ -801,6 +807,18 @@ void MainWindow::wireSignals() {
     });
     connect(m_annotationBar, &AnnotationBar::colorChanged, this,
             [this](const QColor& c) { m_viewport->setHighlightColor(c); });
+
+    // Measure bar ↔ viewport: pick the mode/unit; the page view draws the overlay.
+    connect(m_measureBar, &MeasureBar::modeChanged, this, [this](int mode) {
+        using K = PageView::MeasureKind;
+        m_viewport->setMeasureKind(mode == 1 ? K::Perimeter : mode == 2 ? K::Area : K::Distance);
+    });
+    connect(m_measureBar, &MeasureBar::unitChanged, this, [this](int unit) {
+        using U = Measurer::Unit;
+        m_viewport->setMeasureUnit(unit == 1 ? U::Centimeter : unit == 2 ? U::Inch : U::Millimeter);
+    });
+    connect(m_measureBar, &MeasureBar::clearRequested, m_viewport, &Viewport::clearMeasure);
+    connect(m_measureBar, &MeasureBar::doneRequested, this, [this] { setMeasureMode(false); });
     // Note tool clicked → collect text, then add the note at that point.
     connect(m_viewport, &Viewport::noteRequested, this, [this](int slot, QPointF pos) {
         NoteDialog dialog(this);
@@ -1097,6 +1115,7 @@ void MainWindow::addFormField() {
 
     setRedactionMode(false); // the edit modes are mutually exclusive
     setHighlightMode(false);
+    setMeasureMode(false);
     m_viewport->setFieldPlacementMode(true);
     m_toast->show(isRadio ? tr("Draw where the first button goes.")
                           : tr("Draw where the field goes."));
@@ -1109,6 +1128,7 @@ void MainWindow::moveFormField(const QString& name) {
     m_placingField = true;
     setRedactionMode(false);
     setHighlightMode(false);
+    setMeasureMode(false);
     m_viewport->setFieldPlacementMode(true);
     m_toast->show(tr("Draw the new position for “%1”.").arg(name));
 }
@@ -1382,8 +1402,10 @@ bool MainWindow::saveActiveAs() {
 void MainWindow::setRedactionMode(bool on) {
     if (on && !hasActiveDoc())
         return;
-    if (on)
-        setHighlightMode(false); // the two edit modes are mutually exclusive
+    if (on) {
+        setHighlightMode(false); // the edit modes are mutually exclusive
+        setMeasureMode(false);
+    }
     m_viewport->setRedactionMode(on);
     m_redactionBar->setVisible(on);
     if (on) {
@@ -1397,8 +1419,10 @@ void MainWindow::setRedactionMode(bool on) {
 void MainWindow::setHighlightMode(bool on) {
     if (on && !hasActiveDoc())
         return;
-    if (on)
+    if (on) {
         setRedactionMode(false);
+        setMeasureMode(false);
+    }
     m_viewport->setHighlightMode(on);
     m_annotationBar->setVisible(on);
     if (on) {
@@ -1408,6 +1432,21 @@ void MainWindow::setHighlightMode(bool on) {
     } else {
         m_viewport->clearAnnotations();
     }
+}
+
+void MainWindow::setMeasureMode(bool on) {
+    if (on && !hasActiveDoc())
+        return;
+    if (on) {
+        setRedactionMode(false); // the edit/measure modes are mutually exclusive
+        setHighlightMode(false);
+    }
+    m_viewport->setMeasureMode(on);
+    m_measureBar->setVisible(on);
+    if (on)
+        m_findBar->hide();
+    else
+        m_viewport->clearMeasure(); // leaving the mode discards the measurement
 }
 
 void MainWindow::applyAnnotations() {
@@ -1711,6 +1750,7 @@ void MainWindow::addLink() {
     m_placingLink = true;
     setRedactionMode(false); // the drag modes are mutually exclusive
     setHighlightMode(false);
+    setMeasureMode(false);
     m_viewport->setFieldPlacementMode(true);
     m_toast->show(tr("Draw the area the link should cover."));
 }
@@ -1815,6 +1855,9 @@ void MainWindow::activateTool(const QString& id) {
             setHighlightMode(!m_viewport->highlightMode());
     } else if (id == QLatin1String("snapshot")) {
         startSnapshot();
+    } else if (id == QLatin1String("measure")) {
+        if (hasActiveDoc())
+            setMeasureMode(!m_viewport->measureMode());
     } else if (id == QLatin1String("sign")) {
         signDocument();
     } else if (id == QLatin1String("edit")) {
@@ -1996,6 +2039,7 @@ void MainWindow::startSnapshot() {
         return;
     setRedactionMode(false); // the drag modes are mutually exclusive
     setHighlightMode(false);
+    setMeasureMode(false);
     m_viewport->setSnapshotMode(true);
     m_toast->show(tr("Drag to select a region to copy as an image."));
 }

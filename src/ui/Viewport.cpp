@@ -62,6 +62,11 @@ void Viewport::setFieldPlacementMode(bool on) { m_view->setFieldPlacementMode(on
 bool Viewport::fieldPlacementMode() const { return m_view->fieldPlacementMode(); }
 void Viewport::setSnapshotMode(bool on) { m_view->setSnapshotMode(on); }
 bool Viewport::snapshotMode() const { return m_view->snapshotMode(); }
+void Viewport::setMeasureMode(bool on) { m_view->setMeasureMode(on); }
+bool Viewport::measureMode() const { return m_view->measureMode(); }
+void Viewport::setMeasureKind(PageView::MeasureKind kind) { m_view->setMeasureKind(kind); }
+void Viewport::setMeasureUnit(Measurer::Unit unit) { m_view->setMeasureUnit(unit); }
+void Viewport::clearMeasure() { m_view->clearMeasure(); }
 QHash<int, QList<QRectF>> Viewport::redactionMarks() const { return m_view->redactionMarks(); }
 void Viewport::addRedactions(const QHash<int, QList<QRectF>>& marks) {
     m_view->addRedactions(marks);
