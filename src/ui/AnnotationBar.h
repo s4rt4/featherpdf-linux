@@ -17,6 +17,7 @@
 #pragma once
 
 #include <QColor>
+#include <QStringList>
 #include <QVector>
 #include <QWidget>
 
@@ -43,17 +44,12 @@ signals:
 
 private:
     void selectSwatch(int index);
+    void applyToolIcons(); // re-tint tool icons (checked = accent, rest = text)
 
     QLabel* m_label = nullptr;
-    QPushButton* m_highlightTool = nullptr;
-    QPushButton* m_noteTool = nullptr;
-    QPushButton* m_inkTool = nullptr;
-    QPushButton* m_underlineTool = nullptr;
-    QPushButton* m_strikeTool = nullptr;
-    QPushButton* m_rectTool = nullptr;
-    QPushButton* m_lineTool = nullptr;
-    QPushButton* m_arrowTool = nullptr;
-    QPushButton* m_textTool = nullptr;
+    QPushButton* m_info = nullptr; // "i" button; its tooltip carries the usage hint
+    QVector<QPushButton*> m_tools; // the 9 tool buttons, in toolChanged() index order
+    QStringList m_toolIcons;       // symbolic icon name per tool (parallel to m_tools)
     QPushButton* m_save = nullptr;
     QPushButton* m_clear = nullptr;
     QVector<QPushButton*> m_swatches;

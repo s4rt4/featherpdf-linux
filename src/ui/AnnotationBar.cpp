@@ -21,30 +21,39 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QToolTip>
 
 AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     setObjectName(QStringLiteral("AnnotationBar"));
 
     auto* row = new QHBoxLayout(this);
-    row->setContentsMargins(14, 7, 12, 7);
-    row->setSpacing(10);
+    row->setContentsMargins(10, 6, 10, 6);
+    row->setSpacing(6);
 
-    m_highlightTool = new QPushButton(tr("Highlight"), this);
-    m_noteTool = new QPushButton(tr("Note"), this);
-    m_inkTool = new QPushButton(tr("Draw"), this);
-    m_underlineTool = new QPushButton(tr("Underline"), this);
-    m_strikeTool = new QPushButton(tr("Strikeout"), this);
-    m_rectTool = new QPushButton(tr("Rectangle"), this);
-    m_lineTool = new QPushButton(tr("Line"), this);
-    m_arrowTool = new QPushButton(tr("Arrow"), this);
-    m_textTool = new QPushButton(tr("Text"), this);
-    for (QPushButton* b : {m_highlightTool, m_noteTool, m_inkTool, m_underlineTool, m_strikeTool,
-                           m_rectTool, m_lineTool, m_arrowTool, m_textTool}) {
-        b->setObjectName(QStringLiteral("GhostBtn"));
+    // Icon-only tool buttons (the bar is cramped); the tooltip names each tool.
+    // Order here defines the toolChanged() index emitted to the page view.
+    const struct {
+        const char* name;
+        const char* icon;
+    } toolDefs[] = {
+        {QT_TR_NOOP("Highlight"), "highlighter"}, {QT_TR_NOOP("Note"), "sticky-note"},
+        {QT_TR_NOOP("Draw"), "pencil"},           {QT_TR_NOOP("Underline"), "underline"},
+        {QT_TR_NOOP("Strikeout"), "strikethrough"}, {QT_TR_NOOP("Rectangle"), "square"},
+        {QT_TR_NOOP("Line"), "line"},             {QT_TR_NOOP("Arrow"), "arrow-up-right"},
+        {QT_TR_NOOP("Text"), "type"}};
+    for (const auto& d : toolDefs) {
+        auto* b = new QPushButton(this);
+        b->setObjectName(QStringLiteral("AnnotTool")); // own style; no #GhostBtn min-width
         b->setCheckable(true);
         b->setCursor(Qt::PointingHandCursor);
+        b->setToolTip(tr(d.name));
+        b->setAccessibleName(tr(d.name));
+        b->setFixedSize(34, 34);
+        b->setIconSize(QSize(18, 18));
+        m_tools.append(b);
+        m_toolIcons << QLatin1String(d.icon);
     }
-    m_highlightTool->setChecked(true);
+    m_tools.first()->setChecked(true);
 
     // Highlight colour swatches.
     m_colors = {QColor(255, 214, 0), QColor(120, 220, 90), QColor(255, 140, 190),
@@ -60,11 +69,28 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
         m_swatches.append(sw);
     }
 
+    // Usage hint folded into a hoverable "i" button so it never crowds the bar.
+    m_info = new QPushButton(this);
+    m_info->setObjectName(QStringLiteral("AnnotTool"));
+    m_info->setCursor(Qt::WhatsThisCursor);
+    m_info->setFixedSize(34, 34);
+    m_info->setIconSize(QSize(18, 18));
+    m_info->setFocusPolicy(Qt::NoFocus);
+    const QString hint =
+        tr("Pick a tool and draw. Right-click a mark to remove it, then Save to write them in.");
+    m_info->setToolTip(hint);
+    m_info->setAccessibleName(hint);
+    // Hover shows the tooltip; clicking pins it too (for touch / discoverability).
+    connect(m_info, &QPushButton::clicked, this, [this, hint] {
+        QToolTip::showText(m_info->mapToGlobal(QPoint(0, m_info->height())), hint, m_info);
+    });
+
     m_label = new QLabel(this);
     m_label->setObjectName(QStringLiteral("AnnotLabel"));
 
-    m_save = new QPushButton(tr("Save Annotations"), this);
+    m_save = new QPushButton(tr("Save"), this);
     m_save->setObjectName(QStringLiteral("Share")); // accent-filled primary
+    m_save->setToolTip(tr("Save annotations into the PDF"));
     m_save->setCursor(Qt::PointingHandCursor);
 
     m_clear = new QPushButton(tr("Clear"), this);
@@ -75,19 +101,13 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     done->setObjectName(QStringLiteral("GhostBtn"));
     done->setCursor(Qt::PointingHandCursor);
 
-    row->addWidget(m_highlightTool);
-    row->addWidget(m_noteTool);
-    row->addWidget(m_inkTool);
-    row->addWidget(m_underlineTool);
-    row->addWidget(m_strikeTool);
-    row->addWidget(m_rectTool);
-    row->addWidget(m_lineTool);
-    row->addWidget(m_arrowTool);
-    row->addWidget(m_textTool);
+    for (QPushButton* b : m_tools)
+        row->addWidget(b);
     row->addSpacing(8);
     for (QPushButton* sw : m_swatches)
         row->addWidget(sw);
     row->addSpacing(6);
+    row->addWidget(m_info);
     row->addWidget(m_label);
     row->addStretch(1);
     row->addWidget(m_clear);
@@ -97,13 +117,11 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
     connect(m_save, &QPushButton::clicked, this, &AnnotationBar::saveRequested);
     connect(m_clear, &QPushButton::clicked, this, &AnnotationBar::clearRequested);
     connect(done, &QPushButton::clicked, this, &AnnotationBar::doneRequested);
-    const QVector<QPushButton*> tools{m_highlightTool, m_noteTool,   m_inkTool,
-                                      m_underlineTool, m_strikeTool, m_rectTool,
-                                      m_lineTool,      m_arrowTool,  m_textTool};
-    for (int i = 0; i < tools.size(); ++i)
-        connect(tools[i], &QPushButton::clicked, this, [this, tools, i] {
-            for (int j = 0; j < tools.size(); ++j)
-                tools[j]->setChecked(j == i);
+    for (int i = 0; i < m_tools.size(); ++i)
+        connect(m_tools[i], &QPushButton::clicked, this, [this, i] {
+            for (int j = 0; j < m_tools.size(); ++j)
+                m_tools[j]->setChecked(j == i);
+            applyToolIcons();
             emit toolChanged(i);
         });
 
@@ -126,16 +144,29 @@ AnnotationBar::AnnotationBar(QWidget* parent) : QWidget(parent) {
         setStyleSheet(
             QStringLiteral("#AnnotationBar { background:%1; border-bottom:1px solid %2; }"
                            "#AnnotLabel { color:%3; }"
-                           "#AnnotationBar QPushButton#GhostBtn:checked { background:%4;"
-                           " border:1px solid %5; color:%5; }")
+                           "#AnnotationBar QPushButton#AnnotTool { background:transparent;"
+                           " border:1px solid %2; border-radius:8px; padding:0; }"
+                           "#AnnotationBar QPushButton#AnnotTool:hover { background:%4; }"
+                           "#AnnotationBar QPushButton#AnnotTool:checked { background:%4;"
+                           " border:1px solid %5; }")
                 .arg(css(p.surface), css(p.hairline), css(p.text), css(p.accentTint),
                      css(p.accent)));
+        m_info->setIcon(Theme::instance().icon(QStringLiteral("info"), p.text));
+        applyToolIcons();
     };
     applyTheme();
     connect(&Theme::instance(), &Theme::changed, this, applyTheme);
 
     selectSwatch(0); // default to the first colour
     setCount(0);
+}
+
+void AnnotationBar::applyToolIcons() {
+    const Theme::Palette& p = Theme::instance().palette();
+    for (int i = 0; i < m_tools.size(); ++i) {
+        const QColor c = m_tools[i]->isChecked() ? p.accent : p.text;
+        m_tools[i]->setIcon(Theme::instance().icon(m_toolIcons[i], c));
+    }
 }
 
 void AnnotationBar::selectSwatch(int index) {
@@ -146,10 +177,7 @@ void AnnotationBar::selectSwatch(int index) {
 }
 
 void AnnotationBar::setCount(int count) {
-    m_label->setText(
-        count == 0
-            ? tr("Pick a tool and draw. Right-click a mark to remove it.")
-            : tr("%n annotation(s) · right-click to remove · Save to write them in.", "", count));
+    m_label->setText(count == 0 ? QString() : tr("%n annotation(s)", "", count));
     m_save->setEnabled(count > 0);
     m_clear->setEnabled(count > 0);
 }

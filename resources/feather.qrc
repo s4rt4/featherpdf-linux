@@ -49,5 +49,15 @@
   <file alias="file.svg">icons/file.svg</file>
   <file alias="feather-logo.svg">icons/feather-logo.svg</file>
   <file alias="wrench.svg">icons/wrench.svg</file>
+  <file alias="highlighter.svg">icons/highlighter.svg</file>
+  <file alias="sticky-note.svg">icons/sticky-note.svg</file>
+  <file alias="pencil.svg">icons/pencil.svg</file>
+  <file alias="underline.svg">icons/underline.svg</file>
+  <file alias="strikethrough.svg">icons/strikethrough.svg</file>
+  <file alias="square.svg">icons/square.svg</file>
+  <file alias="line.svg">icons/line.svg</file>
+  <file alias="arrow-up-right.svg">icons/arrow-up-right.svg</file>
+  <file alias="type.svg">icons/type.svg</file>
+  <file alias="info.svg">icons/info.svg</file>
 </qresource>
 </RCC>

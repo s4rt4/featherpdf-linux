@@ -4,82 +4,87 @@
 <context>
     <name>AnnotationBar</name>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="32"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="39"/>
         <source>Highlight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="33"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="39"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="34"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="40"/>
         <source>Draw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="35"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="40"/>
         <source>Underline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="36"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="41"/>
         <source>Strikeout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="37"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="41"/>
         <source>Rectangle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="38"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="42"/>
         <source>Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="39"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="42"/>
         <source>Arrow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="40"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="43"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="58"/>
+        <location filename="../src/ui/AnnotationBar.cpp" line="67"/>
         <source>Highlight colour</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="66"/>
-        <source>Save Annotations</source>
+        <location filename="../src/ui/AnnotationBar.cpp" line="80"/>
+        <source>Pick a tool and draw. Right-click a mark to remove it, then Save to write them in.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="70"/>
-        <source>Clear</source>
+        <location filename="../src/ui/AnnotationBar.cpp" line="91"/>
+        <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="74"/>
-        <source>Done</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/ui/AnnotationBar.cpp" line="151"/>
-        <source>Pick a tool and draw. Right-click a mark to remove it.</source>
+        <location filename="../src/ui/AnnotationBar.cpp" line="93"/>
+        <source>Save annotations into the PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ui/AnnotationBar.cpp" line="152"/>
-        <source>%n annotation(s) · right-click to remove · Save to write them in.</source>
+        <location filename="../src/ui/AnnotationBar.cpp" line="180"/>
+        <source>%n annotation(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AnnotationBar.cpp" line="96"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AnnotationBar.cpp" line="100"/>
+        <source>Done</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
