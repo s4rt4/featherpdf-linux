@@ -165,6 +165,17 @@ target_link_libraries(feather-pdf PRIVATE
     PkgConfig::POPPLER_QT6
 )
 
+# Localization. lrelease compiles the .ts into .qm and qt_add_translations embeds
+# them as resources under :/i18n; the `update_translations` target re-runs lupdate.
+# English is the source language, so feather_en.ts is an identity (empty) catalog.
+qt_add_translations(feather-pdf
+    TS_FILES
+        ${CMAKE_SOURCE_DIR}/translations/feather_id.ts
+        ${CMAKE_SOURCE_DIR}/translations/feather_en.ts
+    RESOURCE_PREFIX "/i18n"
+    LUPDATE_OPTIONS -no-obsolete
+)
+
 install(TARGETS feather-pdf RUNTIME DESTINATION bin)
 
 # Desktop integration - the .desktop file (app-id io.github.s4rt4.FeatherPDF) and

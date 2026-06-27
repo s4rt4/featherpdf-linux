@@ -1262,6 +1262,15 @@ void MainWindow::showPreferences() {
     settings.setValue(QStringLiteral("view/defaultZoom"), dialog.zoom());
     if (hasActiveDoc())
         applyViewDefaults(); // reflect the new default on the current document too
+
+    // Language is read at startup (tr() runs as widgets are built), so a change
+    // needs a restart - persist it and let the user know.
+    const QString oldLang =
+        settings.value(QStringLiteral("app/language"), QStringLiteral("system")).toString();
+    if (dialog.language() != oldLang) {
+        settings.setValue(QStringLiteral("app/language"), dialog.language());
+        m_toast->show(tr("Restart Feather PDF to apply the new language."));
+    }
 }
 
 void MainWindow::applyViewDefaults() {

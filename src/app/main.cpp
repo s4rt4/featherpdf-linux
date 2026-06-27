@@ -20,7 +20,11 @@
 
 #include <QApplication>
 #include <QIcon>
+#include <QLibraryInfo>
+#include <QLocale>
+#include <QSettings>
 #include <QTimer>
+#include <QTranslator>
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
@@ -31,6 +35,22 @@ int main(int argc, char** argv) {
     // Lets the GNOME shell / Wayland associate the window with its .desktop file.
     QGuiApplication::setDesktopFileName(QStringLiteral(FEATHERPDF_APP_ID));
     QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/feather-logo.svg")));
+
+    // Language: "system" follows the OS locale, otherwise an explicit "id"/"en"
+    // (set in Preferences). Install our catalog plus Qt's own strings (standard
+    // dialog buttons) so the whole UI switches. Must be installed before any
+    // widget is built so its tr() calls pick up the translation.
+    const QString lang =
+        QSettings().value(QStringLiteral("app/language"), QStringLiteral("system")).toString();
+    const QLocale locale = lang == QLatin1String("system") ? QLocale::system() : QLocale(lang);
+    QTranslator appTranslator;
+    if (appTranslator.load(locale, QStringLiteral("feather"), QStringLiteral("_"),
+                           QStringLiteral(":/i18n")))
+        app.installTranslator(&appTranslator);
+    QTranslator qtTranslator;
+    if (qtTranslator.load(locale, QStringLiteral("qtbase"), QStringLiteral("_"),
+                          QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+        app.installTranslator(&qtTranslator);
 
     // The design system: tokens + global style sheet, following the system
     // light/dark preference (ui-guidelines §2).

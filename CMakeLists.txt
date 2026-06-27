@@ -23,7 +23,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # M0 needs: Core/Gui/Widgets (shell), Pdf/PdfWidgets (PDFium rendering),
 # Svg (symbolic icons), Concurrent (off-UI-thread work). Poppler/QPDF are added
 # when their modules land.
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Pdf PdfWidgets Svg PrintSupport Concurrent)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Pdf PdfWidgets Svg PrintSupport Concurrent LinguistTools)
 
 # Tests are built by default; turn off with -DBUILD_TESTING=OFF.
 option(BUILD_TESTING "Build the test suite" ON)

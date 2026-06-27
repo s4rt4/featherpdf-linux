@@ -32,11 +32,13 @@ public:
     PreferencesDialog(QWidget* parent = nullptr);
 
     Theme theme() const;
-    QString layout() const; // "single" | "continuous" | "twoup"
-    QString zoom() const;   // "fitwidth" | "fitpage" | "actual"
+    QString layout() const;   // "single" | "continuous" | "twoup"
+    QString zoom() const;     // "fitwidth" | "fitpage" | "actual"
+    QString language() const; // "system" | "en" | "id"
 
 private:
     QButtonGroup* m_theme = nullptr;
     QButtonGroup* m_layout = nullptr;
     QButtonGroup* m_zoom = nullptr;
+    QButtonGroup* m_language = nullptr;
 };

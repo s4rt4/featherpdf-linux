@@ -84,6 +84,21 @@ PreferencesDialog::PreferencesDialog(QWidget* parent) : QDialog(parent) {
                                              layout != QLatin1String("twoup"));
     radio(m_layout, 2, tr("Two pages"), layout == QLatin1String("twoup"));
 
+    // ── Language ──
+    heading(tr("Language"));
+    m_language = new QButtonGroup(this);
+    const QString language = settings.value(QStringLiteral("app/language"),
+                                            QStringLiteral("system")).toString();
+    radio(m_language, 0, tr("Follow the system language"),
+          language != QLatin1String("en") && language != QLatin1String("id"));
+    radio(m_language, 1, tr("English"), language == QLatin1String("en"));
+    radio(m_language, 2, tr("Bahasa Indonesia"), language == QLatin1String("id"));
+    {
+        auto* note = new QLabel(tr("Takes effect after restarting the app."), this);
+        note->setObjectName(QStringLiteral("Head"));
+        root->addWidget(note);
+    }
+
     // ── Default zoom (new documents) ──
     heading(tr("Default zoom"));
     m_zoom = new QButtonGroup(this);
@@ -128,5 +143,13 @@ QString PreferencesDialog::zoom() const {
     case 1: return QStringLiteral("fitpage");
     case 2: return QStringLiteral("actual");
     default: return QStringLiteral("fitwidth");
+    }
+}
+
+QString PreferencesDialog::language() const {
+    switch (m_language->checkedId()) {
+    case 1: return QStringLiteral("en");
+    case 2: return QStringLiteral("id");
+    default: return QStringLiteral("system");
     }
 }

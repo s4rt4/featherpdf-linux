@@ -221,3 +221,10 @@ target_link_libraries(test_textcomparer PRIVATE
 )
 add_test(NAME textcomparer COMMAND test_textcomparer)
 set_tests_properties(textcomparer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+qt_add_executable(test_translations test_translations.cpp)
+target_include_directories(test_translations PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_compile_definitions(test_translations PRIVATE
+    TRANSLATIONS_TS="${CMAKE_SOURCE_DIR}/translations/feather_id.ts")
+target_link_libraries(test_translations PRIVATE Qt6::Core Qt6::Test)
+add_test(NAME translations COMMAND test_translations)
