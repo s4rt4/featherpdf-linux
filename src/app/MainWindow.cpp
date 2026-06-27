@@ -24,6 +24,7 @@
 #include "backends/ImageExporter.h"
 #include "backends/SnapshotExporter.h"
 #include "backends/LinkEditor.h"
+#include "backends/Optimizer.h"
 #include "backends/PatternRedactor.h"
 #include "backends/Sanitizer.h"
 #include "backends/TextComparer.h"
@@ -55,6 +56,7 @@
 #include "ui/HeaderFooterDialog.h"
 #include "ui/LinkUrlDialog.h"
 #include "ui/LinksDialog.h"
+#include "ui/OptimizeDialog.h"
 #include "ui/SanitizeDialog.h"
 #include "ui/StampDialog.h"
 #include "ui/FlattenDialog.h"
@@ -2190,6 +2192,22 @@ void MainWindow::extractEmbeddedImages() {
 void MainWindow::optimizeDocument() {
     if (!hasActiveDoc())
         return;
+
+    // Audit first so the dialog can show where the bytes live.
+    Optimizer::Audit audit;
+    QString error;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    const bool audited = Optimizer::audit(m_doc->filePath(), &audit, &error);
+    QApplication::restoreOverrideCursor();
+    if (!audited) {
+        QMessageBox::warning(this, tr("Couldn't optimize"), error);
+        return;
+    }
+
+    OptimizeDialog dialog(audit, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
     const QFileInfo info(m_doc->filePath());
     const QString suggested =
         info.dir().filePath(info.completeBaseName() + QStringLiteral("-optimized.pdf"));
@@ -2199,15 +2217,15 @@ void MainWindow::optimizeDocument() {
         return;
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    qint64 before = 0, after = 0;
-    QString error;
-    const bool ok = PdfEditor::optimize(m_doc->filePath(), out, &before, &after, &error);
+    Optimizer::Report report;
+    const bool ok = Optimizer::optimize(m_doc->filePath(), out, dialog.options(), &report, &error);
     QApplication::restoreOverrideCursor();
 
     if (!ok) {
         QMessageBox::warning(this, tr("Couldn't optimize"), error);
         return;
     }
+    const qint64 before = report.beforeBytes, after = report.afterBytes;
     const double pct = before > 0 ? 100.0 * (before - after) / before : 0.0;
     m_toast->show(tr("Optimized: %1 → %2 (%3% smaller)")
                       .arg(locale().formattedDataSize(before),

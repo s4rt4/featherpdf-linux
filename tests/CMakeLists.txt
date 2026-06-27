@@ -191,6 +191,21 @@ target_link_libraries(test_sanitizer PRIVATE
 add_test(NAME sanitizer COMMAND test_sanitizer)
 set_tests_properties(sanitizer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_optimizer
+    test_optimizer.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Optimizer.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Optimizer.h
+)
+target_include_directories(test_optimizer PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_optimizer PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::QPDF
+)
+add_test(NAME optimizer COMMAND test_optimizer)
+set_tests_properties(optimizer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_linkeditor
     test_linkeditor.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/LinkEditor.cpp
