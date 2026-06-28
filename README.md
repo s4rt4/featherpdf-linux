@@ -40,7 +40,8 @@ stay GPLv3.
 
 **Pages** — rotate, delete, drag-reorder, **insert** pages from another PDF,
 **extract** a page range, and **crop** margins — all lossless via QPDF.
-Combine, split, compare, optimize, watermark, Bates numbering, RGB→CMYK.
+Combine, split, compare, **granular optimize** (audit by category, image
+downsample, font unembed), watermark, Bates numbering, RGB→CMYK.
 
 **Annotations** — highlight, sticky note, freehand ink, **underline**,
 **strike-through**, **rectangle**, **line**, **arrow**, and **text boxes**,
@@ -53,11 +54,21 @@ move or delete existing fields.
 **Editing** — edit the text you've added; add, edit, and remove **hyperlinks**;
 an **Open in LibreOffice Draw** bridge for heavier layout work.
 
-**More** — OCR (Tesseract) and image→PDF, document signing & verification
-(PAdES), office/image conversion (LibreOffice), **export back to Word/ODT/RTF/text**
-or **to PNG/JPEG/TIFF images**, AES-256 encryption, redaction (manual or
-**pattern-based Find & Redact**), **sanitize / remove hidden info**, watermarks,
-**headers/footers & page numbers**, **visual or word-level compare**, and flattening.
+**Review tools** — **measure** distances, perimeters, and areas; **snapshot** a
+page region to the clipboard or a PNG; a **stamp library** (Approved / Draft /
+Confidential / For Review, with date and name).
+
+**Signing** — sign with a **text or graphical (image) appearance**, verify
+existing signatures (PAdES/NSS), and attach an optional **RFC 3161 trusted
+timestamp**.
+
+**More** — OCR (Tesseract) and image→PDF, with optional **deskew / despeckle /
+binarize** pre-processing and **automatic language detection**; office/image
+conversion (LibreOffice), **export back to Word/ODT/RTF/text** or **to
+PNG/JPEG/TIFF images**, AES-256 encryption, redaction (manual or **pattern-based
+Find & Redact**), **sanitize / remove hidden info**, watermarks,
+**headers/footers & page numbers**, **visual or word-level compare**,
+**PDF/A-1b tagging + veraPDF preflight**, and flattening.
 
 ## Building
 

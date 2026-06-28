@@ -405,6 +405,32 @@ QList<Group> buildDocs() {
               "gambar; untuk mengambil foto yang sudah tertanam di PDF, pakai <b>File ▸ Extract "
               "Embedded Images…</b> (butuh alat pdfimages dari Poppler).</p>")});
     editing.topics.append(
+        {"snapshot", "Snapshot a region", "Cuplikan area",
+         sect("en", "<p>Copy or save any rectangular area of a page as an image.</p>",
+              "<p>Grab a chart, a logo, a signature, or any part of the page to paste elsewhere or "
+              "keep as a picture.</p>",
+              "<p>You drag a marquee over the page; that region is rendered to an image at the "
+              "current display resolution and placed on the clipboard, with the option to also save "
+              "it as a PNG.</p>",
+              "<ul><li><b>Tools ▸ Snapshot</b> (or the Snapshot tool in the right pane). Drag a box "
+              "over the area - it's copied to the clipboard immediately, and a dialog offers <b>Save "
+              "as PNG…</b>.</li></ul>",
+              "<p>Nothing is captured until you drag a box. The image is taken at the current zoom, "
+              "so zoom in first for a sharper grab. To save whole pages instead, use Export Pages as "
+              "Images.</p>"),
+         sect("id", "<p>Salin atau simpan area persegi mana pun dari halaman sebagai gambar.</p>",
+              "<p>Ambil bagan, logo, tanda tangan, atau bagian halaman mana pun untuk ditempel di "
+              "tempat lain atau disimpan sebagai gambar.</p>",
+              "<p>Kamu menyeret marka di atas halaman; area itu di-render jadi gambar pada resolusi "
+              "tampilan saat ini dan diletakkan di papan klip, dengan opsi menyimpannya sebagai "
+              "PNG.</p>",
+              "<ul><li><b>Tools ▸ Snapshot</b> (atau tool Snapshot di panel kanan). Seret kotak di "
+              "atas area - langsung tersalin ke papan klip, dan dialog menawarkan <b>Save as "
+              "PNG…</b>.</li></ul>",
+              "<p>Tak ada yang diambil sampai kamu menyeret kotak. Gambar diambil pada zoom saat ini, "
+              "jadi perbesar dulu untuk hasil lebih tajam. Untuk menyimpan halaman penuh, pakai "
+              "Ekspor halaman jadi gambar.</p>")});
+    editing.topics.append(
         {"print", "Print", "Cetak",
          sect("en", "<p>A custom print dialog with a live preview.</p>",
               "<p>Print to a printer or to a PDF file with fine control.</p>",
@@ -537,22 +563,36 @@ QList<Group> buildDocs() {
               "melewatinya. Jalankan pada dokumen final agar jumlah halaman benar.</p>")});
     output.topics.append(
         {"optimize", "Optimize", "Optimasi",
-         sect("en", "<p>Rewrite the file more compactly.</p>",
-              "<p>Shrink the file size without changing how it looks.</p>",
-              "<p>QPDF packs objects into object streams and recompresses streams losslessly; the "
-              "before/after sizes are reported.</p>",
-              "<ul><li>Open the <b>Optimize</b> tool (or Document ▸ Optimize…) and save the result."
-              "</li></ul>",
-              "<p>Savings vary - already-compressed or image-heavy PDFs may barely shrink. For scans, "
-              "OCR doesn't reduce size.</p>"),
-         sect("id", "<p>Tulis ulang berkas lebih ringkas.</p>",
-              "<p>Perkecil ukuran berkas tanpa mengubah tampilannya.</p>",
-              "<p>QPDF mengemas objek ke object stream dan mengompres ulang stream secara lossless; "
-              "ukuran sebelum/sesudah dilaporkan.</p>",
-              "<ul><li>Buka tool <b>Optimize</b> (atau Document ▸ Optimize…) lalu simpan hasilnya."
-              "</li></ul>",
-              "<p>Penghematan bervariasi - PDF yang sudah terkompres atau penuh gambar mungkin nyaris "
-              "tak menyusut.</p>")});
+         sect("en", "<p>Audit what's taking up space, then rewrite the file more compactly.</p>",
+              "<p>See where the bytes go - images, fonts, page content, metadata - and shrink the "
+              "file with the controls that fit.</p>",
+              "<p>An audit groups the file's bytes by category and shows the total. You then choose "
+              "any of: downsample images above a target DPI (re-encoded with QImage), unembed font "
+              "programs, and pack objects into object streams with lossless stream recompression "
+              "(QPDF). The result is written to a new file.</p>",
+              "<ul><li>Open the <b>Optimize</b> tool (or Document ▸ Optimize…). Read the "
+              "<b>What's taking space</b> breakdown, tick the options you want - <b>Reduce image "
+              "resolution to</b> a DPI, <b>Unembed fonts</b>, <b>Recompress streams and pack "
+              "objects</b> - then Optimize and save.</li></ul>",
+              "<p>Savings vary - an already-compressed or image-light PDF may barely shrink. "
+              "Downsampling lowers image quality, so pick a DPI you can live with; unembedding fonts "
+              "makes the file rely on the reader's fonts. For scans, run OCR for searchable text - it "
+              "doesn't reduce size.</p>"),
+         sect("id", "<p>Audit apa yang memakan ruang, lalu tulis ulang berkas lebih ringkas.</p>",
+              "<p>Lihat ke mana byte pergi - gambar, font, konten halaman, metadata - dan perkecil "
+              "berkas dengan kontrol yang sesuai.</p>",
+              "<p>Audit mengelompokkan byte berkas per kategori dan menampilkan totalnya. Lalu kamu "
+              "pilih salah satu: turunkan resolusi gambar di atas DPI target (di-encode ulang dengan "
+              "QImage), lepas sematan program font, dan kemas objek ke object stream dengan kompresi "
+              "ulang stream lossless (QPDF). Hasilnya ditulis ke berkas baru.</p>",
+              "<ul><li>Buka tool <b>Optimize</b> (atau Document ▸ Optimize…). Baca rincian <b>Apa "
+              "yang memakan ruang</b>, centang opsi yang diinginkan - <b>Kurangi resolusi gambar "
+              "menjadi</b> DPI, <b>Lepas sematan font</b>, <b>Kompres ulang stream dan padatkan "
+              "objek</b> - lalu Optimize dan simpan.</li></ul>",
+              "<p>Penghematan bervariasi - PDF yang sudah terkompres atau minim gambar mungkin nyaris "
+              "tak menyusut. Menurunkan resolusi mengurangi kualitas gambar, jadi pilih DPI yang masih "
+              "layak; melepas sematan font membuat berkas bergantung pada font pembaca. Untuk scan, "
+              "jalankan OCR agar teks bisa dicari - itu tak mengurangi ukuran.</p>")});
     output.topics.append(
         {"cmyk", "RGB to CMYK", "RGB ke CMYK",
          sect("en", "<p>Convert the document's colours to CMYK for print.</p>",
@@ -585,6 +625,35 @@ QList<Group> buildDocs() {
               "<ul><li>Buka tool <b>Flatten</b>, pilih lossless atau raster, lalu simpan.</li></ul>",
               "<p>Perataan satu arah - simpan aslinya bila mungkin perlu diedit lagi. Perataan raster "
               "membuat teks tak bisa diseleksi.</p>")});
+    output.topics.append(
+        {"pdfa", "PDF/A & preflight", "PDF/A & preflight",
+         sect("en", "<p>Tag a file toward the PDF/A archival standard and validate it.</p>",
+              "<p>Prepare a document for long-term archiving, then check how well it conforms.</p>",
+              "<p>Conversion writes a copy tagged toward PDF/A-1b: an embedded sRGB OutputIntent "
+              "(GTS_PDFA1), an XMP packet declaring pdfaid part 1 / conformance B, plus /MarkInfo and "
+              "a file /ID (QPDF, with the ICC profile from QColorSpace). Preflight runs the veraPDF "
+              "validator and reports PASS/FAIL with the list of violations.</p>",
+              "<ul><li><b>Tools ▸ PDF/A &amp; Preflight…</b> (or Document ▸ PDF/A &amp; Preflight…). "
+              "Click <b>Convert to PDF/A-1b</b> and save the copy, or <b>Validate (preflight)</b> to "
+              "see a conformance report.</li></ul>",
+              "<p>Tagging is best-effort - it can't fix non-conforming page content (odd fonts, "
+              "transparency), so a converted file may still fail strict preflight. Preflight needs "
+              "the veraPDF tool on your PATH (https://verapdf.org); without it, conversion still "
+              "works but validation is unavailable.</p>"),
+         sect("id", "<p>Tandai berkas menuju standar arsip PDF/A dan validasikan.</p>",
+              "<p>Siapkan dokumen untuk pengarsipan jangka panjang, lalu periksa seberapa sesuai.</p>",
+              "<p>Konversi menulis salinan yang ditandai menuju PDF/A-1b: OutputIntent sRGB tersemat "
+              "(GTS_PDFA1), paket XMP yang mendeklarasikan pdfaid part 1 / conformance B, plus "
+              "/MarkInfo dan /ID berkas (QPDF, dengan profil ICC dari QColorSpace). Preflight "
+              "menjalankan validator veraPDF dan melaporkan LULUS/GAGAL beserta daftar "
+              "pelanggaran.</p>",
+              "<ul><li><b>Tools ▸ PDF/A &amp; Preflight…</b> (atau Document ▸ PDF/A &amp; Preflight…). "
+              "Klik <b>Convert to PDF/A-1b</b> dan simpan salinannya, atau <b>Validate (preflight)</b> "
+              "untuk melihat laporan konformitas.</li></ul>",
+              "<p>Penandaan bersifat upaya terbaik - tak bisa memperbaiki konten halaman yang tak "
+              "sesuai (font aneh, transparansi), jadi berkas terkonversi pun bisa gagal preflight "
+              "ketat. Preflight butuh alat veraPDF di PATH (https://verapdf.org); tanpanya, konversi "
+              "tetap jalan tapi validasi tak tersedia.</p>")});
     g.append(output);
 
     // ── Security ─────────────────────────────────────────────────────────────
@@ -741,41 +810,83 @@ QList<Group> buildDocs() {
               "dua opsi.</p>")});
     review.topics.append(
         {"sign", "Digital signatures", "Tanda tangan digital",
-         sect("en", "<p>Sign documents and verify existing signatures.</p>",
-              "<p>Prove a document is authentic and unchanged.</p>",
-              "<p>Signing uses a certificate from your system's NSS database via Poppler; "
-              "verification reports each signature's validity.</p>",
-              "<ul><li><b>Document ▸ Sign</b>: pick a certificate, reason, and location.</li><li>"
-              "<b>Document ▸ Signatures</b>: review signers and validity.</li></ul>",
+         sect("en", "<p>Sign documents - with a text or a handwritten-image appearance - verify "
+              "existing signatures, and optionally add a trusted timestamp.</p>",
+              "<p>Prove a document is authentic and unchanged, show a real signature graphic, and "
+              "pin when it was signed.</p>",
+              "<p>Signing uses a certificate from your system's NSS database via Poppler. The "
+              "appearance can be the default text block or a PNG/JPEG of your signature drawn behind "
+              "it. A trusted timestamp is fetched separately over RFC 3161 (openssl builds the "
+              "request, curl posts it to a Time Stamp Authority) and saved as a detached "
+              "<code>.tsr</code> sidecar next to the signed file - proof it existed at that time. "
+              "Verification reports each signature's validity.</p>",
+              "<ul><li><b>Document ▸ Sign</b> (or Tools ▸ Sign): pick a certificate, reason, and "
+              "location. Under <b>Appearance</b> choose <b>Image</b> and browse to a PNG/JPEG for a "
+              "graphical signature. Tick <b>Add a trusted timestamp (RFC 3161)</b> and set the TSA "
+              "URL to also write a <code>.tsr</code> token.</li>"
+              "<li><b>Document ▸ Signatures</b>: review signers and validity.</li></ul>",
               "<p>Signing needs a certificate in your NSS store (<code>~/.pki/nssdb</code>); if none "
-              "exist the app says so. Import a PKCS#12 certificate first.</p>"),
-         sect("id", "<p>Tanda tangani dokumen dan verifikasi tanda tangan yang ada.</p>",
-              "<p>Buktikan dokumen asli dan tak berubah.</p>",
-              "<p>Penandatanganan memakai sertifikat dari NSS database sistemmu via Poppler; "
-              "verifikasi melaporkan keabsahan tiap tanda tangan.</p>",
-              "<ul><li><b>Document ▸ Sign</b>: pilih sertifikat, alasan, dan lokasi.</li><li>"
-              "<b>Document ▸ Signatures</b>: tinjau penandatangan dan keabsahan.</li></ul>",
+              "exist the app says so - import a PKCS#12 certificate first. Timestamping needs "
+              "<code>openssl</code> and <code>curl</code> and a reachable TSA; if it can't reach one "
+              "the signature is still saved and you're told the timestamp failed. The <code>.tsr</code> "
+              "is a standalone token, not embedded in the PDF (LTV/PAdES-LTA isn't supported yet).</p>"),
+         sect("id", "<p>Tanda tangani dokumen - dengan tampilan teks atau gambar tanda tangan "
+              "tangan - verifikasi tanda tangan yang ada, dan opsional tambahkan stempel waktu "
+              "tepercaya.</p>",
+              "<p>Buktikan dokumen asli dan tak berubah, tampilkan grafik tanda tangan sungguhan, dan "
+              "kunci kapan ditandatangani.</p>",
+              "<p>Penandatanganan memakai sertifikat dari NSS database sistemmu via Poppler. "
+              "Tampilannya bisa blok teks default atau PNG/JPEG tanda tanganmu yang digambar di "
+              "belakangnya. Stempel waktu tepercaya diambil terpisah lewat RFC 3161 (openssl membangun "
+              "permintaan, curl mengirimnya ke Time Stamp Authority) dan disimpan sebagai sidecar "
+              "<code>.tsr</code> terlepas di samping berkas - bukti berkas ada pada waktu itu. "
+              "Verifikasi melaporkan keabsahan tiap tanda tangan.</p>",
+              "<ul><li><b>Document ▸ Sign</b> (atau Tools ▸ Sign): pilih sertifikat, alasan, dan "
+              "lokasi. Di <b>Appearance</b> pilih <b>Image</b> dan telusuri PNG/JPEG untuk tanda "
+              "tangan grafis. Centang <b>Add a trusted timestamp (RFC 3161)</b> dan setel URL TSA "
+              "untuk sekaligus menulis token <code>.tsr</code>.</li>"
+              "<li><b>Document ▸ Signatures</b>: tinjau penandatangan dan keabsahan.</li></ul>",
               "<p>Penandatanganan butuh sertifikat di NSS store (<code>~/.pki/nssdb</code>); jika tak "
-              "ada, aplikasi memberi tahu. Impor sertifikat PKCS#12 dulu.</p>")});
+              "ada, aplikasi memberi tahu - impor sertifikat PKCS#12 dulu. Stempel waktu butuh "
+              "<code>openssl</code> dan <code>curl</code> serta TSA yang terjangkau; bila tak "
+              "terjangkau, tanda tangan tetap tersimpan dan kamu diberi tahu stempel waktu gagal. "
+              "<code>.tsr</code> adalah token mandiri, tidak tersemat di PDF (LTV/PAdES-LTA belum "
+              "didukung).</p>")});
     review.topics.append(
         {"ocr", "Recognize text (OCR)", "Pengenalan teks (OCR)",
-         sect("en", "<p>Make a scanned PDF searchable and selectable.</p>",
-              "<p>Add a hidden text layer over page images without changing how they look.</p>",
-              "<p>Each page is rendered to an image, Tesseract finds the words and their boxes, and "
-              "the text is written invisibly at those positions via QPDF.</p>",
-              "<ul><li><b>Document ▸ Recognize Text (OCR)</b>. Pick a language, then save - the "
-              "result opens with searchable text.</li></ul>",
-              "<p>OCR needs Tesseract installed (with the language packs). It can be slow on long "
-              "documents; accuracy depends on scan quality.</p>"),
-         sect("id", "<p>Buat PDF hasil scan bisa dicari dan diseleksi.</p>",
+         sect("en", "<p>Make a scanned PDF searchable and selectable, with optional image clean-up "
+              "first.</p>",
+              "<p>Add a hidden text layer over page images without changing how they look - and let "
+              "the engine straighten, de-speckle, and sharpen the scan to read it better.</p>",
+              "<p>Each page is rendered to an image, optionally pre-processed (deskew by projection "
+              "profile, median de-speckle, and Otsu black-and-white binarisation), then Tesseract "
+              "finds the words and their boxes and the text is written invisibly at those positions "
+              "via QPDF. The pre-processing only sharpens recognition - the page you see is "
+              "unchanged. The language can be auto-detected (Tesseract OSD).</p>",
+              "<ul><li><b>Document ▸ Recognize Text (OCR)</b>. Pick a language or tick <b>Detect "
+              "language automatically</b>; optionally tick <b>Clean up pages before recognition</b> "
+              "and choose deskew / de-speckle / binarize. Save - the result opens with searchable "
+              "text.</li></ul>",
+              "<p>OCR needs Tesseract installed (with the language packs; auto-detect needs the OSD "
+              "data). It can be slow on long documents; accuracy depends on scan quality - turn on "
+              "clean-up for crooked or noisy scans.</p>"),
+         sect("id", "<p>Buat PDF hasil scan bisa dicari dan diseleksi, dengan pembersihan gambar "
+              "opsional lebih dulu.</p>",
               "<p>Tambahkan lapisan teks tersembunyi di atas gambar halaman tanpa mengubah "
-              "tampilannya.</p>",
-              "<p>Tiap halaman di-render jadi gambar, Tesseract menemukan kata dan kotaknya, lalu "
-              "teks ditulis tak terlihat di posisi itu via QPDF.</p>",
-              "<ul><li><b>Document ▸ Recognize Text (OCR)</b>. Pilih bahasa, lalu simpan - hasilnya "
-              "terbuka dengan teks yang bisa dicari.</li></ul>",
-              "<p>OCR butuh Tesseract terpasang (beserta paket bahasa). Bisa lambat pada dokumen "
-              "panjang; akurasi tergantung kualitas scan.</p>")});
+              "tampilannya - dan biarkan mesin meluruskan, menghilangkan bintik, serta mempertajam "
+              "scan agar lebih mudah dibaca.</p>",
+              "<p>Tiap halaman di-render jadi gambar, opsional dipra-proses (luruskan via projection "
+              "profile, hilangkan bintik median, dan binarisasi hitam-putih Otsu), lalu Tesseract "
+              "menemukan kata dan kotaknya dan teks ditulis tak terlihat di posisi itu via QPDF. "
+              "Pra-proses hanya menajamkan pengenalan - halaman yang kamu lihat tak berubah. Bahasa "
+              "bisa dideteksi otomatis (Tesseract OSD).</p>",
+              "<ul><li><b>Document ▸ Recognize Text (OCR)</b>. Pilih bahasa atau centang <b>Deteksi "
+              "bahasa secara otomatis</b>; opsional centang <b>Bersihkan halaman sebelum "
+              "pengenalan</b> dan pilih deskew / despeckle / binarize. Simpan - hasilnya terbuka "
+              "dengan teks yang bisa dicari.</li></ul>",
+              "<p>OCR butuh Tesseract terpasang (beserta paket bahasa; deteksi otomatis butuh data "
+              "OSD). Bisa lambat pada dokumen panjang; akurasi tergantung kualitas scan - aktifkan "
+              "pembersihan untuk scan miring atau berisik.</p>")});
     review.topics.append(
         {"compare", "Compare", "Bandingkan",
          sect("en", "<p>See what changed between two PDFs.</p>",
@@ -816,6 +927,55 @@ QList<Group> buildDocs() {
               "tiap halaman berubah dengan kata terhapus merah dan kata ditambah hijau.</li></ul>",
               "<p>Halaman dicocokkan per posisi (hal 1 ke hal 1, …). PDF pindai tanpa lapisan teks "
               "dibandingkan kosong - jalankan OCR dulu.</p>")});
+    review.topics.append(
+        {"measure", "Measure", "Mengukur",
+         sect("en", "<p>Measure distances, perimeters, and areas on a page.</p>",
+              "<p>Read dimensions off drawings, plans, or maps without leaving the viewer.</p>",
+              "<p>You click to drop points; two points give a distance, three or more give a closed "
+              "shape's perimeter and area. Values are computed from the page's coordinate space and "
+              "shown in your chosen unit (mm, cm, or inches) in the measure bar.</p>",
+              "<ul><li><b>Tools ▸ Measure</b>. Choose <b>Distance</b>, <b>Perimeter</b>, or "
+              "<b>Area</b> and a unit, then click to add points - for perimeter and area, "
+              "double-click or press <b>Esc</b> to finish the shape. <b>Clear</b> resets; <b>Done</b> "
+              "leaves the tool.</li></ul>",
+              "<p>Measurements use the page's own scale (1 point = 1/72 inch). A drawing printed to a "
+              "scale (e.g. 1:100) reads in page units, not the real-world size - multiply by the "
+              "drawing's scale yourself.</p>"),
+         sect("id", "<p>Ukur jarak, keliling, dan luas pada halaman.</p>",
+              "<p>Baca dimensi dari gambar teknik, denah, atau peta tanpa keluar dari penampil.</p>",
+              "<p>Kamu klik untuk menaruh titik; dua titik memberi jarak, tiga atau lebih memberi "
+              "keliling dan luas bentuk tertutup. Nilai dihitung dari ruang koordinat halaman dan "
+              "ditampilkan dalam satuan pilihanmu (mm, cm, atau inci) di measure bar.</p>",
+              "<ul><li><b>Tools ▸ Measure</b>. Pilih <b>Distance</b>, <b>Perimeter</b>, atau "
+              "<b>Area</b> dan satuan, lalu klik untuk menambah titik - untuk keliling dan luas, klik "
+              "ganda atau tekan <b>Esc</b> untuk menyelesaikan bentuk. <b>Clear</b> mengulang; "
+              "<b>Done</b> keluar dari alat.</li></ul>",
+              "<p>Pengukuran memakai skala halaman (1 poin = 1/72 inci). Gambar yang dicetak berskala "
+              "(mis. 1:100) terbaca dalam satuan halaman, bukan ukuran sebenarnya - kalikan sendiri "
+              "dengan skala gambarnya.</p>")});
+    review.topics.append(
+        {"stamp", "Stamp", "Stempel",
+         sect("en", "<p>Place a rubber stamp on the page, with an optional date and name.</p>",
+              "<p>Mark a document Approved, Draft, Confidential, or For Review at a glance.</p>",
+              "<p>The stamp is a /Stamp annotation drawn with QPDF and given its own appearance, so "
+              "it shows in any viewer. You pick a preset and can add today's date and a name line "
+              "before placing it.</p>",
+              "<ul><li><b>Tools ▸ Stamp</b> (or Document ▸ Add Stamp…). Pick a preset - <b>Approved</b>, "
+              "<b>Draft</b>, <b>Confidential</b>, <b>For Review</b> - tick <b>Include today's date</b> "
+              "and/or <b>Include a name</b>, then drag on the page to place it.</li></ul>",
+              "<p>A stamp is an annotation, so it can be moved or removed until you <b>Flatten</b> the "
+              "file to bake it in permanently.</p>"),
+         sect("id", "<p>Bubuhkan stempel pada halaman, dengan tanggal dan nama opsional.</p>",
+              "<p>Tandai dokumen Disetujui, Draf, Rahasia, atau Untuk Ditinjau secara sekilas.</p>",
+              "<p>Stempel adalah anotasi /Stamp yang digambar dengan QPDF dan diberi appearance "
+              "sendiri, jadi tampil di penampil mana pun. Kamu pilih preset dan bisa menambah tanggal "
+              "hari ini serta baris nama sebelum menempatkannya.</p>",
+              "<ul><li><b>Tools ▸ Stamp</b> (atau Document ▸ Add Stamp…). Pilih preset - "
+              "<b>Disetujui</b>, <b>Draf</b>, <b>Rahasia</b>, <b>Untuk Ditinjau</b> - centang "
+              "<b>Sertakan tanggal hari ini</b> dan/atau <b>Sertakan nama</b>, lalu seret pada "
+              "halaman untuk menempatkannya.</li></ul>",
+              "<p>Stempel adalah anotasi, jadi bisa dipindah atau dihapus sampai kamu <b>Flatten</b> "
+              "berkas untuk membakukannya permanen.</p>")});
     g.append(review);
 
     return g;
