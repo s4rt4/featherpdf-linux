@@ -48,6 +48,7 @@ SplitDialog::SplitDialog(int pageCount, QWidget* parent) : QDialog(parent) {
                        " border-radius:8px; padding:5px 8px; color:%2; }"
                        "QSpinBox:focus, QLineEdit:focus { border:1px solid %5; }")
             .arg(css(p.dim), css(p.text), css(p.surface), css(ctlBorder), css(p.accent)));
+    setStyleSheet(styleSheet() + Theme::instance().spinBoxArrowQss());
 
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(22, 20, 22, 18);

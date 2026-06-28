@@ -56,6 +56,7 @@ OptimizeDialog::OptimizeDialog(const Optimizer::Audit& audit, QWidget* parent) :
                        "QProgressBar { background:%3; border:none; border-radius:3px; max-height:6px; }"
                        "QProgressBar::chunk { background:%5; border-radius:3px; }")
             .arg(css(p.dim), css(p.text), css(p.surface), css(ctlBorder), css(p.accent)));
+    setStyleSheet(styleSheet() + Theme::instance().spinBoxArrowQss());
 
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(22, 20, 22, 18);

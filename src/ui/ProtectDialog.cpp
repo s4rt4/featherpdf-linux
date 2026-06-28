@@ -75,6 +75,12 @@ ProtectDialog::ProtectDialog(const QString& docName, QWidget* parent) : QDialog(
     m_confirm = new QLineEdit(this);
     m_confirm->setEchoMode(QLineEdit::Password);
     m_password->setMinimumWidth(260);
+    // Qt doesn't fold stylesheet padding into a QLineEdit's size hint, so in a
+    // packed form the fields compress and the (taller) placeholder text clips.
+    // Pin a height that scales with the font to give the text room.
+    const int fieldHeight = m_password->fontMetrics().height() + 14;
+    m_password->setMinimumHeight(fieldHeight);
+    m_confirm->setMinimumHeight(fieldHeight);
     form->addRow(tr("Open password"), m_password);
     form->addRow(tr("Confirm"), m_confirm);
     root->addLayout(form);

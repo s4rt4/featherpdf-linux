@@ -86,6 +86,12 @@ public:
     // current `dim` token is used. Cached per (name,color).
     QString symbolicIconPath(const QString& name, QColor color = QColor()) const;
 
+    // A QSS fragment that restores the up/down stepper arrows on a restyled
+    // QSpinBox. Once a dialog gives QSpinBox a custom border/background, Qt stops
+    // drawing the native arrows; append this to the dialog's style sheet to put
+    // themed chevron arrows back. Tinted with the `dim` token.
+    QString spinBoxArrowQss() const;
+
 signals:
     // Emitted whenever the active palette changes (system flip or manual toggle)
     // so chrome that paints tokens itself can repaint.

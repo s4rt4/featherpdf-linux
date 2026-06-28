@@ -179,6 +179,13 @@ SignDialog::SignDialog(const QStringList& certificates, QWidget* parent) : QDial
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     root->addWidget(buttons);
 
+    // Qt leaves stylesheet padding out of a line edit's size hint, so in a packed
+    // form the fields compress until their placeholder text clips. Pin a
+    // font-scaled height on every field so the text always has room.
+    const int fieldHeight = fontMetrics().height() + 14;
+    for (QLineEdit* le : findChildren<QLineEdit*>())
+        le->setMinimumHeight(fieldHeight);
+
     resize(440, 0);
 }
 

@@ -44,6 +44,7 @@ FlattenDialog::FlattenDialog(QWidget* parent) : QDialog(parent) {
                                  "QSpinBox { background:%3; border:1px solid %4; border-radius:8px;"
                                  " padding:5px 8px; color:%2; }")
                       .arg(css(p.dim), css(p.text), css(p.surface), css(ctlBorder)));
+    setStyleSheet(styleSheet() + Theme::instance().spinBoxArrowQss());
 
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(22, 20, 22, 18);

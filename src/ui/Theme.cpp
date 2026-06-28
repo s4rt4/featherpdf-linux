@@ -436,6 +436,17 @@ QString Theme::symbolicIconPath(const QString& name, QColor color) const {
     return path;
 }
 
+QString Theme::spinBoxArrowQss() const {
+    const QString up = symbolicIconPath(QStringLiteral("chevron-up"), m_palette.dim);
+    const QString down = symbolicIconPath(QStringLiteral("chevron-down"), m_palette.dim);
+    return QStringLiteral(
+               "QSpinBox::up-button, QSpinBox::down-button { background:transparent; border:none;"
+               " width:18px; }"
+               "QSpinBox::up-arrow { image:url(%1); width:11px; height:11px; }"
+               "QSpinBox::down-arrow { image:url(%2); width:11px; height:11px; }")
+        .arg(up, down);
+}
+
 QPixmap Theme::brandLogo(int size) const {
     const qreal dpr = qApp ? qApp->devicePixelRatio() : 1.0;
     QSvgRenderer renderer(QStringLiteral(":/icons/feather-logo.svg"));

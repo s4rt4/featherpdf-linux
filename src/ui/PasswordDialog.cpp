@@ -67,6 +67,9 @@ PasswordDialog::PasswordDialog(const QString& fileName, QWidget* parent) : QDial
     m_password->setEchoMode(QLineEdit::Password);
     m_password->setPlaceholderText(tr("Password"));
     m_password->setMinimumWidth(280);
+    // Qt leaves stylesheet padding out of the line edit's size hint, so the field
+    // can shrink until the placeholder clips; pin a font-scaled height.
+    m_password->setMinimumHeight(m_password->fontMetrics().height() + 14);
     root->addWidget(m_password);
 
     auto* show = new QCheckBox(tr("Show password"), this);
