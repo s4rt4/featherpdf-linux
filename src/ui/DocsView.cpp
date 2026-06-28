@@ -171,6 +171,42 @@ QList<Group> buildDocs() {
               "dibuka berikutnya.</li></ul>",
               "<p>Default layout/zoom baru berlaku setelah kamu mengaturnya, jadi perilaku bawaan tak "
               "berubah sampai kamu memilih.</p>")});
+    start.topics.append(
+        {"cli", "Command line", "Baris perintah",
+         sect("en", "<p>A headless command-line interface for scripts and servers.</p>",
+              "<p>Run common operations - merge, split, encrypt, optimize, OCR, convert, and more - "
+              "without opening the window, in shell scripts, pipelines, or over SSH.</p>",
+              "<p>It's the same program: when the first argument is a command, Feather PDF runs "
+              "off-screen with no window (so it works with no display) and each command wraps the "
+              "exact same backend the app uses. Exit codes are 0 success, 1 failure, 2 bad "
+              "usage.</p>",
+              "<ul><li><code>feather-pdf --help</code> lists every command; "
+              "<code>feather-pdf COMMAND --help</code> shows a command's options.</li>"
+              "<li>Examples: <code>feather-pdf merge out.pdf a.pdf b.pdf</code> · "
+              "<code>feather-pdf extract in.pdf out.pdf --pages 1-3,5</code> · "
+              "<code>feather-pdf encrypt in.pdf out.pdf --password secret --no-print</code> · "
+              "<code>feather-pdf optimize in.pdf out.pdf --dpi 150</code> · "
+              "<code>feather-pdf info in.pdf</code>.</li></ul>",
+              "<p>Running <code>feather-pdf</code> with no arguments, or with a file path, still opens "
+              "the graphical app. OCR needs Tesseract and the office conversions need LibreOffice, "
+              "just like in the app.</p>"),
+         sect("id", "<p>Antarmuka baris perintah tanpa jendela untuk skrip dan server.</p>",
+              "<p>Jalankan operasi umum - gabung, pisah, enkripsi, optimasi, OCR, konversi, dan lain "
+              "lain - tanpa membuka jendela, di skrip shell, pipeline, atau lewat SSH.</p>",
+              "<p>Ini program yang sama: bila argumen pertama adalah sebuah perintah, Feather PDF "
+              "berjalan off-screen tanpa jendela (jadi tetap jalan tanpa layar) dan tiap perintah "
+              "membungkus backend yang persis sama dengan aplikasinya. Kode keluar 0 sukses, 1 gagal, "
+              "2 salah pemakaian.</p>",
+              "<ul><li><code>feather-pdf --help</code> menampilkan semua perintah; "
+              "<code>feather-pdf PERINTAH --help</code> menampilkan opsinya.</li>"
+              "<li>Contoh: <code>feather-pdf merge out.pdf a.pdf b.pdf</code> · "
+              "<code>feather-pdf extract in.pdf out.pdf --pages 1-3,5</code> · "
+              "<code>feather-pdf encrypt in.pdf out.pdf --password rahasia --no-print</code> · "
+              "<code>feather-pdf optimize in.pdf out.pdf --dpi 150</code> · "
+              "<code>feather-pdf info in.pdf</code>.</li></ul>",
+              "<p>Menjalankan <code>feather-pdf</code> tanpa argumen, atau dengan sebuah path berkas, "
+              "tetap membuka aplikasi grafis. OCR butuh Tesseract dan konversi office butuh "
+              "LibreOffice, sama seperti di aplikasi.</p>")});
     g.append(start);
 
     // ── Panels ───────────────────────────────────────────────────────────────

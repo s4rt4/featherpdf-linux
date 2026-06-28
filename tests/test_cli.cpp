@@ -1,0 +1,121 @@
+// Feather PDF — light on the system, full-featured on PDF.
+// Copyright (C) 2026 Feather PDF contributors. Licensed under GPLv3 (see LICENSE).
+//
+// Integration test for the headless command-line interface: drives the real
+// feather-pdf binary (path injected as FEATHERPDF_BIN) with sub-commands and
+// checks exit codes and output. Covers the dispatcher, argument parsing, and a
+// couple of representative operations end to end; the per-operation backends
+// have their own unit tests.
+
+#include <QByteArray>
+#include <QPageSize>
+#include <QPainter>
+#include <QPdfWriter>
+#include <QProcess>
+#include <QTemporaryDir>
+#include <QtTest>
+
+class TestCli : public QObject {
+    Q_OBJECT
+
+private:
+    QTemporaryDir m_dir;
+    QString m_pdf;
+
+    struct Result {
+        int code = -1;
+        QString out;
+        QString err;
+    };
+    Result run(const QStringList& args) {
+        QProcess p;
+        p.start(QStringLiteral(FEATHERPDF_BIN), args);
+        if (!p.waitForFinished(30000))
+            return {};
+        return {p.exitCode(), QString::fromUtf8(p.readAllStandardOutput()),
+                QString::fromUtf8(p.readAllStandardError())};
+    }
+
+private slots:
+    void initTestCase() {
+        QVERIFY(m_dir.isValid());
+        m_pdf = m_dir.filePath(QStringLiteral("two.pdf"));
+        QPdfWriter w(m_pdf);
+        w.setPageSize(QPageSize(QPageSize::A4));
+        QPainter pa(&w);
+        pa.drawText(100, 100, QStringLiteral("page one"));
+        w.newPage();
+        pa.drawText(100, 100, QStringLiteral("page two"));
+        pa.end();
+        QVERIFY(QFileInfo::exists(m_pdf));
+    }
+
+    void versionPrints() {
+        const Result r = run({QStringLiteral("--version")});
+        QCOMPARE(r.code, 0);
+        QVERIFY2(r.out.contains(QStringLiteral("Feather PDF")), qPrintable(r.out));
+    }
+
+    void helpListsCommands() {
+        const Result r = run({QStringLiteral("--help")});
+        QCOMPARE(r.code, 0);
+        QVERIFY(r.out.contains(QStringLiteral("merge")));
+        QVERIFY(r.out.contains(QStringLiteral("optimize")));
+    }
+
+    void infoReportsPageCount() {
+        const Result r = run({QStringLiteral("info"), m_pdf});
+        QCOMPARE(r.code, 0);
+        QVERIFY2(r.out.contains(QStringLiteral("Pages:     2")), qPrintable(r.out));
+        QVERIFY(r.out.contains(QStringLiteral("Encrypted: no")));
+    }
+
+    void extractWritesSubset() {
+        const QString out = m_dir.filePath(QStringLiteral("one.pdf"));
+        const Result r =
+            run({QStringLiteral("extract"), m_pdf, out, QStringLiteral("--pages"), QStringLiteral("1")});
+        QCOMPARE(r.code, 0);
+        QVERIFY(QFileInfo::exists(out));
+        const Result info = run({QStringLiteral("info"), out});
+        QVERIFY2(info.out.contains(QStringLiteral("Pages:     1")), qPrintable(info.out));
+    }
+
+    void mergeConcatenates() {
+        const QString out = m_dir.filePath(QStringLiteral("four.pdf"));
+        const Result r = run({QStringLiteral("merge"), out, m_pdf, m_pdf});
+        QCOMPARE(r.code, 0);
+        const Result info = run({QStringLiteral("info"), out});
+        QVERIFY2(info.out.contains(QStringLiteral("Pages:     4")), qPrintable(info.out));
+    }
+
+    void encryptThenDecryptRoundTrips() {
+        const QString enc = m_dir.filePath(QStringLiteral("enc.pdf"));
+        const QString dec = m_dir.filePath(QStringLiteral("dec.pdf"));
+        QCOMPARE(run({QStringLiteral("encrypt"), m_pdf, enc, QStringLiteral("--password"),
+                      QStringLiteral("pw")})
+                     .code,
+                 0);
+        QVERIFY(run({QStringLiteral("info"), enc}).out.contains(QStringLiteral("Encrypted: yes")));
+        QCOMPARE(run({QStringLiteral("decrypt"), enc, dec, QStringLiteral("--password"),
+                      QStringLiteral("pw")})
+                     .code,
+                 0);
+        QVERIFY(run({QStringLiteral("info"), dec}).out.contains(QStringLiteral("Encrypted: no")));
+    }
+
+    void usageErrorsExitTwo() {
+        // Missing required option.
+        QCOMPARE(run({QStringLiteral("extract"), m_pdf, m_dir.filePath(QStringLiteral("x.pdf"))}).code,
+                 2);
+        // Out-of-range page.
+        QCOMPARE(run({QStringLiteral("extract"), m_pdf, m_dir.filePath(QStringLiteral("x.pdf")),
+                      QStringLiteral("--pages"), QStringLiteral("9")})
+                     .code,
+                 2);
+        // Unknown sub-command flag style.
+        QCOMPARE(run({QStringLiteral("optimize"), m_pdf}).code, 2); // missing output
+    }
+};
+
+QTEST_MAIN(TestCli)
+#include "test_cli.moc"

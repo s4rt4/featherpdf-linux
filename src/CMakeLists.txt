@@ -3,6 +3,8 @@
 
 qt_add_executable(feather-pdf
     app/main.cpp
+    cli/Cli.cpp
+    cli/Cli.h
     app/MainWindow.cpp
     app/MainWindow.h
     core/FeatherDocument.cpp

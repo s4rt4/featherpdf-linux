@@ -16,9 +16,11 @@
 
 #include "app/MainWindow.h"
 
+#include "cli/Cli.h"
 #include "ui/Theme.h"
 
 #include <QApplication>
+#include <QGuiApplication>
 #include <QIcon>
 #include <QLibraryInfo>
 #include <QLocale>
@@ -26,12 +28,31 @@
 #include <QTimer>
 #include <QTranslator>
 
-int main(int argc, char** argv) {
-    QApplication app(argc, argv);
+namespace {
+void setAppIdentity() {
     QCoreApplication::setOrganizationName(QStringLiteral("Feather PDF"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("github.com/s4rt4"));
     QCoreApplication::setApplicationName(QStringLiteral("Feather PDF"));
     QCoreApplication::setApplicationVersion(QStringLiteral(FEATHERPDF_VERSION));
+}
+} // namespace
+
+int main(int argc, char** argv) {
+    // Headless command-line mode: when the first argument names a sub-command
+    // (merge, split, …) or a help/version flag, run the CLI with no window. Use
+    // the off-screen platform so it works over SSH and on machines with no
+    // display (operations only rasterize to memory, never to a screen).
+    const QString firstArg = argc > 1 ? QString::fromLocal8Bit(argv[1]) : QString();
+    if (Cli::isCommand(firstArg)) {
+        if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
+            qputenv("QT_QPA_PLATFORM", "offscreen");
+        QGuiApplication cliApp(argc, argv);
+        setAppIdentity();
+        return Cli::run(QCoreApplication::arguments());
+    }
+
+    QApplication app(argc, argv);
+    setAppIdentity();
     // Lets the GNOME shell / Wayland associate the window with its .desktop file.
     QGuiApplication::setDesktopFileName(QStringLiteral(FEATHERPDF_APP_ID));
     QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/feather-logo.svg")));

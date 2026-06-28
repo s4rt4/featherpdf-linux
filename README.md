@@ -70,6 +70,18 @@ Find & Redact**), **sanitize / remove hidden info**, watermarks,
 **headers/footers & page numbers**, **visual or word-level compare**,
 **PDF/A-1b tagging + veraPDF preflight**, and flattening.
 
+**Command line** — the same binary runs **headless** when given a sub-command,
+for scripts, pipelines, and servers (no display needed):
+
+```sh
+feather-pdf merge out.pdf a.pdf b.pdf
+feather-pdf extract in.pdf out.pdf --pages 1-3,5
+feather-pdf encrypt in.pdf out.pdf --password secret --no-print
+feather-pdf optimize in.pdf out.pdf --dpi 150
+feather-pdf ocr scan.pdf searchable.pdf --lang eng
+feather-pdf --help          # merge · split · rotate · watermark · bates · sanitize · images · info · …
+```
+
 ## Building
 
 Feather targets **Fedora / GNOME (Wayland)** first. On Fedora 43:
@@ -77,7 +89,7 @@ Feather targets **Fedora / GNOME (Wayland)** first. On Fedora 43:
 ```sh
 sudo dnf install -y gcc-c++ cmake ninja-build \
     qt6-qtbase-devel qt6-qtpdf-devel poppler-qt6-devel qt6-qtsvg-devel \
-    clang-tools-extra
+    qt6-qttools-devel clang-tools-extra
 
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
 cmake --build build

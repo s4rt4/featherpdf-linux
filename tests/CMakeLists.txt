@@ -325,6 +325,14 @@ target_link_libraries(test_signer PRIVATE
 add_test(NAME signer COMMAND test_signer)
 set_tests_properties(signer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_cli test_cli.cpp)
+target_include_directories(test_cli PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_compile_definitions(test_cli PRIVATE FEATHERPDF_BIN="$<TARGET_FILE:feather-pdf>")
+target_link_libraries(test_cli PRIVATE Qt6::Core Qt6::Gui Qt6::Test)
+add_dependencies(test_cli feather-pdf)
+add_test(NAME cli COMMAND test_cli)
+set_tests_properties(cli PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_translations test_translations.cpp)
 target_include_directories(test_translations PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_compile_definitions(test_translations PRIVATE
