@@ -34,6 +34,8 @@ qt_add_executable(feather-pdf
     backends/Comparer.h
     backends/Watermarker.cpp
     backends/Watermarker.h
+    backends/BatchRunner.cpp
+    backends/BatchRunner.h
     backends/Flattener.cpp
     backends/Flattener.h
     backends/Splitter.cpp
@@ -110,6 +112,10 @@ qt_add_executable(feather-pdf
     ui/CompareReportDialog.h
     ui/SanitizeDialog.cpp
     ui/SanitizeDialog.h
+    ui/BatchDialog.cpp
+    ui/BatchDialog.h
+    ui/StepConfigDialog.cpp
+    ui/StepConfigDialog.h
     ui/PdfADialog.cpp
     ui/PdfADialog.h
     ui/OptimizeDialog.cpp

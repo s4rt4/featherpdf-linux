@@ -325,6 +325,31 @@ target_link_libraries(test_signer PRIVATE
 add_test(NAME signer COMMAND test_signer)
 set_tests_properties(signer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_batchrunner
+    test_batchrunner.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/BatchRunner.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/BatchRunner.h
+    ${CMAKE_SOURCE_DIR}/src/backends/PdfEditor.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Optimizer.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Sanitizer.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Watermarker.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Flattener.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/PdfA.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Ocr.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/OcrPreprocess.cpp
+)
+target_include_directories(test_batchrunner PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_batchrunner PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Pdf
+    Qt6::Test
+    PkgConfig::QPDF
+    PkgConfig::POPPLER_QT6
+)
+add_test(NAME batchrunner COMMAND test_batchrunner)
+set_tests_properties(batchrunner PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_cli test_cli.cpp)
 target_include_directories(test_cli PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_compile_definitions(test_cli PRIVATE FEATHERPDF_BIN="$<TARGET_FILE:feather-pdf>")

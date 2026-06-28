@@ -690,6 +690,41 @@ QList<Group> buildDocs() {
               "sesuai (font aneh, transparansi), jadi berkas terkonversi pun bisa gagal preflight "
               "ketat. Preflight butuh alat veraPDF di PATH (https://verapdf.org); tanpanya, konversi "
               "tetap jalan tapi validasi tak tersedia.</p>")});
+    output.topics.append(
+        {"batch", "Batch / Action", "Batch / Aksi",
+         sect("en", "<p>Build a sequence of operations once, then run it over many files.</p>",
+              "<p>Apply the same pipeline - optimise, watermark, number, stamp a header/footer, "
+              "sanitise, encrypt, rotate, flatten, PDF/A, OCR - to a whole folder of PDFs in one "
+              "go.</p>",
+              "<p>An <b>action</b> is an ordered list of steps, each one of the document operations "
+              "with its own parameters. Every input file is piped through the steps in order via "
+              "temporary files (the same backends the tools and CLI use), so several operations "
+              "compose into one output. Results are written to the output folder, named after the "
+              "source plus a suffix.</p>",
+              "<ul><li>Open the <b>Batch / Action</b> tool (or Tools ▸ Batch / Action…). "
+              "<b>Add files…</b> to build the queue, <b>Add step…</b> to append operations (edit, "
+              "reorder, or remove them), choose the <b>output folder</b> and <b>filename suffix</b>, "
+              "then <b>Run</b>. A progress bar tracks the queue and a summary lists any "
+              "failures.</li></ul>",
+              "<p>Steps run in the order shown - put Optimize or OCR before stamping if you want "
+              "the marks preserved. A failing step reports the file and the step name and moves on "
+              "to the next file. The originals are never modified.</p>"),
+         sect("id", "<p>Susun urutan operasi sekali, lalu jalankan ke banyak berkas.</p>",
+              "<p>Terapkan pipeline yang sama - optimasi, watermark, penomoran, header/footer, "
+              "sanitasi, enkripsi, putar, ratakan, PDF/A, OCR - ke satu folder PDF sekaligus.</p>",
+              "<p>Sebuah <b>aksi</b> adalah daftar langkah berurutan, masing-masing salah satu "
+              "operasi dokumen dengan parameternya sendiri. Setiap berkas masukan dialirkan melalui "
+              "langkah-langkah secara berurutan lewat berkas sementara (backend yang sama dipakai "
+              "tool dan CLI), sehingga beberapa operasi tergabung jadi satu keluaran. Hasil ditulis "
+              "ke folder keluaran, dinamai sesuai sumber plus akhiran.</p>",
+              "<ul><li>Buka tool <b>Batch / Action</b> (atau Tools ▸ Batch / Action…). "
+              "<b>Add files…</b> untuk menyusun antrean, <b>Add step…</b> untuk menambah operasi "
+              "(edit, urutkan ulang, atau hapus), pilih <b>folder keluaran</b> dan <b>akhiran nama "
+              "berkas</b>, lalu <b>Run</b>. Bilah kemajuan melacak antrean dan ringkasan menampilkan "
+              "kegagalan.</li></ul>",
+              "<p>Langkah berjalan sesuai urutan yang tampil - taruh Optimize atau OCR sebelum "
+              "stempel bila ingin tandanya tetap ada. Langkah yang gagal melaporkan berkas dan nama "
+              "langkah lalu lanjut ke berkas berikutnya. Berkas asli tak pernah diubah.</p>")});
     g.append(output);
 
     // ── Security ─────────────────────────────────────────────────────────────

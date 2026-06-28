@@ -57,6 +57,7 @@
 #include "ui/LinkUrlDialog.h"
 #include "ui/LinksDialog.h"
 #include "ui/OptimizeDialog.h"
+#include "ui/BatchDialog.h"
 #include "ui/SanitizeDialog.h"
 #include "ui/PdfADialog.h"
 #include "ui/StampDialog.h"
@@ -390,6 +391,7 @@ void MainWindow::buildMenus() {
         {"flatten", tr("Flatten…"), false},
         {"protect", tr("Protect…"), false},    {"sign", tr("Sign…"), false},
         {"stamp", tr("Stamp…"), false},        {"pdfa", tr("PDF/A & Preflight…"), true},
+        {"batch", tr("Batch / Action…"), false},
     };
     for (const ToolEntry& e : toolEntries) {
         const QString id = QString::fromLatin1(e.id);
@@ -1767,6 +1769,16 @@ void MainWindow::convertToPdfA() {
     dialog.exec();
 }
 
+void MainWindow::runBatch() {
+    // The wizard runs over a list of files, not the active document, so it does
+    // not require an open doc — but if one is open, seed the queue with it.
+    QStringList seed;
+    if (hasActiveDoc())
+        seed << m_doc->filePath();
+    BatchDialog dialog(seed, this);
+    dialog.exec();
+}
+
 void MainWindow::addLink() {
     if (!hasActiveDoc())
         return;
@@ -1944,6 +1956,8 @@ void MainWindow::activateTool(const QString& id) {
         recognizeText();
     } else if (id == QLatin1String("pdfa")) {
         convertToPdfA();
+    } else if (id == QLatin1String("batch")) {
+        runBatch();
     } else if (id == QLatin1String("create")) {
         createPdf();
     } else if (id == QLatin1String("export")) {

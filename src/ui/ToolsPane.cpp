@@ -188,6 +188,7 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
         {"sign", QT_TR_NOOP("Sign"), "sign", false},
         {"stamp", QT_TR_NOOP("Stamp"), "stamp", false},
         {"pdfa", QT_TR_NOOP("PDF/A"), "badge-check", false},
+        {"batch", QT_TR_NOOP("Batch / Action"), "gear", false},
     };
     for (const Def& d : defs) {
         m_catalog.append({QString::fromLatin1(d.id), tr(d.label), QString::fromLatin1(d.icon),
