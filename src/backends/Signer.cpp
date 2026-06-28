@@ -18,7 +18,11 @@
 
 #include <QDateTime>
 #include <QFile>
+#include <QFileInfo>
 #include <QObject>
+#include <QProcess>
+#include <QStandardPaths>
+#include <QTemporaryDir>
 
 #include <memory>
 
@@ -58,7 +62,7 @@ QStringList Signer::availableCertificates() {
 
 bool Signer::sign(const QString& inputPath, const QString& outputPath, const QString& certName,
                   const QString& password, const QString& reason, const QString& location,
-                  int page, const QRectF& rect, QString* error) {
+                  int page, const QRectF& rect, const QString& imagePath, QString* error) {
     // Resolve the display name back to the NSS nickname the backend signs with.
     QString nickname;
     for (const Poppler::CertificateInfo& c : Poppler::getAvailableSigningCertificates()) {
@@ -94,6 +98,9 @@ bool Signer::sign(const QString& inputPath, const QString& outputPath, const QSt
     if (!reason.isEmpty())
         text += QStringLiteral("\n") + reason;
     data.setSignatureText(QObject::tr("Digitally signed by\n%1").arg(text));
+    // A graphical signature: draw the chosen image behind the appearance widget.
+    if (!imagePath.isEmpty() && QFileInfo::exists(imagePath))
+        data.setImagePath(imagePath);
     if (!reason.isEmpty())
         data.setReason(reason);
     if (!location.isEmpty())
@@ -116,6 +123,67 @@ bool Signer::sign(const QString& inputPath, const QString& outputPath, const QSt
         QFile::remove(target);
         return false;
     }
+    return true;
+}
+
+bool Signer::timestamp(const QString& filePath, const QString& tsaUrl,
+                       const QString& outTokenPath, QString* error) {
+    const auto fail = [&](const QString& m) {
+        if (error)
+            *error = m;
+        return false;
+    };
+    const QString openssl = QStandardPaths::findExecutable(QStringLiteral("openssl"));
+    const QString curl = QStandardPaths::findExecutable(QStringLiteral("curl"));
+    if (openssl.isEmpty() || curl.isEmpty())
+        return fail(QObject::tr("Trusted timestamping needs 'openssl' and 'curl' on your PATH."));
+    if (tsaUrl.isEmpty())
+        return fail(QObject::tr("No timestamp authority (TSA) URL was given."));
+    if (!QFileInfo::exists(filePath))
+        return fail(QObject::tr("The file to timestamp no longer exists."));
+
+    QTemporaryDir tmp;
+    if (!tmp.isValid())
+        return fail(QObject::tr("Couldn't create a temporary working directory."));
+    const QString tsq = tmp.filePath(QStringLiteral("request.tsq"));
+    const QString tsr = tmp.filePath(QStringLiteral("response.tsr"));
+
+    const auto okRun = [](const QString& prog, const QStringList& args, int ms) {
+        QProcess p;
+        p.start(prog, args);
+        return p.waitForFinished(ms) && p.exitStatus() == QProcess::NormalExit
+            && p.exitCode() == 0;
+    };
+
+    // 1) Build an RFC 3161 query over the file's SHA-256 (request the TSA's cert).
+    if (!okRun(openssl,
+               {QStringLiteral("ts"), QStringLiteral("-query"), QStringLiteral("-data"), filePath,
+                QStringLiteral("-sha256"), QStringLiteral("-cert"), QStringLiteral("-out"), tsq},
+               15000))
+        return fail(QObject::tr("Couldn't build the timestamp request."));
+
+    // 2) POST it to the timestamp authority.
+    if (!okRun(curl,
+               {QStringLiteral("-s"), QStringLiteral("-S"), QStringLiteral("--max-time"),
+                QStringLiteral("25"), QStringLiteral("-H"),
+                QStringLiteral("Content-Type: application/timestamp-query"),
+                QStringLiteral("--data-binary"), QStringLiteral("@") + tsq, tsaUrl,
+                QStringLiteral("-o"), tsr},
+               30000))
+        return fail(QObject::tr("Couldn't reach the timestamp authority. Check the TSA URL and "
+                                "your connection."));
+
+    // 3) Confirm the reply is a well-formed RFC 3161 timestamp response.
+    if (!okRun(openssl,
+               {QStringLiteral("ts"), QStringLiteral("-reply"), QStringLiteral("-in"), tsr,
+                QStringLiteral("-text")},
+               15000))
+        return fail(QObject::tr("The timestamp authority's reply wasn't a valid RFC 3161 token."));
+
+    // 4) Save the token next to the signed file.
+    QFile::remove(outTokenPath);
+    if (!QFile::copy(tsr, outTokenPath))
+        return fail(QObject::tr("Couldn't save the timestamp token."));
     return true;
 }
 

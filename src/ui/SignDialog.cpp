@@ -18,12 +18,19 @@
 
 #include "ui/Theme.h"
 
+#include <QButtonGroup>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QFormLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QRadioButton>
+#include <QSettings>
 #include <QVBoxLayout>
 
 SignDialog::SignDialog(const QStringList& certificates, QWidget* parent) : QDialog(parent) {
@@ -50,7 +57,12 @@ SignDialog::SignDialog(const QStringList& certificates, QWidget* parent) : QDial
             "QComboBox::drop-down { border:none; width:26px; }"
             "QComboBox::down-arrow { image:url(%6); width:13px; height:13px; }"
             "QComboBox QAbstractItemView { background:%1; border:1px solid %3; border-radius:8px;"
-            " padding:4px; outline:0; selection-background-color:%7; selection-color:%4; }")
+            " padding:4px; outline:0; selection-background-color:%7; selection-color:%4; }"
+            "QRadioButton, QCheckBox { color:%4; spacing:7px; }"
+            "QRadioButton:disabled, QCheckBox:disabled, QLineEdit:disabled { color:%2; }"
+            "QPushButton#Browse { background:%1; border:1px solid %3; border-radius:8px;"
+            " padding:6px 12px; color:%4; }"
+            "QPushButton#Browse:hover { border:1px solid %5; }")
             .arg(css(p.surface), css(p.dim), css(ctlBorder), css(p.text), css(p.accent), chevDown,
                  css(p.accentTint)));
 
@@ -83,7 +95,71 @@ SignDialog::SignDialog(const QStringList& certificates, QWidget* parent) : QDial
     form->addRow(tr("Reason"), m_reason);
     form->addRow(tr("Location"), m_location);
     form->addRow(tr("Password"), m_password);
+
+    // Appearance: the default text block, or a graphical (image) signature.
+    m_apprText = new QRadioButton(tr("Text"), this);
+    m_apprImage = new QRadioButton(tr("Image"), this);
+    m_apprText->setChecked(true);
+    auto* apprGroup = new QButtonGroup(this);
+    apprGroup->addButton(m_apprText);
+    apprGroup->addButton(m_apprImage);
+    auto* apprRow = new QHBoxLayout;
+    apprRow->setSpacing(16);
+    apprRow->addWidget(m_apprText);
+    apprRow->addWidget(m_apprImage);
+    apprRow->addStretch(1);
+    form->addRow(tr("Appearance"), apprRow);
+
+    m_imagePath = new QLineEdit(this);
+    m_imagePath->setPlaceholderText(tr("Choose a PNG or JPEG of your signature"));
+    m_imagePath->setReadOnly(true);
+    auto* browse = new QPushButton(tr("Browse…"), this);
+    browse->setObjectName(QStringLiteral("Browse"));
+    browse->setCursor(Qt::PointingHandCursor);
+    auto* imgRow = new QHBoxLayout;
+    imgRow->setSpacing(8);
+    imgRow->addWidget(m_imagePath, 1);
+    imgRow->addWidget(browse);
+    form->addRow(QString(), imgRow);
+
+    // Trusted timestamp (RFC 3161) — a detached .tsr sidecar next to the signed file.
+    QSettings settings;
+    m_timestamp = new QCheckBox(tr("Add a trusted timestamp (RFC 3161)"), this);
+    m_timestamp->setChecked(
+        settings.value(QStringLiteral("sign/timestamp"), false).toBool());
+    form->addRow(QString(), m_timestamp);
+
+    m_tsaUrl = new QLineEdit(this);
+    m_tsaUrl->setText(settings
+                          .value(QStringLiteral("sign/tsaUrl"),
+                                 QStringLiteral("https://freetsa.org/tsr"))
+                          .toString());
+    m_tsaUrl->setPlaceholderText(tr("https://your-tsa.example/tsr"));
+    form->addRow(tr("TSA URL"), m_tsaUrl);
+
     root->addLayout(form);
+
+    // Image fields follow the Image radio; the TSA URL follows the checkbox.
+    const auto syncImage = [this] {
+        const bool on = m_apprImage->isChecked();
+        m_imagePath->setEnabled(on);
+    };
+    connect(m_apprText, &QRadioButton::toggled, this, syncImage);
+    connect(m_apprImage, &QRadioButton::toggled, this, syncImage);
+    syncImage();
+    connect(browse, &QPushButton::clicked, this, [this] {
+        const QString f = QFileDialog::getOpenFileName(
+            this, tr("Choose signature image"), QString(),
+            tr("Images (*.png *.jpg *.jpeg)"));
+        if (!f.isEmpty()) {
+            m_imagePath->setText(f);
+            m_apprImage->setChecked(true);
+        }
+    });
+
+    const auto syncTsa = [this] { m_tsaUrl->setEnabled(m_timestamp->isChecked()); };
+    connect(m_timestamp, &QCheckBox::toggled, this, syncTsa);
+    syncTsa();
 
     root->addStretch(1);
 
@@ -93,7 +169,13 @@ SignDialog::SignDialog(const QStringList& certificates, QWidget* parent) : QDial
     sign->setObjectName(QStringLiteral("Share"));
     sign->setCursor(Qt::PointingHandCursor);
     sign->setEnabled(!certificates.isEmpty());
-    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::accepted, this, [this] {
+        // Remember the timestamp choice and TSA URL for next time.
+        QSettings settings;
+        settings.setValue(QStringLiteral("sign/timestamp"), m_timestamp->isChecked());
+        settings.setValue(QStringLiteral("sign/tsaUrl"), m_tsaUrl->text().trimmed());
+        accept();
+    });
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     root->addWidget(buttons);
 
@@ -104,3 +186,13 @@ QString SignDialog::certificate() const { return m_cert->currentText(); }
 QString SignDialog::reason() const { return m_reason->text().trimmed(); }
 QString SignDialog::location() const { return m_location->text().trimmed(); }
 QString SignDialog::password() const { return m_password->text(); }
+
+QString SignDialog::imagePath() const {
+    if (!m_apprImage->isChecked())
+        return QString();
+    const QString p = m_imagePath->text().trimmed();
+    return QFileInfo::exists(p) ? p : QString();
+}
+
+bool SignDialog::wantsTimestamp() const { return m_timestamp->isChecked(); }
+QString SignDialog::tsaUrl() const { return m_tsaUrl->text().trimmed(); }

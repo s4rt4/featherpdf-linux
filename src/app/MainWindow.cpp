@@ -2586,14 +2586,29 @@ void MainWindow::signDocument() {
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString error;
     const bool ok = Signer::sign(m_doc->filePath(), out, dialog.certificate(), dialog.password(),
-                                 dialog.reason(), dialog.location(), orig, rect, &error);
+                                 dialog.reason(), dialog.location(), orig, rect,
+                                 dialog.imagePath(), &error);
     QApplication::restoreOverrideCursor();
 
     if (!ok) {
         QMessageBox::warning(this, tr("Couldn't sign"), error);
         return;
     }
-    m_toast->show(tr("Signed and saved to %1").arg(QFileInfo(out).fileName()));
+
+    // Optionally pin the signed file in time with an RFC 3161 trusted timestamp.
+    if (dialog.wantsTimestamp()) {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        QString tsError;
+        const QString token = out + QStringLiteral(".tsr");
+        const bool stamped = Signer::timestamp(out, dialog.tsaUrl(), token, &tsError);
+        QApplication::restoreOverrideCursor();
+        if (stamped)
+            m_toast->show(tr("Signed, and timestamped to %1").arg(QFileInfo(token).fileName()));
+        else
+            QMessageBox::warning(this, tr("Signed, but timestamping failed"), tsError);
+    } else {
+        m_toast->show(tr("Signed and saved to %1").arg(QFileInfo(out).fileName()));
+    }
     openPath(out);
     // Show the verification result for the freshly signed copy.
     SignaturesDialog(Signer::verify(out), this).exec();

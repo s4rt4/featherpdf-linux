@@ -1570,9 +1570,9 @@
         <location filename="../src/app/MainWindow.cpp" line="2478"/>
         <location filename="../src/app/MainWindow.cpp" line="2536"/>
         <location filename="../src/app/MainWindow.cpp" line="2582"/>
-        <location filename="../src/app/MainWindow.cpp" line="2638"/>
-        <location filename="../src/app/MainWindow.cpp" line="2678"/>
-        <location filename="../src/app/MainWindow.cpp" line="2710"/>
+        <location filename="../src/app/MainWindow.cpp" line="2653"/>
+        <location filename="../src/app/MainWindow.cpp" line="2693"/>
+        <location filename="../src/app/MainWindow.cpp" line="2725"/>
         <source>PDF documents (*.pdf)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2400,144 +2400,154 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2593"/>
+        <location filename="../src/app/MainWindow.cpp" line="2594"/>
         <source>Couldn&apos;t sign</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2596"/>
+        <location filename="../src/app/MainWindow.cpp" line="2606"/>
+        <source>Signed, and timestamped to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2608"/>
+        <source>Signed, but timestamping failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2610"/>
         <source>Signed and saved to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2613"/>
-        <location filename="../src/app/MainWindow.cpp" line="2619"/>
+        <location filename="../src/app/MainWindow.cpp" line="2628"/>
+        <location filename="../src/app/MainWindow.cpp" line="2634"/>
         <source>Recognize Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2614"/>
+        <location filename="../src/app/MainWindow.cpp" line="2629"/>
         <source>Text recognition needs Tesseract, which isn&apos;t installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2620"/>
+        <location filename="../src/app/MainWindow.cpp" line="2635"/>
         <source>No Tesseract language data is installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2637"/>
+        <location filename="../src/app/MainWindow.cpp" line="2652"/>
         <source>Save recognized PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2643"/>
+        <location filename="../src/app/MainWindow.cpp" line="2658"/>
         <source>Recognizing text… this may take a while.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2650"/>
+        <location filename="../src/app/MainWindow.cpp" line="2665"/>
         <source>Couldn&apos;t recognize text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2651"/>
+        <location filename="../src/app/MainWindow.cpp" line="2666"/>
         <source>Text recognition failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2654"/>
+        <location filename="../src/app/MainWindow.cpp" line="2669"/>
         <source>Recognized text - saved to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2677"/>
+        <location filename="../src/app/MainWindow.cpp" line="2692"/>
         <source>Save protected PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2694"/>
+        <location filename="../src/app/MainWindow.cpp" line="2709"/>
         <source>Couldn&apos;t protect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2699"/>
+        <location filename="../src/app/MainWindow.cpp" line="2714"/>
         <source>Saved protected copy to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2709"/>
+        <location filename="../src/app/MainWindow.cpp" line="2724"/>
         <source>Save unprotected PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2721"/>
+        <location filename="../src/app/MainWindow.cpp" line="2736"/>
         <source>Couldn&apos;t remove password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2724"/>
+        <location filename="../src/app/MainWindow.cpp" line="2739"/>
         <source>Saved unprotected copy to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2742"/>
+        <location filename="../src/app/MainWindow.cpp" line="2757"/>
         <source>Couldn&apos;t save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2748"/>
+        <location filename="../src/app/MainWindow.cpp" line="2763"/>
         <source>Saved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2783"/>
+        <location filename="../src/app/MainWindow.cpp" line="2798"/>
         <source>Saved to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2784"/>
+        <location filename="../src/app/MainWindow.cpp" line="2799"/>
         <source>Sent to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2911"/>
+        <location filename="../src/app/MainWindow.cpp" line="2926"/>
         <source>Incorrect password. Try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2917"/>
+        <location filename="../src/app/MainWindow.cpp" line="2932"/>
         <source>Couldn&apos;t open document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3050"/>
+        <location filename="../src/app/MainWindow.cpp" line="3065"/>
         <source>Open PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3050"/>
+        <location filename="../src/app/MainWindow.cpp" line="3065"/>
         <source>PDF documents (*.pdf);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3073"/>
-        <location filename="../src/app/MainWindow.cpp" line="3099"/>
+        <location filename="../src/app/MainWindow.cpp" line="3088"/>
+        <location filename="../src/app/MainWindow.cpp" line="3114"/>
         <source>Unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3074"/>
+        <location filename="../src/app/MainWindow.cpp" line="3089"/>
         <source>Save changes to “%1” before closing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3075"/>
+        <location filename="../src/app/MainWindow.cpp" line="3090"/>
         <source>Your changes will be lost if you don&apos;t save them.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="3100"/>
+        <location filename="../src/app/MainWindow.cpp" line="3115"/>
         <source>%n document(s) have unsaved changes.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2545,17 +2555,17 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3101"/>
+        <location filename="../src/app/MainWindow.cpp" line="3116"/>
         <source>Save them before closing Feather PDF?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3123"/>
+        <location filename="../src/app/MainWindow.cpp" line="3138"/>
         <source>Close Feather PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="3124"/>
+        <location filename="../src/app/MainWindow.cpp" line="3139"/>
         <source>%n tab(s) are open. Close them all?</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2563,128 +2573,128 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3136"/>
+        <location filename="../src/app/MainWindow.cpp" line="3151"/>
         <source>%1 | Feather PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3138"/>
-        <location filename="../src/app/MainWindow.cpp" line="3235"/>
+        <location filename="../src/app/MainWindow.cpp" line="3153"/>
+        <location filename="../src/app/MainWindow.cpp" line="3250"/>
         <source>Feather PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3185"/>
+        <location filename="../src/app/MainWindow.cpp" line="3200"/>
         <source>%1 / %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3196"/>
+        <location filename="../src/app/MainWindow.cpp" line="3211"/>
         <source>%1%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3241"/>
+        <location filename="../src/app/MainWindow.cpp" line="3256"/>
         <source>Version %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3248"/>
+        <location filename="../src/app/MainWindow.cpp" line="3263"/>
         <source>Light on the system, full-featured on PDF.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3254"/>
+        <location filename="../src/app/MainWindow.cpp" line="3269"/>
         <source>A native, open-source PDF tool for Linux, licensed under the GPLv3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3268"/>
+        <location filename="../src/app/MainWindow.cpp" line="3283"/>
         <source>&lt;a style=&apos;%1&apos; href=&apos;https://github.com/s4rt4/featherpdf-linux&apos;&gt;GitHub&lt;/a&gt;&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;&lt;a style=&apos;%1&apos; href=&apos;https://www.gnu.org/licenses/gpl-3.0.html&apos;&gt;License&lt;/a&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3289"/>
+        <location filename="../src/app/MainWindow.cpp" line="3304"/>
         <source>Document properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3307"/>
+        <location filename="../src/app/MainWindow.cpp" line="3322"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3308"/>
+        <location filename="../src/app/MainWindow.cpp" line="3323"/>
         <source>Author</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3309"/>
+        <location filename="../src/app/MainWindow.cpp" line="3324"/>
         <source>Subject</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3310"/>
+        <location filename="../src/app/MainWindow.cpp" line="3325"/>
         <source>Keywords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3311"/>
+        <location filename="../src/app/MainWindow.cpp" line="3326"/>
         <source>Creator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3312"/>
+        <location filename="../src/app/MainWindow.cpp" line="3327"/>
         <source>Producer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3316"/>
+        <location filename="../src/app/MainWindow.cpp" line="3331"/>
         <source>Created</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3321"/>
+        <location filename="../src/app/MainWindow.cpp" line="3336"/>
         <source> (was %1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3322"/>
+        <location filename="../src/app/MainWindow.cpp" line="3337"/>
         <source>Pages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3325"/>
+        <location filename="../src/app/MainWindow.cpp" line="3340"/>
         <source>Page size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3325"/>
+        <location filename="../src/app/MainWindow.cpp" line="3340"/>
         <source>%1 × %2 pt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3328"/>
+        <location filename="../src/app/MainWindow.cpp" line="3343"/>
         <source>File size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3329"/>
+        <location filename="../src/app/MainWindow.cpp" line="3344"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3340"/>
+        <location filename="../src/app/MainWindow.cpp" line="3355"/>
         <source>%1 arrives in a later milestone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3362"/>
+        <location filename="../src/app/MainWindow.cpp" line="3377"/>
         <source>No recent documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3373"/>
+        <location filename="../src/app/MainWindow.cpp" line="3388"/>
         <source>Clear list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3393,39 +3403,79 @@ Result: %3
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/backends/Signer.cpp" line="35"/>
+        <location filename="../src/backends/Signer.cpp" line="39"/>
         <source>Valid - the document is intact.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/backends/Signer.cpp" line="37"/>
+        <location filename="../src/backends/Signer.cpp" line="41"/>
         <source>The document was changed after it was signed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/backends/Signer.cpp" line="39"/>
+        <location filename="../src/backends/Signer.cpp" line="43"/>
         <source>Invalid signature.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/backends/Signer.cpp" line="41"/>
+        <location filename="../src/backends/Signer.cpp" line="45"/>
         <source>The signature is malformed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/backends/Signer.cpp" line="43"/>
+        <location filename="../src/backends/Signer.cpp" line="47"/>
         <source>No signature found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/backends/Signer.cpp" line="45"/>
+        <location filename="../src/backends/Signer.cpp" line="49"/>
         <source>The signature could not be verified.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/backends/Signer.cpp" line="96"/>
+        <location filename="../src/backends/Signer.cpp" line="100"/>
         <source>Digitally signed by
 %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Signer.cpp" line="139"/>
+        <source>Trusted timestamping needs &apos;openssl&apos; and &apos;curl&apos; on your PATH.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Signer.cpp" line="141"/>
+        <source>No timestamp authority (TSA) URL was given.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Signer.cpp" line="143"/>
+        <source>The file to timestamp no longer exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Signer.cpp" line="147"/>
+        <source>Couldn&apos;t create a temporary working directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Signer.cpp" line="163"/>
+        <source>Couldn&apos;t build the timestamp request.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Signer.cpp" line="173"/>
+        <source>Couldn&apos;t reach the timestamp authority. Check the TSA URL and your connection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Signer.cpp" line="181"/>
+        <source>The timestamp authority&apos;s reply wasn&apos;t a valid RFC 3161 token.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Signer.cpp" line="186"/>
+        <source>Couldn&apos;t save the timestamp token.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3599,52 +3649,102 @@ Result: %3
 <context>
     <name>SignDialog</name>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="30"/>
+        <location filename="../src/ui/SignDialog.cpp" line="37"/>
         <source>Sign Document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="62"/>
+        <location filename="../src/ui/SignDialog.cpp" line="74"/>
         <source>Sign with a certificate from your system. The signature is placed on the current page; anyone can then verify the document is intact.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="76"/>
+        <location filename="../src/ui/SignDialog.cpp" line="88"/>
         <source>e.g. Approved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="78"/>
+        <location filename="../src/ui/SignDialog.cpp" line="90"/>
         <source>e.g. Jakarta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="81"/>
+        <location filename="../src/ui/SignDialog.cpp" line="93"/>
         <source>Leave empty if the key has no password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="82"/>
+        <location filename="../src/ui/SignDialog.cpp" line="94"/>
         <source>Certificate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="83"/>
+        <location filename="../src/ui/SignDialog.cpp" line="95"/>
         <source>Reason</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="84"/>
+        <location filename="../src/ui/SignDialog.cpp" line="96"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="85"/>
+        <location filename="../src/ui/SignDialog.cpp" line="97"/>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/SignDialog.cpp" line="91"/>
+        <location filename="../src/ui/SignDialog.cpp" line="100"/>
+        <source>Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="101"/>
+        <source>Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="111"/>
+        <source>Appearance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="114"/>
+        <source>Choose a PNG or JPEG of your signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="116"/>
+        <source>Browse…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="127"/>
+        <source>Add a trusted timestamp (RFC 3161)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="137"/>
+        <source>https://your-tsa.example/tsr</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="138"/>
+        <source>TSA URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="152"/>
+        <source>Choose signature image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="153"/>
+        <source>Images (*.png *.jpg *.jpeg)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SignDialog.cpp" line="167"/>
         <source>Sign</source>
         <translation type="unfinished"></translation>
     </message>
