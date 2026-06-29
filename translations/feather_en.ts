@@ -4811,7 +4811,7 @@ Result: %3
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="137"/>
-        <location filename="../src/ui/ToolsPane.cpp" line="285"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="286"/>
         <source>Collapse the tools pane</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4852,103 +4852,108 @@ Result: %3
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="176"/>
-        <source>Comment</source>
+        <source>Prepare form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="177"/>
-        <source>Combine</source>
+        <source>Comment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="178"/>
-        <source>Split</source>
+        <source>Combine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="179"/>
-        <source>Compare</source>
+        <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="180"/>
-        <source>Optimize</source>
+        <source>Compare</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="181"/>
-        <source>RGB to CMYK</source>
+        <source>Optimize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="182"/>
-        <source>Watermark</source>
+        <source>RGB to CMYK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="183"/>
-        <source>Bates numbering</source>
+        <source>Watermark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="184"/>
-        <source>Protect</source>
+        <source>Bates numbering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="185"/>
-        <source>Flatten</source>
+        <source>Protect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="186"/>
-        <source>Organize</source>
+        <source>Flatten</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="187"/>
-        <source>Redact</source>
+        <source>Organize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="188"/>
-        <source>Snapshot</source>
+        <source>Redact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="189"/>
-        <source>Measure</source>
+        <source>Snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="190"/>
-        <source>Sign</source>
+        <source>Measure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="191"/>
-        <source>Stamp</source>
+        <source>Sign</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="192"/>
-        <source>PDF/A</source>
+        <source>Stamp</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="193"/>
+        <source>PDF/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ToolsPane.cpp" line="194"/>
         <source>Batch / Action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="206"/>
-        <location filename="../src/ui/ToolsPane.cpp" line="283"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="207"/>
         <location filename="../src/ui/ToolsPane.cpp" line="284"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="285"/>
         <source>Customize tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="285"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="286"/>
         <source>Expand the tools pane</source>
         <translation type="unfinished"></translation>
     </message>

@@ -173,6 +173,7 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
         {"edit", QT_TR_NOOP("Edit text"), "edit", false},
         {"read-aloud", QT_TR_NOOP("Read aloud"), "volume-2", false},
         {"forms", QT_TR_NOOP("Forms"), "form", false},
+        {"prepare-form", QT_TR_NOOP("Prepare form"), "wand", false},
         {"comment", QT_TR_NOOP("Comment"), "comment", false},
         {"combine", QT_TR_NOOP("Combine"), "combine", true},
         {"split", QT_TR_NOOP("Split"), "split", false},

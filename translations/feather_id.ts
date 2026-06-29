@@ -2425,7 +2425,9 @@
     <message numerus="yes">
         <location filename="../src/app/MainWindow.cpp" line="2197"/>
         <source>Scanned %n page(s) into %1.</source>
-        <translation><numerusform>Memindai %n halaman ke %1.</numerusform></translation>
+        <translation>
+            <numerusform>Memindai %n halaman ke %1.</numerusform>
+        </translation>
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="2417"/>
@@ -4803,7 +4805,7 @@ Hasil: %3
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="137"/>
-        <location filename="../src/ui/ToolsPane.cpp" line="285"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="286"/>
         <source>Collapse the tools pane</source>
         <translation>Ciutkan panel alat</translation>
     </message>
@@ -4844,103 +4846,108 @@ Hasil: %3
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="176"/>
+        <source>Prepare form</source>
+        <translation>Siapkan formulir</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ToolsPane.cpp" line="177"/>
         <source>Comment</source>
         <translation>Komentar</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="177"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="178"/>
         <source>Combine</source>
         <translation>Gabungkan</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="178"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="179"/>
         <source>Split</source>
         <translation>Pisahkan</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="179"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="180"/>
         <source>Compare</source>
         <translation>Bandingkan</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="180"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="181"/>
         <source>Optimize</source>
         <translation>Optimalkan</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="181"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="182"/>
         <source>RGB to CMYK</source>
         <translation>RGB ke CMYK</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="182"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="183"/>
         <source>Watermark</source>
         <translation>Watermark</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="183"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="184"/>
         <source>Bates numbering</source>
         <translation>Penomoran Bates</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="184"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="185"/>
         <source>Protect</source>
         <translation>Lindungi</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="185"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="186"/>
         <source>Flatten</source>
         <translation>Ratakan</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="186"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="187"/>
         <source>Organize</source>
         <translation>Atur</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="187"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="188"/>
         <source>Redact</source>
         <translation>Redaksi</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="188"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="189"/>
         <source>Snapshot</source>
         <translation>Cuplikan</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="189"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="190"/>
         <source>Measure</source>
         <translation>Ukur</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="190"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="191"/>
         <source>Sign</source>
         <translation>Tanda Tangani</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="191"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="192"/>
         <source>Stamp</source>
         <translation>Stempel</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="192"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="193"/>
         <source>PDF/A</source>
         <translation>PDF/A</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="193"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="194"/>
         <source>Batch / Action</source>
         <translation>Batch / Aksi</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="206"/>
-        <location filename="../src/ui/ToolsPane.cpp" line="283"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="207"/>
         <location filename="../src/ui/ToolsPane.cpp" line="284"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="285"/>
         <source>Customize tools</source>
         <translation>Sesuaikan alat</translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="285"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="286"/>
         <source>Expand the tools pane</source>
         <translation>Bentangkan panel alat</translation>
     </message>
