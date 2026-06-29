@@ -70,9 +70,10 @@ conversion (LibreOffice), **export back to Word/ODT/RTF/text** or **to
 PNG/JPEG/TIFF images**, AES-256 encryption, redaction (manual or **pattern-based
 Find & Redact**), **sanitize / remove hidden info**, watermarks,
 **headers/footers & page numbers**, **visual or word-level compare**,
-**PDF/A-1b tagging + veraPDF preflight**, and flattening. A **batch / action
-wizard** composes any of these operations into a pipeline and runs it over many
-files at once.
+**PDF/A-1b tagging + veraPDF preflight**, and flattening. **Read aloud** speaks
+the document sentence by sentence via speech-dispatcher — fully local, nothing
+leaves your machine. A **batch / action wizard** composes any of these
+operations into a pipeline and runs it over many files at once.
 
 **Command line** — the same binary runs **headless** when given a sub-command,
 for scripts, pipelines, and servers (no display needed):

@@ -71,6 +71,7 @@
 #include "ui/InsertDialog.h"
 #include "ui/FindBar.h"
 #include "ui/FloatingPill.h"
+#include "ui/ReadAloudBar.h"
 #include "ui/FormPanel.h"
 #include "ui/HomeView.h"
 #include "ui/LayersPanel.h"
@@ -383,6 +384,7 @@ void MainWindow::buildMenus() {
     const ToolEntry toolEntries[] = {
         {"create", tr("Create PDF…"), false},  {"export", tr("Export…"), false},
         {"ocr", tr("Recognize Text (OCR)…"), false}, {"edit", tr("Edit Text…"), false},
+        {"read-aloud", tr("Read Aloud…"), false},
         {"forms", tr("Forms"), false},
         {"prepare-form", tr("Prepare Form…"), true},
         {"combine", tr("Combine…"), false},    {"split", tr("Split…"), true},
@@ -429,12 +431,15 @@ void MainWindow::buildShell() {
     m_annotationBar->hide();
     m_measureBar = new MeasureBar(shell);
     m_measureBar->hide();
+    m_readAloudBar = new ReadAloudBar(shell);
+    m_readAloudBar->hide();
     outer->addWidget(m_tabStrip);
     outer->addWidget(m_commandBar);
     outer->addWidget(m_findBar);
     outer->addWidget(m_redactionBar);
     outer->addWidget(m_annotationBar);
     outer->addWidget(m_measureBar);
+    outer->addWidget(m_readAloudBar);
 
     auto* body = new QWidget(shell);
     auto* bodyRow = new QHBoxLayout(body);
@@ -722,6 +727,13 @@ void MainWindow::wireSignals() {
     connect(m_pill, &FloatingPill::goToPageRequested, this, promptGoToPage);
     connect(m_pill, &FloatingPill::readingModeToggleRequested, this,
             [this] { m_immersiveAct->toggle(); });
+
+    // Read-aloud bar: follow the spoken sentence, tidy up on close.
+    connect(m_readAloudBar, &ReadAloudBar::pageReached, this, [this](int page) {
+        if (m_viewport->currentPage() != page)
+            m_viewport->goToPage(page);
+    });
+    connect(m_readAloudBar, &ReadAloudBar::closed, this, [this] { m_readAloudBar->hide(); });
 
     // View actions → viewport.
     connect(m_zoomInAct, &QAction::triggered, m_viewport, &Viewport::zoomIn);
@@ -1183,6 +1195,27 @@ void MainWindow::prepareForm() {
     m_toast->show(tr("Added %n form field(s).", "", count));
     openPath(out);
     m_forms->reload();
+}
+
+void MainWindow::readAloud() {
+    if (!hasActiveDoc())
+        return;
+    if (!ReadAloudBar::isAvailable()) {
+        m_toast->show(tr("Read aloud needs speech-dispatcher (install the “speech-dispatcher” "
+                         "package)."));
+        return;
+    }
+
+    // Hide the sibling bars so only one strip shows at a time.
+    m_findBar->hide();
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    const int count = m_readAloudBar->start(m_doc->filePath(), m_viewport->currentPage());
+    QApplication::restoreOverrideCursor();
+    if (count == 0) {
+        m_readAloudBar->hide();
+        m_toast->show(tr("There's no readable text on these pages."));
+    }
 }
 
 void MainWindow::moveFormField(const QString& name) {
@@ -2008,6 +2041,8 @@ void MainWindow::activateTool(const QString& id) {
             m_rail->setCurrentPanel(NavigationRail::Panel::Forms);
             prepareForm();
         }
+    } else if (id == QLatin1String("read-aloud")) {
+        readAloud();
     } else if (id == QLatin1String("ocr")) {
         recognizeText();
     } else if (id == QLatin1String("pdfa")) {
@@ -3059,6 +3094,7 @@ void MainWindow::activateSession(int id) {
     if (target->undo)
         m_undoGroup->setActiveStack(target->undo);
     m_findBar->hide(); // search is per-document; setDocument clears the query
+    m_readAloudBar->stopAndHide(); // reading is per-document too
     m_searchIndex = 0;
     m_viewport->setDocument(m_doc);
     m_viewport->goToPage(target->lastPage);
@@ -3103,6 +3139,7 @@ void MainWindow::closeSession(int id) {
     if (wasActive) {
         m_activeId = -1;
         m_doc = nullptr;
+        m_readAloudBar->stopAndHide();
         m_viewport->clear();
         m_thumbnails->clear();
         m_outline->clear();

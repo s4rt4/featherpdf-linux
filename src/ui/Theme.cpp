@@ -327,6 +327,25 @@ QString Theme::styleSheet() const {
                .arg(css(p.surface), css(p.hairline), css(p.canvas), css(p.dim), css(p.text),
                     css(p.accent));
 
+    // Read-aloud bar - same slim strip as the find bar, with playback controls.
+    qss += QStringLiteral(
+               "#ReadAloudBar { background:%1; border-bottom:1px solid %2; }"
+               "#ReadAloudBar QToolButton { background:transparent; border:none; border-radius:7px; }"
+               "#ReadAloudBar QToolButton:hover { background:%3; }"
+               "#ReadAloudBar QToolButton:disabled { opacity:0.4; }"
+               "#ReadAloudBar QLabel#ReadAloudStatus { color:%4; font-size:12px; }"
+               "#ReadAloudBar QLabel#ReadAloudCaption { color:%4; font-size:12px; }"
+               "QComboBox#ReadAloudLang { background:%3; border:1px solid %2; border-radius:8px;"
+               " padding:4px 8px; color:%5; }"
+               "QComboBox#ReadAloudLang:focus { border:1px solid %6; }"
+               "QSlider#ReadAloudSpeed::groove:horizontal { height:4px; background:%3;"
+               " border-radius:2px; }"
+               "QSlider#ReadAloudSpeed::sub-page:horizontal { background:%6; border-radius:2px; }"
+               "QSlider#ReadAloudSpeed::handle:horizontal { width:14px; margin:-6px 0;"
+               " border-radius:7px; background:%6; }")
+               .arg(css(p.surface), css(p.hairline), css(p.canvas), css(p.dim), css(p.text),
+                    css(p.accent));
+
     // Left rail expandable panel (Thumbnails / Outline / …).
     qss += QStringLiteral(
                "#RailPanel { background:%1; border-right:1px solid %2; }"

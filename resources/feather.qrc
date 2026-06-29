@@ -49,6 +49,10 @@
   <file alias="sun.svg">icons/sun.svg</file>
   <file alias="thumbnails.svg">icons/thumbnails.svg</file>
   <file alias="x.svg">icons/x.svg</file>
+  <file alias="play.svg">icons/play.svg</file>
+  <file alias="pause.svg">icons/pause.svg</file>
+  <file alias="stop.svg">icons/stop.svg</file>
+  <file alias="volume-2.svg">icons/volume-2.svg</file>
   <file alias="file.svg">icons/file.svg</file>
   <file alias="feather-logo.svg">icons/feather-logo.svg</file>
   <file alias="wrench.svg">icons/wrench.svg</file>

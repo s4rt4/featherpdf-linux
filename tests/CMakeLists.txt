@@ -51,6 +51,21 @@ target_link_libraries(test_formdetector PRIVATE
 add_test(NAME formdetector COMMAND test_formdetector)
 set_tests_properties(formdetector PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_readaloud
+    test_readaloud.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/ReadAloud.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/ReadAloud.h
+)
+target_include_directories(test_readaloud PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_readaloud PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::POPPLER_QT6
+)
+add_test(NAME readaloud COMMAND test_readaloud)
+set_tests_properties(readaloud PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_annotator
     test_annotator.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Annotator.cpp

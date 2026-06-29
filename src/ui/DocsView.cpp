@@ -360,6 +360,36 @@ QList<Group> buildDocs() {
               "<p>\"No editable text boxes\" berarti kamu belum menambah apa pun - pakai alat anotasi "
               "<b>Text</b> dulu. Jembatan Draw butuh LibreOffice terpasang.</p>")});
     editing.topics.append(
+        {"read-aloud", "Read aloud", "Baca lantang",
+         sect("en", "<p>Have the document read out loud, one sentence at a time.</p>",
+              "<p>Listen to a PDF instead of reading it - useful for proofreading or accessibility, "
+              "and fully local.</p>",
+              "<p>Feather extracts the page text with Poppler, splits it into sentences, and speaks "
+              "each through <b>speech-dispatcher</b> (the system's <code>spd-say</code>). Nothing "
+              "leaves your machine - the same engine screen readers use. The view follows along, "
+              "scrolling to the page being spoken.</p>",
+              "<ul><li>Tools ▸ <b>Read Aloud</b> opens a playback bar and starts from the page you're "
+              "on.</li>"
+              "<li><b>Play/Pause</b> and <b>Stop</b> control playback; the <b>Speed</b> slider and "
+              "<b>language</b> picker tune the voice. Esc or ✕ closes the bar.</li></ul>",
+              "<p>If reading does nothing, install <code>speech-dispatcher</code> (and a synthesizer "
+              "such as espeak-ng). Scanned pages with no text layer have nothing to read - run OCR "
+              "first.</p>"),
+         sect("id", "<p>Dengarkan dokumen dibacakan, satu kalimat sekali.</p>",
+              "<p>Dengarkan PDF alih-alih membacanya - berguna untuk mengoreksi atau aksesibilitas, "
+              "dan sepenuhnya lokal.</p>",
+              "<p>Feather mengambil teks halaman dengan Poppler, memecahnya jadi kalimat, dan "
+              "membacakannya lewat <b>speech-dispatcher</b> (<code>spd-say</code> milik sistem). Tak "
+              "ada yang keluar dari mesinmu - mesin yang sama dipakai pembaca layar. Tampilan ikut "
+              "menggulir ke halaman yang sedang dibaca.</p>",
+              "<ul><li>Tools ▸ <b>Read Aloud</b> membuka bar pemutaran dan mulai dari halaman yang "
+              "kamu lihat.</li>"
+              "<li><b>Play/Pause</b> dan <b>Stop</b> mengontrol pemutaran; slider <b>Speed</b> dan "
+              "pemilih <b>bahasa</b> menyetel suara. Esc atau ✕ menutup bar.</li></ul>",
+              "<p>Jika tak ada suara, pasang <code>speech-dispatcher</code> (dan synthesizer seperti "
+              "espeak-ng). Halaman hasil pindai tanpa lapisan teks tak punya yang dibaca - jalankan "
+              "OCR dulu.</p>")});
+    editing.topics.append(
         {"combine", "Combine", "Combine",
          sect("en", "<p>Merge several PDFs into one.</p>",
               "<p>Assemble multiple documents in any order.</p>",

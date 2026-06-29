@@ -43,6 +43,7 @@ class FindBar;
 class RedactionBar;
 class AnnotationBar;
 class MeasureBar;
+class ReadAloudBar;
 class NavigationRail;
 class ToolsPane;
 class FloatingPill;
@@ -99,6 +100,7 @@ private:
     void saveOutline(const QVector<PdfEditor::OutlineItem>& items); // write /Outlines, open result
     void addFormField(); // author a new AcroForm field: configure, then place
     void prepareForm();  // auto-detect fillable areas, review, then add them all
+    void readAloud();    // speak the document via speech-dispatcher (Read Aloud bar)
     void placeFormField(int slot, const QRectF& normRect); // drawn rect → create/move field
     void moveFormField(const QString& name);   // start repositioning an existing field
     void deleteFormField(const QString& name); // remove an existing field
@@ -222,6 +224,7 @@ private:
     RedactionBar* m_redactionBar = nullptr;
     AnnotationBar* m_annotationBar = nullptr;
     MeasureBar* m_measureBar = nullptr;
+    ReadAloudBar* m_readAloudBar = nullptr;
     int m_searchIndex = 0;
     NavigationRail* m_rail = nullptr;
     ToolsPane* m_toolsPane = nullptr;
