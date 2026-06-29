@@ -93,11 +93,13 @@ FormPanel::FormPanel(QWidget* parent) : QWidget(parent) {
         return b;
     };
     m_add = makeBtn(tr("Add a field"));
+    m_prepare = makeBtn(tr("Prepare Form — detect fillable areas"));
     m_save = makeBtn(tr("Save the form"));
     auto* footer = new QHBoxLayout;
     footer->setContentsMargins(12, 8, 12, 12);
     footer->setSpacing(8);
     footer->addWidget(m_add);
+    footer->addWidget(m_prepare);
     footer->addStretch(1);
     footer->addWidget(m_save);
     col->addLayout(footer);
@@ -105,6 +107,7 @@ FormPanel::FormPanel(QWidget* parent) : QWidget(parent) {
     const auto applyIcons = [this] {
         const Theme::Palette& p = Theme::instance().palette();
         m_add->setIcon(Theme::instance().icon(QStringLiteral("plus"), p.text));
+        m_prepare->setIcon(Theme::instance().icon(QStringLiteral("form"), p.text));
         m_save->setIcon(Theme::instance().icon(QStringLiteral("save"), p.accent)); // primary
     };
     applyIcons();
@@ -112,6 +115,7 @@ FormPanel::FormPanel(QWidget* parent) : QWidget(parent) {
 
     connect(m_save, &QToolButton::clicked, this, [this] { emit saveRequested(m_values); });
     connect(m_add, &QToolButton::clicked, this, [this] { emit addFieldRequested(); });
+    connect(m_prepare, &QToolButton::clicked, this, [this] { emit prepareFormRequested(); });
 }
 
 void FormPanel::setDocumentPath(const QString& path) {
@@ -161,6 +165,7 @@ void FormPanel::rebuild() {
     layout->addStretch(1);
 
     m_add->setEnabled(!m_path.isEmpty()); // can author even on an empty form
+    m_prepare->setEnabled(!m_path.isEmpty());
 
     const QList<FormFiller::Field> fields = m_path.isEmpty() ? QList<FormFiller::Field>()
                                                              : FormFiller::read(m_path);

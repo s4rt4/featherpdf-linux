@@ -322,6 +322,72 @@ private slots:
         QVERIFY(!FormEditor::addField(m_input, out, f, &err));
         QVERIFY(!err.isEmpty());
     }
+
+    void writesFormatActions() {
+        // A Currency-formatted Text field carries the standard Acrobat /AA
+        // format + keystroke JavaScript so conforming viewers validate input.
+        const QString out = m_dir.filePath("currency.pdf");
+        FormEditor::NewField f;
+        f.type = FormEditor::Type::Text;
+        f.name = "amount";
+        f.page = 0;
+        f.rect = QRectF(0.1, 0.1, 0.3, 0.04);
+        f.format = FormEditor::Format::Currency;
+        QString err;
+        QVERIFY2(FormEditor::addField(m_input, out, f, &err), qPrintable(err));
+
+        QPDF q;
+        q.processFile(out.toLocal8Bit().constData());
+        QPDFObjectHandle field = acroFields(q).getArrayItem(0);
+        QPDFObjectHandle aa = field.getKey("/AA");
+        QVERIFY(aa.isDictionary());
+        QPDFObjectHandle fmt = aa.getKey("/F");
+        QVERIFY(fmt.isDictionary());
+        QCOMPARE(QString::fromStdString(fmt.getKey("/S").getName()), QStringLiteral("/JavaScript"));
+        const QString js = QString::fromStdString(fmt.getKey("/JS").getUTF8Value());
+        QVERIFY2(js.contains("AFNumber_Format"), qPrintable(js));
+        QVERIFY2(js.contains("$"), qPrintable(js));
+        QVERIFY(aa.getKey("/K").isDictionary()); // keystroke filter too
+
+        // A plain (None) field has no /AA.
+        const QString plain = m_dir.filePath("plain.pdf");
+        FormEditor::NewField g = f;
+        g.name = "plain";
+        g.format = FormEditor::Format::None;
+        QVERIFY2(FormEditor::addField(m_input, plain, g, &err), qPrintable(err));
+        QPDF q2;
+        q2.processFile(plain.toLocal8Bit().constData());
+        QVERIFY(!acroFields(q2).getArrayItem(0).getKey("/AA").isDictionary());
+    }
+
+    void addsManyFieldsAtOnce() {
+        // Batch add: several detected fields land in one write, radios skipped.
+        const QString out = m_dir.filePath("batch.pdf");
+        QList<FormEditor::NewField> fields;
+        for (int i = 0; i < 3; ++i) {
+            FormEditor::NewField f;
+            f.type = FormEditor::Type::Text;
+            f.name = QStringLiteral("f%1").arg(i);
+            f.page = i % 2;
+            f.rect = QRectF(0.1, 0.1 + i * 0.05, 0.3, 0.04);
+            fields.append(f);
+        }
+        FormEditor::NewField radio; // should be skipped by addFields
+        radio.type = FormEditor::Type::Radio;
+        radio.name = "ignored";
+        radio.page = 0;
+        radio.rect = QRectF(0.1, 0.5, 0.03, 0.02);
+        fields.append(radio);
+
+        int count = 0;
+        QString err;
+        QVERIFY2(FormEditor::addFields(m_input, out, fields, &count, &err), qPrintable(err));
+        QCOMPARE(count, 3);
+
+        QPDF q;
+        q.processFile(out.toLocal8Bit().constData());
+        QCOMPARE(acroFields(q).getArrayNItems(), 3);
+    }
 };
 
 QTEST_MAIN(TestFormEditor)

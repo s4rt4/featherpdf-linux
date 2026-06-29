@@ -98,6 +98,7 @@ private:
     void cropActivePages();       // trim page margins (/CropBox), open the result
     void saveOutline(const QVector<PdfEditor::OutlineItem>& items); // write /Outlines, open result
     void addFormField(); // author a new AcroForm field: configure, then place
+    void prepareForm();  // auto-detect fillable areas, review, then add them all
     void placeFormField(int slot, const QRectF& normRect); // drawn rect → create/move field
     void moveFormField(const QString& name);   // start repositioning an existing field
     void deleteFormField(const QString& name); // remove an existing field

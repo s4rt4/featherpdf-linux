@@ -39,6 +39,7 @@ public:
     QString defaultValue() const;
     bool checked() const;
     QStringList options() const; // dropdown choices, split from a comma list
+    FormEditor::Format format() const; // Text input format / validation
 
 private:
     void syncRows(); // show only the rows relevant to the chosen type
@@ -48,6 +49,8 @@ private:
     QLineEdit* m_default = nullptr;
     QCheckBox* m_checked = nullptr;
     QLineEdit* m_options = nullptr;
+    QComboBox* m_format = nullptr;
     QLabel* m_defaultLabel = nullptr;
     QLabel* m_optionsLabel = nullptr;
+    QLabel* m_formatLabel = nullptr;
 };

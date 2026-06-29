@@ -287,6 +287,160 @@ QPDFObjectHandle ensureAcroForm(QPDF& qpdf, QPDFObjectHandle& fieldsOut) {
     fieldsOut = fields;
     return acro;
 }
+
+// A /JavaScript action dict carrying `js` as its /JS program.
+QPDFObjectHandle jsAction(const std::string& js) {
+    QPDFObjectHandle a = QPDFObjectHandle::newDictionary();
+    a.replaceKey("/S", QPDFObjectHandle::newName("/JavaScript"));
+    a.replaceKey("/JS", QPDFObjectHandle::newString(js)); // QPDF escapes on write
+    return a;
+}
+
+// Build the /AA (additional-actions) dict for a Text field's input format, using
+// the standard Acrobat AF* field-format helpers (/F format + /K keystroke).
+// Returns false for Format::None (no actions).
+bool formatActions(FormEditor::Format fmt, QPDFObjectHandle& aaOut) {
+    std::string f, k;
+    switch (fmt) {
+    case FormEditor::Format::None:
+        return false;
+    case FormEditor::Format::Number:
+        f = "AFNumber_Format(2, 0, 0, 0, \"\", true)";
+        k = "AFNumber_Keystroke(2, 0, 0, 0, \"\", true)";
+        break;
+    case FormEditor::Format::Currency:
+        f = "AFNumber_Format(2, 0, 0, 0, \"$\", true)";
+        k = "AFNumber_Keystroke(2, 0, 0, 0, \"$\", true)";
+        break;
+    case FormEditor::Format::Percent:
+        f = "AFPercent_Format(2, 0)";
+        k = "AFPercent_Keystroke(2, 0)";
+        break;
+    case FormEditor::Format::Date:
+        f = "AFDate_FormatEx(\"mm/dd/yyyy\")";
+        k = "AFDate_KeystrokeEx(\"mm/dd/yyyy\")";
+        break;
+    case FormEditor::Format::Time:
+        f = "AFTime_Format(0)";
+        k = "AFTime_Keystroke(0)";
+        break;
+    }
+    QPDFObjectHandle aa = QPDFObjectHandle::newDictionary();
+    aa.replaceKey("/F", jsAction(f));
+    aa.replaceKey("/K", jsAction(k));
+    aaOut = aa;
+    return true;
+}
+
+// Create one field/widget node from `field`, attach it to its page's /Annots and
+// to the AcroForm `fields` array. Radio is rejected (use addRadioGroup). Shared
+// by addField (single) and addFields (batch). Fills *error and returns false on
+// a bad field; an empty name is the caller's responsibility to pre-check.
+bool placeOneField(QPDF& qpdf, std::vector<QPDFPageObjectHelper>& pages,
+                   const FormEditor::NewField& field, QPDFObjectHandle fields, QString* error) {
+    using Type = FormEditor::Type;
+    const int n = static_cast<int>(pages.size());
+    const int pg = std::max(0, std::min(field.page, n - 1));
+    QPDFObjectHandle pageObj = pages[pg].getObjectHandle();
+
+    double mb[4];
+    if (!mediaBox(pageObj, mb)) {
+        if (error)
+            *error = QStringLiteral("The target page has no media box.");
+        return false;
+    }
+    const int rot = pageRotate(pageObj);
+    const QRectF ur = toUnrotatedFraction(field.rect, rot);
+    double w = 0, h = 0;
+    QPDFObjectHandle rect = rectToPdf(mb, ur, &w, &h);
+
+    QPDFObjectHandle node = qpdf.makeIndirectObject(QPDFObjectHandle::newDictionary());
+    node.replaceKey("/Type", QPDFObjectHandle::newName("/Annot"));
+    node.replaceKey("/Subtype", QPDFObjectHandle::newName("/Widget"));
+    node.replaceKey("/T", QPDFObjectHandle::newUnicodeString(field.name.toStdString()));
+    node.replaceKey("/P", pageObj);
+    node.replaceKey("/F", QPDFObjectHandle::newInteger(4)); // Print
+    node.replaceKey("/Rect", rect);
+
+    const auto singleAppearance = [&](QPDFObjectHandle xobj) {
+        QPDFObjectHandle ap = QPDFObjectHandle::newDictionary();
+        ap.replaceKey("/N", xobj);
+        node.replaceKey("/AP", ap);
+    };
+
+    switch (field.type) {
+    case Type::Text:
+        node.replaceKey("/FT", QPDFObjectHandle::newName("/Tx"));
+        node.replaceKey("/DA", QPDFObjectHandle::newString("/Helv 0 Tf 0 g"));
+        if (!field.defaultValue.isEmpty()) {
+            node.replaceKey("/V",
+                            QPDFObjectHandle::newUnicodeString(field.defaultValue.toStdString()));
+            node.replaceKey("/DV",
+                            QPDFObjectHandle::newUnicodeString(field.defaultValue.toStdString()));
+        }
+        singleAppearance(textAppearance(qpdf, w, h, field.defaultValue));
+        break;
+    case Type::CheckBox: {
+        node.replaceKey("/FT", QPDFObjectHandle::newName("/Btn"));
+        const char* state = field.checked ? "/Yes" : "/Off";
+        node.replaceKey("/V", QPDFObjectHandle::newName(state));
+        node.replaceKey("/AS", QPDFObjectHandle::newName(state));
+        QPDFObjectHandle apN = QPDFObjectHandle::newDictionary();
+        apN.replaceKey("/Yes", checkOnAppearance(qpdf, w, h));
+        apN.replaceKey("/Off", makeAppearance(qpdf, w, h, borderOps(w, h), false));
+        QPDFObjectHandle ap = QPDFObjectHandle::newDictionary();
+        ap.replaceKey("/N", apN);
+        node.replaceKey("/AP", ap);
+        break;
+    }
+    case Type::Dropdown: {
+        node.replaceKey("/FT", QPDFObjectHandle::newName("/Ch"));
+        node.replaceKey("/Ff", QPDFObjectHandle::newInteger(kFfCombo));
+        node.replaceKey("/DA", QPDFObjectHandle::newString("/Helv 0 Tf 0 g"));
+        QPDFObjectHandle opt = QPDFObjectHandle::newArray();
+        for (const QString& o : field.options)
+            opt.appendItem(QPDFObjectHandle::newUnicodeString(o.toStdString()));
+        node.replaceKey("/Opt", opt);
+        const QString def = !field.defaultValue.isEmpty()
+                                ? field.defaultValue
+                                : (!field.options.isEmpty() ? field.options.first() : QString());
+        if (!def.isEmpty())
+            node.replaceKey("/V", QPDFObjectHandle::newUnicodeString(def.toStdString()));
+        singleAppearance(textAppearance(qpdf, w, h, def));
+        break;
+    }
+    case Type::PushButton: {
+        node.replaceKey("/FT", QPDFObjectHandle::newName("/Btn"));
+        node.replaceKey("/Ff", QPDFObjectHandle::newInteger(kFfPushButton));
+        const QString caption = !field.defaultValue.isEmpty() ? field.defaultValue : field.name;
+        QPDFObjectHandle mk = QPDFObjectHandle::newDictionary();
+        mk.replaceKey("/CA", QPDFObjectHandle::newString(caption.toStdString()));
+        node.replaceKey("/MK", mk);
+        singleAppearance(buttonAppearance(qpdf, w, h, caption));
+        break;
+    }
+    case Type::Radio:
+        if (error)
+            *error = QStringLiteral("Use addRadioGroup for a radio set.");
+        return false;
+    }
+
+    // Input format / validation actions (Text and Dropdown carry a typed value).
+    if (field.type == Type::Text || field.type == Type::Dropdown) {
+        QPDFObjectHandle aa;
+        if (formatActions(field.format, aa))
+            node.replaceKey("/AA", aa);
+    }
+
+    QPDFObjectHandle annots = pageObj.getKey("/Annots");
+    if (!annots.isArray()) {
+        annots = QPDFObjectHandle::newArray();
+        pageObj.replaceKey("/Annots", annots);
+    }
+    annots.appendItem(node);
+    fields.appendItem(node);
+    return true;
+}
 } // namespace
 
 bool FormEditor::addField(const QString& inputPath, const QString& outputPath,
@@ -315,109 +469,13 @@ bool FormEditor::addField(const QString& inputPath, const QString& outputPath,
                 QFile::remove(target);
             return false;
         }
-        const int pg = std::max(0, std::min(field.page, n - 1));
-        QPDFObjectHandle pageObj = pages[pg].getObjectHandle();
-
-        double mb[4];
-        if (!mediaBox(pageObj, mb)) {
-            if (error)
-                *error = QStringLiteral("The target page has no media box.");
-            if (inPlace)
-                QFile::remove(target);
-            return false;
-        }
-        const int rot = pageRotate(pageObj);
-        const QRectF ur = toUnrotatedFraction(field.rect, rot);
-        double w = 0, h = 0;
-        QPDFObjectHandle rect = rectToPdf(mb, ur, &w, &h);
-
-        // Combined field/widget annotation.
-        QPDFObjectHandle node = qpdf.makeIndirectObject(QPDFObjectHandle::newDictionary());
-        node.replaceKey("/Type", QPDFObjectHandle::newName("/Annot"));
-        node.replaceKey("/Subtype", QPDFObjectHandle::newName("/Widget"));
-        node.replaceKey("/T", QPDFObjectHandle::newUnicodeString(field.name.toStdString()));
-        node.replaceKey("/P", pageObj);
-        node.replaceKey("/F", QPDFObjectHandle::newInteger(4)); // Print
-        node.replaceKey("/Rect", rect);
-
-        // Each type also gets a generated /AP so the field is visible even in
-        // viewers that don't honour /NeedAppearances.
-        const auto singleAppearance = [&](QPDFObjectHandle xobj) {
-            QPDFObjectHandle ap = QPDFObjectHandle::newDictionary();
-            ap.replaceKey("/N", xobj);
-            node.replaceKey("/AP", ap);
-        };
-
-        switch (field.type) {
-        case Type::Text:
-            node.replaceKey("/FT", QPDFObjectHandle::newName("/Tx"));
-            node.replaceKey("/DA", QPDFObjectHandle::newString("/Helv 0 Tf 0 g"));
-            if (!field.defaultValue.isEmpty()) {
-                node.replaceKey("/V",
-                                QPDFObjectHandle::newUnicodeString(field.defaultValue.toStdString()));
-                node.replaceKey("/DV",
-                                QPDFObjectHandle::newUnicodeString(field.defaultValue.toStdString()));
-            }
-            singleAppearance(textAppearance(qpdf, w, h, field.defaultValue));
-            break;
-        case Type::CheckBox: {
-            node.replaceKey("/FT", QPDFObjectHandle::newName("/Btn"));
-            const char* state = field.checked ? "/Yes" : "/Off";
-            node.replaceKey("/V", QPDFObjectHandle::newName(state));
-            node.replaceKey("/AS", QPDFObjectHandle::newName(state));
-            QPDFObjectHandle apN = QPDFObjectHandle::newDictionary();
-            apN.replaceKey("/Yes", checkOnAppearance(qpdf, w, h));
-            apN.replaceKey("/Off", makeAppearance(qpdf, w, h, borderOps(w, h), false));
-            QPDFObjectHandle ap = QPDFObjectHandle::newDictionary();
-            ap.replaceKey("/N", apN);
-            node.replaceKey("/AP", ap);
-            break;
-        }
-        case Type::Dropdown: {
-            node.replaceKey("/FT", QPDFObjectHandle::newName("/Ch"));
-            node.replaceKey("/Ff", QPDFObjectHandle::newInteger(kFfCombo));
-            node.replaceKey("/DA", QPDFObjectHandle::newString("/Helv 0 Tf 0 g"));
-            QPDFObjectHandle opt = QPDFObjectHandle::newArray();
-            for (const QString& o : field.options)
-                opt.appendItem(QPDFObjectHandle::newUnicodeString(o.toStdString()));
-            node.replaceKey("/Opt", opt);
-            const QString def = !field.defaultValue.isEmpty() ? field.defaultValue
-                                : (!field.options.isEmpty() ? field.options.first() : QString());
-            if (!def.isEmpty())
-                node.replaceKey("/V", QPDFObjectHandle::newUnicodeString(def.toStdString()));
-            singleAppearance(textAppearance(qpdf, w, h, def));
-            break;
-        }
-        case Type::PushButton: {
-            node.replaceKey("/FT", QPDFObjectHandle::newName("/Btn"));
-            node.replaceKey("/Ff", QPDFObjectHandle::newInteger(kFfPushButton));
-            const QString caption =
-                !field.defaultValue.isEmpty() ? field.defaultValue : field.name;
-            QPDFObjectHandle mk = QPDFObjectHandle::newDictionary();
-            mk.replaceKey("/CA", QPDFObjectHandle::newString(caption.toStdString()));
-            node.replaceKey("/MK", mk);
-            singleAppearance(buttonAppearance(qpdf, w, h, caption));
-            break;
-        }
-        case Type::Radio:
-            if (error)
-                *error = QStringLiteral("Use addRadioGroup for a radio set.");
-            if (inPlace)
-                QFile::remove(target);
-            return false;
-        }
-
-        // Attach to the page's annotations and the AcroForm field list.
-        QPDFObjectHandle annots = pageObj.getKey("/Annots");
-        if (!annots.isArray()) {
-            annots = QPDFObjectHandle::newArray();
-            pageObj.replaceKey("/Annots", annots);
-        }
-        annots.appendItem(node);
-
         QPDFObjectHandle fields;
         ensureAcroForm(qpdf, fields);
-        fields.appendItem(node);
+        if (!placeOneField(qpdf, pages, field, fields, error)) {
+            if (inPlace)
+                QFile::remove(target);
+            return false;
+        }
 
         QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
         writer.write();
@@ -439,6 +497,77 @@ bool FormEditor::addField(const QString& inputPath, const QString& outputPath,
             return false;
         }
     }
+    return true;
+}
+
+bool FormEditor::addFields(const QString& inputPath, const QString& outputPath,
+                           const QList<NewField>& newFields, int* count, QString* error) {
+    if (count)
+        *count = 0;
+    if (newFields.isEmpty()) {
+        if (error)
+            *error = QStringLiteral("No fields to add.");
+        return false;
+    }
+
+    const bool inPlace =
+        QFileInfo(inputPath).absoluteFilePath() == QFileInfo(outputPath).absoluteFilePath();
+    const QString target = inPlace ? outputPath + QStringLiteral(".feather-tmp") : outputPath;
+
+    int written = 0;
+    try {
+        QPDF qpdf;
+        qpdf.processFile(inputPath.toLocal8Bit().constData());
+
+        QPDFPageDocumentHelper dh(qpdf);
+        std::vector<QPDFPageObjectHelper> pages = dh.getAllPages();
+        if (pages.empty()) {
+            if (error)
+                *error = QStringLiteral("The document has no pages.");
+            if (inPlace)
+                QFile::remove(target);
+            return false;
+        }
+
+        QPDFObjectHandle fields;
+        ensureAcroForm(qpdf, fields);
+        for (const NewField& f : newFields) {
+            if (f.name.trimmed().isEmpty() || f.type == Type::Radio)
+                continue; // skip unnamed and radio (needs addRadioGroup)
+            QString stepError;
+            if (placeOneField(qpdf, pages, f, fields, &stepError))
+                ++written;
+        }
+        if (written == 0) {
+            if (error)
+                *error = QStringLiteral("None of the fields could be added.");
+            if (inPlace)
+                QFile::remove(target);
+            return false;
+        }
+
+        QPDFWriter writer(qpdf, target.toLocal8Bit().constData());
+        writer.write();
+    } catch (const std::exception& e) {
+        if (error)
+            *error = QString::fromUtf8(e.what());
+        if (inPlace)
+            QFile::remove(target);
+        return false;
+    }
+
+    if (inPlace) {
+        QFile::remove(outputPath);
+        if (!QFile::rename(target, outputPath)) {
+            if (error)
+                *error = QStringLiteral("The file with the new fields couldn't replace the "
+                                        "original.");
+            QFile::remove(target);
+            return false;
+        }
+    }
+    if (count)
+        *count = written;
     return true;
 }
 

@@ -49,7 +49,9 @@ with a comment sidebar. Import/export form data as **XFDF**.
 
 **Forms** — fill text, checkbox, and dropdown fields, and **author** new ones
 (text, checkbox, dropdown, radio, push button) by drawing them on the page;
-move or delete existing fields.
+move or delete existing fields. **Prepare Form** auto-detects the blanks and
+checkboxes on a flat PDF and turns them into real fields in one reviewed pass,
+with date / number / currency input formatting.
 
 **Editing** — edit the text you've added; add, edit, and remove **hyperlinks**;
 an **Open in LibreOffice Draw** bridge for heavier layout work.

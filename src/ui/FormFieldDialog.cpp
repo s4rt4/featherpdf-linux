@@ -85,6 +85,16 @@ FormFieldDialog::FormFieldDialog(QWidget* parent) : QDialog(parent) {
     m_optionsLabel = new QLabel(tr("Options"), this);
     form->addRow(m_optionsLabel, m_options);
 
+    m_format = new QComboBox(this);
+    m_format->addItem(tr("None"), int(FormEditor::Format::None));
+    m_format->addItem(tr("Number"), int(FormEditor::Format::Number));
+    m_format->addItem(tr("Currency"), int(FormEditor::Format::Currency));
+    m_format->addItem(tr("Percentage"), int(FormEditor::Format::Percent));
+    m_format->addItem(tr("Date"), int(FormEditor::Format::Date));
+    m_format->addItem(tr("Time"), int(FormEditor::Format::Time));
+    m_formatLabel = new QLabel(tr("Format"), this);
+    form->addRow(m_formatLabel, m_format);
+
     m_checked = new QCheckBox(tr("Checked by default"), this);
     form->addRow(QString(), m_checked);
 
@@ -125,6 +135,11 @@ void FormFieldDialog::syncRows() {
     m_options->setVisible(isDrop || isRadio);
     m_optionsLabel->setText(isRadio ? tr("Buttons") : tr("Options"));
 
+    // Input format / validation applies only to a Text field.
+    const bool isText = t == FormEditor::Type::Text;
+    m_formatLabel->setVisible(isText);
+    m_format->setVisible(isText);
+
     m_checked->setVisible(isCheck);
 }
 
@@ -152,4 +167,8 @@ QStringList FormFieldDialog::options() const {
             out << t;
     }
     return out;
+}
+
+FormEditor::Format FormFieldDialog::format() const {
+    return static_cast<FormEditor::Format>(m_format->currentData().toInt());
 }

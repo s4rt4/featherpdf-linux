@@ -29,6 +29,7 @@
 #include "backends/Sanitizer.h"
 #include "backends/TextComparer.h"
 #include "backends/Flattener.h"
+#include "backends/FormDetector.h"
 #include "backends/FormEditor.h"
 #include "backends/FormFiller.h"
 #include "backends/Splitter.h"
@@ -63,6 +64,7 @@
 #include "ui/StampDialog.h"
 #include "ui/FlattenDialog.h"
 #include "ui/FormFieldDialog.h"
+#include "ui/PrepareFormDialog.h"
 #include "ui/GoToPageDialog.h"
 #include "ui/PreferencesDialog.h"
 #include "ui/TextEditDialog.h"
@@ -381,7 +383,8 @@ void MainWindow::buildMenus() {
     const ToolEntry toolEntries[] = {
         {"create", tr("Create PDF…"), false},  {"export", tr("Export…"), false},
         {"ocr", tr("Recognize Text (OCR)…"), false}, {"edit", tr("Edit Text…"), false},
-        {"forms", tr("Forms"), true},
+        {"forms", tr("Forms"), false},
+        {"prepare-form", tr("Prepare Form…"), true},
         {"combine", tr("Combine…"), false},    {"split", tr("Split…"), true},
         {"comment", tr("Comment"), false},     {"redact", tr("Redact"), false},
         {"snapshot", tr("Snapshot"), false},   {"measure", tr("Measure"), false},
@@ -781,6 +784,7 @@ void MainWindow::wireSignals() {
     connect(m_viewport, &Viewport::fieldRectDrawn, this, &MainWindow::placeFormField);
     connect(m_viewport, &Viewport::snapshotRegion, this, &MainWindow::snapshotRegion);
     connect(m_forms, &FormPanel::addFieldRequested, this, &MainWindow::addFormField);
+    connect(m_forms, &FormPanel::prepareFormRequested, this, &MainWindow::prepareForm);
     connect(m_forms, &FormPanel::moveFieldRequested, this, &MainWindow::moveFormField);
     connect(m_forms, &FormPanel::deleteFieldRequested, this, &MainWindow::deleteFormField);
 
@@ -1123,6 +1127,7 @@ void MainWindow::addFormField() {
     m_pendingField.defaultValue = dialog.defaultValue();
     m_pendingField.checked = dialog.checked();
     m_pendingField.options = dialog.options();
+    m_pendingField.format = dialog.format();
     m_placingField = true;
     m_movingField.clear(); // this is an add, not a move
 
@@ -1132,6 +1137,52 @@ void MainWindow::addFormField() {
     m_viewport->setFieldPlacementMode(true);
     m_toast->show(isRadio ? tr("Draw where the first button goes.")
                           : tr("Draw where the field goes."));
+}
+
+void MainWindow::prepareForm() {
+    if (!hasActiveDoc())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    const QList<FormEditor::NewField> detected = FormDetector::detect(m_doc->filePath(), &error);
+    QApplication::restoreOverrideCursor();
+
+    if (!error.isEmpty()) {
+        QMessageBox::warning(this, tr("Couldn't prepare form"), error);
+        return;
+    }
+    if (detected.isEmpty()) {
+        m_toast->show(tr("No fillable areas found."));
+        return;
+    }
+
+    PrepareFormDialog dialog(detected, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const QList<FormEditor::NewField> fields = dialog.selectedFields();
+    if (fields.isEmpty()) {
+        m_toast->show(tr("No fields selected."));
+        return;
+    }
+
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save form"), m_doc->filePath(),
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    int count = 0;
+    const bool ok = FormEditor::addFields(m_doc->filePath(), out, fields, &count, &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't prepare form"), error);
+        return;
+    }
+
+    m_toast->show(tr("Added %n form field(s).", "", count));
+    openPath(out);
+    m_forms->reload();
 }
 
 void MainWindow::moveFormField(const QString& name) {
@@ -1952,6 +2003,11 @@ void MainWindow::activateTool(const QString& id) {
     } else if (id == QLatin1String("forms")) {
         if (hasActiveDoc())
             m_rail->setCurrentPanel(NavigationRail::Panel::Forms);
+    } else if (id == QLatin1String("prepare-form")) {
+        if (hasActiveDoc()) {
+            m_rail->setCurrentPanel(NavigationRail::Panel::Forms);
+            prepareForm();
+        }
     } else if (id == QLatin1String("ocr")) {
         recognizeText();
     } else if (id == QLatin1String("pdfa")) {

@@ -880,6 +880,39 @@ QList<Group> buildDocs() {
               "<p>Jika panel kosong, PDF belum punya field - tambah satu. Grup radio butuh minimal "
               "dua opsi.</p>")});
     review.topics.append(
+        {"prepare-form", "Prepare Form (auto-detect)", "Siapkan Formulir (deteksi otomatis)",
+         sect("en", "<p>Turn a flat PDF into a fillable form in one pass.</p>",
+              "<p>Detect the blanks and checkboxes on a printed form and add real fields for them.</p>",
+              "<p>Detection scans the page text with Poppler: underscore fill-in lines "
+              "(“Name: ______”) become Text fields and checkbox markers "
+              "(“[ ]”, “☐”) become Check boxes. Field names come from the "
+              "nearby label, and an input format (Date / Currency / Percentage / Number) is guessed "
+              "from label keywords. You review everything before anything is written; the fields are "
+              "then added with QPDF, the same engine as manual authoring.</p>",
+              "<ul><li><b>Prepare Form</b> (the form button in the Forms panel, or Tools ▸ Prepare "
+              "Form…) scans the document.</li>"
+              "<li>In the review table, untick rows you don't want, rename them, switch a row between "
+              "<b>Text</b> and <b>Check box</b>, and set a Text field's <b>Format</b>.</li>"
+              "<li><b>Add Fields</b> writes them to a new file and reopens it.</li></ul>",
+              "<p>Detection follows the visual layout, so odd templates may need a few tweaks - or use "
+              "<b>Add field</b> to place one by hand.</p>"),
+         sect("id", "<p>Ubah PDF datar menjadi formulir yang bisa diisi dalam satu langkah.</p>",
+              "<p>Deteksi isian dan kotak centang pada formulir cetak lalu tambahkan field sungguhan.</p>",
+              "<p>Deteksi memindai teks halaman dengan Poppler: garis isian garis-bawah "
+              "(“Nama: ______”) menjadi field Text dan penanda kotak centang "
+              "(“[ ]”, “☐”) menjadi Check box. Nama field diambil dari label "
+              "terdekat, dan format input (Date / Currency / Percentage / Number) ditebak dari kata "
+              "kunci label. Kamu meninjau semuanya sebelum ditulis; field lalu ditambahkan dengan "
+              "QPDF, mesin yang sama seperti pembuatan manual.</p>",
+              "<ul><li><b>Prepare Form</b> (tombol form di panel Forms, atau Tools ▸ Prepare Form…) "
+              "memindai dokumen.</li>"
+              "<li>Di tabel tinjauan, hilangkan centang baris yang tak diinginkan, ganti namanya, "
+              "ubah baris antara <b>Text</b> dan <b>Check box</b>, dan atur <b>Format</b> field "
+              "Text.</li>"
+              "<li><b>Add Fields</b> menulisnya ke berkas baru dan membukanya kembali.</li></ul>",
+              "<p>Deteksi mengikuti tata letak visual, jadi templat tak biasa mungkin perlu sedikit "
+              "penyesuaian - atau pakai <b>Add field</b> untuk meletakkan satu secara manual.</p>")});
+    review.topics.append(
         {"sign", "Digital signatures", "Tanda tangan digital",
          sect("en", "<p>Sign documents - with a text or a handwritten-image appearance - verify "
               "existing signatures, and optionally add a trusted timestamp.</p>",

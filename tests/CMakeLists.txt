@@ -36,6 +36,21 @@ target_link_libraries(test_formeditor PRIVATE
 add_test(NAME formeditor COMMAND test_formeditor)
 set_tests_properties(formeditor PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_formdetector
+    test_formdetector.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/FormDetector.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/FormDetector.h
+)
+target_include_directories(test_formdetector PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_formdetector PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    PkgConfig::POPPLER_QT6
+)
+add_test(NAME formdetector COMMAND test_formdetector)
+set_tests_properties(formdetector PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_annotator
     test_annotator.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Annotator.cpp

@@ -18,6 +18,8 @@ qt_add_executable(feather-pdf
     backends/FormFiller.h
     backends/FormEditor.cpp
     backends/FormEditor.h
+    backends/FormDetector.cpp
+    backends/FormDetector.h
     backends/Xfdf.cpp
     backends/Xfdf.h
     backends/TextEditor.cpp
@@ -132,6 +134,8 @@ qt_add_executable(feather-pdf
     ui/CropDialog.h
     ui/FormFieldDialog.cpp
     ui/FormFieldDialog.h
+    ui/PrepareFormDialog.cpp
+    ui/PrepareFormDialog.h
     ui/TextEditDialog.cpp
     ui/TextEditDialog.h
     ui/CustomizeToolsDialog.cpp

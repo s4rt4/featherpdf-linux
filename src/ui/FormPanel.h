@@ -43,6 +43,7 @@ signals:
     // Emitted when Save is pressed; values are keyed by Poppler field id.
     void saveRequested(const QHash<int, QVariant>& values);
     void addFieldRequested();                       // "Add field…" pressed
+    void prepareFormRequested();                    // "Prepare Form" (auto-detect) pressed
     void moveFieldRequested(const QString& name);    // reposition an existing field
     void deleteFieldRequested(const QString& name);  // remove an existing field
 
@@ -62,4 +63,5 @@ private:
     QLabel* m_empty = nullptr;
     QToolButton* m_save = nullptr;
     QToolButton* m_add = nullptr;
+    QToolButton* m_prepare = nullptr;
 };

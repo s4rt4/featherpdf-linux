@@ -28,6 +28,13 @@ class FormEditor {
 public:
     enum class Type { Text, CheckBox, Dropdown, PushButton, Radio };
 
+    // Optional input formatting/validation for a Text field. Each non-None value
+    // writes the standard Acrobat field-format JavaScript (/AA /F format + /K
+    // keystroke, the AFNumber_/AFPercent_/AFDate_/AFTime_ helpers) so conforming
+    // viewers format and validate as the user types. Our own viewer fills the
+    // raw value; the actions travel with the document for Acrobat/Foxit/etc.
+    enum class Format { None, Number, Currency, Percent, Date, Time };
+
     struct NewField {
         Type type = Type::Text;
         QString name;            // field name (/T); should be unique in the document
@@ -36,6 +43,7 @@ public:
         QStringList options;     // Dropdown: choices
         int page = 0;            // 0-based page to place it on
         QRectF rect;             // normalized [0,1], top-left origin (displayed page)
+        Format format = Format::None; // Text only: input format / validation
     };
 
     // Add `field` to `inputPath` and write `outputPath`. Lossless apart from the
@@ -45,6 +53,12 @@ public:
     // per option.)
     static bool addField(const QString& inputPath, const QString& outputPath,
                          const NewField& field, QString* error);
+
+    // Add several fields in one pass (one QPDF read/write), used by Prepare Form.
+    // Type::Radio entries are skipped (use addRadioGroup). Temp file + atomic
+    // rename. Returns true on success; *count (if given) gets the number written.
+    static bool addFields(const QString& inputPath, const QString& outputPath,
+                          const QList<NewField>& fields, int* count, QString* error);
 
     // Remove the top-level field named `name` (and its widget annotations, incl.
     // every kid of a radio group) from `inputPath`, writing `outputPath`. Temp
