@@ -380,36 +380,54 @@ void MainWindow::buildMenus() {
     connect(pdfa, &QAction::triggered, this, &MainWindow::convertToPdfA);
 
     QMenu* tools = menuBar()->addMenu(tr("&Tools"));
-    struct ToolEntry {
+    // The Tools list grew long, so it is grouped into a handful of submenus by
+    // task. (Batch / Action stays top-level — it composes the rest.)
+    struct ToolItem {
         const char* id;
         QString label;
-        bool sep; // a separator follows
     };
-    const ToolEntry toolEntries[] = {
-        {"create", tr("Create PDF…"), false},  {"scan", tr("Scan…"), false},
-        {"export", tr("Export…"), false},
-        {"ocr", tr("Recognize Text (OCR)…"), false}, {"edit", tr("Edit Text…"), false},
-        {"read-aloud", tr("Read Aloud…"), false},
-        {"forms", tr("Forms"), false},
-        {"prepare-form", tr("Prepare Form…"), true},
-        {"combine", tr("Combine…"), false},    {"split", tr("Split…"), true},
-        {"comment", tr("Comment"), false},     {"redact", tr("Redact"), false},
-        {"snapshot", tr("Snapshot"), false},   {"measure", tr("Measure"), false},
-        {"watermark", tr("Watermark…"), false}, {"bates", tr("Bates Numbering…"), false},
-        {"organize", tr("Organize"), true},    {"compare", tr("Compare…"), false},
-        {"optimize", tr("Optimize…"), false},  {"cmyk", tr("RGB to CMYK…"), false},
-        {"flatten", tr("Flatten…"), false},
-        {"protect", tr("Protect…"), false},    {"sign", tr("Sign…"), false},
-        {"stamp", tr("Stamp…"), false},        {"pdfa", tr("PDF/A & Preflight…"), true},
-        {"batch", tr("Batch / Action…"), false},
+    struct ToolGroup {
+        QString title;
+        QList<ToolItem> items;
     };
-    for (const ToolEntry& e : toolEntries) {
-        const QString id = QString::fromLatin1(e.id);
-        QAction* a = tools->addAction(e.label);
-        connect(a, &QAction::triggered, this, [this, id] { activateTool(id); });
-        if (e.sep)
-            tools->addSeparator();
+    const ToolGroup toolGroups[] = {
+        {tr("&Create && Export"),
+         {{"create", tr("Create PDF…")}, {"scan", tr("Scan…")}, {"export", tr("Export…")}}},
+        {tr("&Text && Forms"),
+         {{"ocr", tr("Recognize Text (OCR)…")},
+          {"edit", tr("Edit Text…")},
+          {"read-aloud", tr("Read Aloud…")},
+          {"forms", tr("Forms")},
+          {"prepare-form", tr("Prepare Form…")}}},
+        {tr("&Pages"),
+         {{"combine", tr("Combine…")}, {"split", tr("Split…")}, {"organize", tr("Organize")}}},
+        {tr("&Review && Markup"),
+         {{"comment", tr("Comment")},
+          {"redact", tr("Redact")},
+          {"snapshot", tr("Snapshot")},
+          {"measure", tr("Measure")},
+          {"compare", tr("Compare…")},
+          {"stamp", tr("Stamp…")},
+          {"watermark", tr("Watermark…")},
+          {"bates", tr("Bates Numbering…")}}},
+        {tr("&Optimize && Convert"),
+         {{"optimize", tr("Optimize…")},
+          {"cmyk", tr("RGB to CMYK…")},
+          {"flatten", tr("Flatten…")},
+          {"pdfa", tr("PDF/A && Preflight…")}}},
+        {tr("&Security"), {{"protect", tr("Protect…")}, {"sign", tr("Sign…")}}},
+    };
+    for (const ToolGroup& g : toolGroups) {
+        QMenu* sub = tools->addMenu(g.title);
+        for (const ToolItem& it : g.items) {
+            const QString id = QString::fromLatin1(it.id);
+            QAction* a = sub->addAction(it.label);
+            connect(a, &QAction::triggered, this, [this, id] { activateTool(id); });
+        }
     }
+    tools->addSeparator();
+    QAction* batchAct = tools->addAction(tr("&Batch / Action…"));
+    connect(batchAct, &QAction::triggered, this, [this] { activateTool(QStringLiteral("batch")); });
 
     QMenu* help = menuBar()->addMenu(tr("&Help"));
     QAction* docs = help->addAction(tr("&Documentation"));

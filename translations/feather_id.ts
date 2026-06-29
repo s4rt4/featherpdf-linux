@@ -1499,1430 +1499,1460 @@
         <translation>&amp;Alat</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="389"/>
+        <location filename="../src/app/MainWindow.cpp" line="395"/>
         <source>Create PDF…</source>
         <translation>Buat PDF…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="389"/>
+        <location filename="../src/app/MainWindow.cpp" line="395"/>
         <source>Scan…</source>
         <translation>Pindai…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="390"/>
+        <location filename="../src/app/MainWindow.cpp" line="395"/>
         <source>Export…</source>
         <translation>Ekspor…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="391"/>
+        <location filename="../src/app/MainWindow.cpp" line="397"/>
         <source>Recognize Text (OCR)…</source>
         <translation>Kenali Teks (OCR)…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="391"/>
+        <location filename="../src/app/MainWindow.cpp" line="398"/>
         <source>Edit Text…</source>
         <translation>Sunting Teks…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="392"/>
+        <location filename="../src/app/MainWindow.cpp" line="399"/>
         <source>Read Aloud…</source>
         <translation>Baca Lantang…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="393"/>
+        <location filename="../src/app/MainWindow.cpp" line="400"/>
         <source>Forms</source>
         <translation>Formulir</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="394"/>
+        <location filename="../src/app/MainWindow.cpp" line="401"/>
         <source>Prepare Form…</source>
         <translation>Siapkan Formulir…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="395"/>
+        <location filename="../src/app/MainWindow.cpp" line="403"/>
         <source>Combine…</source>
         <translation>Gabungkan…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="395"/>
+        <location filename="../src/app/MainWindow.cpp" line="403"/>
         <source>Split…</source>
         <translation>Pisahkan…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="396"/>
+        <location filename="../src/app/MainWindow.cpp" line="405"/>
         <source>Comment</source>
         <translation>Komentar</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="396"/>
+        <location filename="../src/app/MainWindow.cpp" line="406"/>
         <source>Redact</source>
         <translation>Redaksi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="397"/>
+        <location filename="../src/app/MainWindow.cpp" line="407"/>
         <source>Snapshot</source>
         <translation>Cuplikan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="397"/>
+        <location filename="../src/app/MainWindow.cpp" line="408"/>
         <source>Measure</source>
         <translation>Ukur</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="398"/>
+        <location filename="../src/app/MainWindow.cpp" line="411"/>
         <source>Watermark…</source>
         <translation>Watermark…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="398"/>
+        <location filename="../src/app/MainWindow.cpp" line="412"/>
         <source>Bates Numbering…</source>
         <translation>Penomoran Bates…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="399"/>
+        <location filename="../src/app/MainWindow.cpp" line="403"/>
         <source>Organize</source>
         <translation>Atur</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="399"/>
+        <location filename="../src/app/MainWindow.cpp" line="409"/>
         <source>Compare…</source>
         <translation>Bandingkan…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="400"/>
+        <location filename="../src/app/MainWindow.cpp" line="414"/>
         <source>Optimize…</source>
         <translation>Optimalkan…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="400"/>
+        <location filename="../src/app/MainWindow.cpp" line="415"/>
         <source>RGB to CMYK…</source>
         <translation>RGB ke CMYK…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="401"/>
+        <location filename="../src/app/MainWindow.cpp" line="416"/>
         <source>Flatten…</source>
         <translation>Ratakan…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="402"/>
+        <location filename="../src/app/MainWindow.cpp" line="418"/>
         <source>Protect…</source>
         <translation>Lindungi…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="402"/>
+        <location filename="../src/app/MainWindow.cpp" line="418"/>
         <source>Sign…</source>
         <translation>Tanda Tangani…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="403"/>
+        <location filename="../src/app/MainWindow.cpp" line="410"/>
         <source>Stamp…</source>
         <translation>Stempel…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="403"/>
-        <source>PDF/A &amp; Preflight…</source>
-        <translation>PDF/A &amp; Preflight…</translation>
-    </message>
-    <message>
-        <location filename="../src/app/MainWindow.cpp" line="404"/>
-        <source>Batch / Action…</source>
-        <translation>Batch / Aksi…</translation>
-    </message>
-    <message>
-        <location filename="../src/app/MainWindow.cpp" line="414"/>
+        <location filename="../src/app/MainWindow.cpp" line="432"/>
         <source>&amp;Help</source>
         <translation>Ban&amp;tuan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="415"/>
+        <location filename="../src/app/MainWindow.cpp" line="433"/>
         <source>&amp;Documentation</source>
         <translation>&amp;Dokumentasi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="577"/>
+        <location filename="../src/app/MainWindow.cpp" line="595"/>
         <source>Press Esc or F11 to leave immersive reading</source>
         <translation>Tekan Esc atau F11 untuk keluar baca imersif</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="679"/>
+        <location filename="../src/app/MainWindow.cpp" line="697"/>
         <source>Email</source>
         <translation>Email</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="680"/>
+        <location filename="../src/app/MainWindow.cpp" line="698"/>
         <source>Couldn&apos;t reach an email client. Install xdg-utils, or attach the file manually from your mail app.</source>
         <translation>Tidak bisa menjangkau klien email. Pasang xdg-utils, atau lampirkan berkas secara manual dari aplikasi email.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="702"/>
+        <location filename="../src/app/MainWindow.cpp" line="720"/>
         <source>Zoom to %1%</source>
         <translation>Zoom ke %1%</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="759"/>
+        <location filename="../src/app/MainWindow.cpp" line="777"/>
         <source>THUMBNAILS</source>
         <translation>MINIATUR</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="763"/>
+        <location filename="../src/app/MainWindow.cpp" line="781"/>
         <source>OUTLINE</source>
         <translation>KERANGKA</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="767"/>
+        <location filename="../src/app/MainWindow.cpp" line="785"/>
         <source>ANNOTATIONS</source>
         <translation>ANOTASI</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="771"/>
+        <location filename="../src/app/MainWindow.cpp" line="789"/>
         <source>ATTACHMENTS</source>
         <translation>LAMPIRAN</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="775"/>
+        <location filename="../src/app/MainWindow.cpp" line="793"/>
         <source>LAYERS</source>
         <translation>LAPISAN</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="779"/>
+        <location filename="../src/app/MainWindow.cpp" line="797"/>
         <source>FORMS</source>
         <translation>FORMULIR</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="876"/>
-        <location filename="../src/app/MainWindow.cpp" line="1290"/>
+        <location filename="../src/app/MainWindow.cpp" line="894"/>
+        <location filename="../src/app/MainWindow.cpp" line="1308"/>
         <source>Save filled form</source>
         <translation>Simpan formulir terisi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="877"/>
-        <location filename="../src/app/MainWindow.cpp" line="990"/>
-        <location filename="../src/app/MainWindow.cpp" line="1015"/>
-        <location filename="../src/app/MainWindow.cpp" line="1041"/>
-        <location filename="../src/app/MainWindow.cpp" line="1077"/>
-        <location filename="../src/app/MainWindow.cpp" line="1106"/>
-        <location filename="../src/app/MainWindow.cpp" line="1187"/>
-        <location filename="../src/app/MainWindow.cpp" line="1242"/>
-        <location filename="../src/app/MainWindow.cpp" line="1291"/>
-        <location filename="../src/app/MainWindow.cpp" line="1324"/>
-        <location filename="../src/app/MainWindow.cpp" line="1442"/>
-        <location filename="../src/app/MainWindow.cpp" line="1490"/>
-        <location filename="../src/app/MainWindow.cpp" line="1658"/>
-        <location filename="../src/app/MainWindow.cpp" line="1688"/>
-        <location filename="../src/app/MainWindow.cpp" line="1830"/>
-        <location filename="../src/app/MainWindow.cpp" line="1895"/>
-        <location filename="../src/app/MainWindow.cpp" line="1930"/>
-        <location filename="../src/app/MainWindow.cpp" line="1978"/>
-        <location filename="../src/app/MainWindow.cpp" line="2094"/>
-        <location filename="../src/app/MainWindow.cpp" line="2154"/>
-        <location filename="../src/app/MainWindow.cpp" line="2402"/>
-        <location filename="../src/app/MainWindow.cpp" line="2438"/>
-        <location filename="../src/app/MainWindow.cpp" line="2468"/>
-        <location filename="../src/app/MainWindow.cpp" line="2476"/>
-        <location filename="../src/app/MainWindow.cpp" line="2510"/>
-        <location filename="../src/app/MainWindow.cpp" line="2551"/>
-        <location filename="../src/app/MainWindow.cpp" line="2594"/>
-        <location filename="../src/app/MainWindow.cpp" line="2625"/>
-        <location filename="../src/app/MainWindow.cpp" line="2652"/>
-        <location filename="../src/app/MainWindow.cpp" line="2710"/>
-        <location filename="../src/app/MainWindow.cpp" line="2756"/>
-        <location filename="../src/app/MainWindow.cpp" line="2827"/>
-        <location filename="../src/app/MainWindow.cpp" line="2867"/>
-        <location filename="../src/app/MainWindow.cpp" line="2899"/>
+        <location filename="../src/app/MainWindow.cpp" line="895"/>
+        <location filename="../src/app/MainWindow.cpp" line="1008"/>
+        <location filename="../src/app/MainWindow.cpp" line="1033"/>
+        <location filename="../src/app/MainWindow.cpp" line="1059"/>
+        <location filename="../src/app/MainWindow.cpp" line="1095"/>
+        <location filename="../src/app/MainWindow.cpp" line="1124"/>
+        <location filename="../src/app/MainWindow.cpp" line="1205"/>
+        <location filename="../src/app/MainWindow.cpp" line="1260"/>
+        <location filename="../src/app/MainWindow.cpp" line="1309"/>
+        <location filename="../src/app/MainWindow.cpp" line="1342"/>
+        <location filename="../src/app/MainWindow.cpp" line="1460"/>
+        <location filename="../src/app/MainWindow.cpp" line="1508"/>
+        <location filename="../src/app/MainWindow.cpp" line="1676"/>
+        <location filename="../src/app/MainWindow.cpp" line="1706"/>
+        <location filename="../src/app/MainWindow.cpp" line="1848"/>
+        <location filename="../src/app/MainWindow.cpp" line="1913"/>
+        <location filename="../src/app/MainWindow.cpp" line="1948"/>
+        <location filename="../src/app/MainWindow.cpp" line="1996"/>
+        <location filename="../src/app/MainWindow.cpp" line="2112"/>
+        <location filename="../src/app/MainWindow.cpp" line="2172"/>
+        <location filename="../src/app/MainWindow.cpp" line="2420"/>
+        <location filename="../src/app/MainWindow.cpp" line="2456"/>
+        <location filename="../src/app/MainWindow.cpp" line="2486"/>
+        <location filename="../src/app/MainWindow.cpp" line="2494"/>
+        <location filename="../src/app/MainWindow.cpp" line="2528"/>
+        <location filename="../src/app/MainWindow.cpp" line="2569"/>
+        <location filename="../src/app/MainWindow.cpp" line="2612"/>
+        <location filename="../src/app/MainWindow.cpp" line="2643"/>
+        <location filename="../src/app/MainWindow.cpp" line="2670"/>
+        <location filename="../src/app/MainWindow.cpp" line="2728"/>
+        <location filename="../src/app/MainWindow.cpp" line="2774"/>
+        <location filename="../src/app/MainWindow.cpp" line="2845"/>
+        <location filename="../src/app/MainWindow.cpp" line="2885"/>
+        <location filename="../src/app/MainWindow.cpp" line="2917"/>
         <source>PDF documents (*.pdf)</source>
         <translation type="unfinished">Dokumen PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="885"/>
+        <location filename="../src/app/MainWindow.cpp" line="903"/>
         <source>Couldn&apos;t save form</source>
         <translation>Tidak bisa menyimpan formulir</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="888"/>
+        <location filename="../src/app/MainWindow.cpp" line="906"/>
         <source>Saved filled form to %1</source>
         <translation>Formulir terisi disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="953"/>
+        <location filename="../src/app/MainWindow.cpp" line="971"/>
         <source>A document must keep at least one page.</source>
         <translation>Dokumen harus punya minimal satu halaman.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="969"/>
+        <location filename="../src/app/MainWindow.cpp" line="987"/>
         <source>No pages in that range to extract.</source>
         <translation>Tidak ada halaman pada rentang itu untuk diambil.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="988"/>
+        <location filename="../src/app/MainWindow.cpp" line="1006"/>
         <source>-extracted</source>
         <comment>suffix for an extracted-pages file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="989"/>
+        <location filename="../src/app/MainWindow.cpp" line="1007"/>
         <source>Extract Pages</source>
         <translation>Ambil Halaman</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1001"/>
+        <location filename="../src/app/MainWindow.cpp" line="1019"/>
         <source>Couldn&apos;t extract</source>
         <translation>Tidak bisa mengambil</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1004"/>
+        <location filename="../src/app/MainWindow.cpp" line="1022"/>
         <source>Extracted %n page(s) to %1</source>
         <translation>
             <numerusform>%n halaman diambil ke %1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1013"/>
+        <location filename="../src/app/MainWindow.cpp" line="1031"/>
         <source>Choose a PDF to insert</source>
         <translation>Pilih PDF untuk disisipkan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1023"/>
+        <location filename="../src/app/MainWindow.cpp" line="1041"/>
         <source>That PDF couldn&apos;t be opened to insert from.</source>
         <translation>PDF itu tidak bisa dibuka untuk menyisipkan.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1034"/>
+        <location filename="../src/app/MainWindow.cpp" line="1052"/>
         <source>No pages in that range to insert.</source>
         <translation>Tidak ada halaman pada rentang itu untuk disisipkan.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1040"/>
+        <location filename="../src/app/MainWindow.cpp" line="1058"/>
         <source>Save merged PDF</source>
         <translation>Simpan PDF gabungan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1053"/>
+        <location filename="../src/app/MainWindow.cpp" line="1071"/>
         <source>Couldn&apos;t insert</source>
         <translation>Tidak bisa menyisipkan</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1056"/>
+        <location filename="../src/app/MainWindow.cpp" line="1074"/>
         <source>Inserted %n page(s) into %1</source>
         <translation>
             <numerusform>%n halaman disisipkan ke %1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1069"/>
+        <location filename="../src/app/MainWindow.cpp" line="1087"/>
         <source>Set a margin on at least one edge to crop.</source>
         <translation>Atur margin pada minimal satu sisi untuk memangkas.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1076"/>
+        <location filename="../src/app/MainWindow.cpp" line="1094"/>
         <source>Save cropped PDF</source>
         <translation>Simpan PDF terpangkas</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1092"/>
+        <location filename="../src/app/MainWindow.cpp" line="1110"/>
         <source>Couldn&apos;t crop</source>
         <translation>Tidak bisa memangkas</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1095"/>
+        <location filename="../src/app/MainWindow.cpp" line="1113"/>
         <source>Saved cropped copy to %1</source>
         <translation>Salinan terpangkas disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1105"/>
+        <location filename="../src/app/MainWindow.cpp" line="1123"/>
         <source>Save outline</source>
         <translation>Simpan kerangka</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1116"/>
+        <location filename="../src/app/MainWindow.cpp" line="1134"/>
         <source>Couldn&apos;t save outline</source>
         <translation>Tidak bisa menyimpan kerangka</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1119"/>
+        <location filename="../src/app/MainWindow.cpp" line="1137"/>
         <source>Outline saved to %1</source>
         <translation>Kerangka disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1131"/>
+        <location filename="../src/app/MainWindow.cpp" line="1149"/>
         <source>Give the field a name.</source>
         <translation>Beri nama kolomnya.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1136"/>
+        <location filename="../src/app/MainWindow.cpp" line="1154"/>
         <source>A radio group needs at least two buttons.</source>
         <translation>Grup radio butuh minimal dua tombol.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1155"/>
+        <location filename="../src/app/MainWindow.cpp" line="1173"/>
         <source>Draw where the first button goes.</source>
         <translation>Gambar tempat tombol pertama.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1156"/>
+        <location filename="../src/app/MainWindow.cpp" line="1174"/>
         <source>Draw where the field goes.</source>
         <translation>Gambar tempat kolomnya.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1169"/>
-        <location filename="../src/app/MainWindow.cpp" line="1196"/>
+        <location filename="../src/app/MainWindow.cpp" line="1187"/>
+        <location filename="../src/app/MainWindow.cpp" line="1214"/>
         <source>Couldn&apos;t prepare form</source>
         <translation>Tidak bisa menyiapkan formulir</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1173"/>
+        <location filename="../src/app/MainWindow.cpp" line="1191"/>
         <source>No fillable areas found.</source>
         <translation>Tidak ada area isian ditemukan.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1182"/>
+        <location filename="../src/app/MainWindow.cpp" line="1200"/>
         <source>No fields selected.</source>
         <translation>Tidak ada field dipilih.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1200"/>
+        <location filename="../src/app/MainWindow.cpp" line="1218"/>
         <source>Added %n form field(s).</source>
         <translation>
             <numerusform>Menambahkan %n field formulir.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1209"/>
+        <location filename="../src/app/MainWindow.cpp" line="1227"/>
         <source>Read aloud needs speech-dispatcher (install the “speech-dispatcher” package).</source>
         <translation>Baca lantang butuh speech-dispatcher (pasang paket “speech-dispatcher”).</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1222"/>
+        <location filename="../src/app/MainWindow.cpp" line="1240"/>
         <source>There&apos;s no readable text on these pages.</source>
         <translation>Tak ada teks yang bisa dibaca di halaman ini.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1235"/>
+        <location filename="../src/app/MainWindow.cpp" line="1253"/>
         <source>Draw the new position for “%1”.</source>
         <translation>Gambar posisi baru untuk “%1”.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1186"/>
-        <location filename="../src/app/MainWindow.cpp" line="1241"/>
-        <location filename="../src/app/MainWindow.cpp" line="1441"/>
+        <location filename="../src/app/MainWindow.cpp" line="1204"/>
+        <location filename="../src/app/MainWindow.cpp" line="1259"/>
+        <location filename="../src/app/MainWindow.cpp" line="1459"/>
         <source>Save form</source>
         <translation>Simpan formulir</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1250"/>
+        <location filename="../src/app/MainWindow.cpp" line="1268"/>
         <source>Couldn&apos;t delete field</source>
         <translation>Tidak bisa menghapus kolom</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1253"/>
+        <location filename="../src/app/MainWindow.cpp" line="1271"/>
         <source>Deleted “%1”</source>
         <translation>“%1” dihapus</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1264"/>
+        <location filename="../src/app/MainWindow.cpp" line="1282"/>
         <source>Export form data</source>
         <translation>Ekspor data formulir</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1265"/>
-        <location filename="../src/app/MainWindow.cpp" line="1285"/>
+        <location filename="../src/app/MainWindow.cpp" line="1283"/>
+        <location filename="../src/app/MainWindow.cpp" line="1303"/>
         <source>XFDF form data (*.xfdf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1273"/>
+        <location filename="../src/app/MainWindow.cpp" line="1291"/>
         <source>Couldn&apos;t export form data</source>
         <translation>Tidak bisa mengekspor data formulir</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1276"/>
+        <location filename="../src/app/MainWindow.cpp" line="1294"/>
         <source>Exported form data to %1</source>
         <translation>Data formulir diekspor ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1283"/>
+        <location filename="../src/app/MainWindow.cpp" line="1301"/>
         <source>Import form data</source>
         <translation>Impor data formulir</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1299"/>
+        <location filename="../src/app/MainWindow.cpp" line="1317"/>
         <source>Couldn&apos;t import form data</source>
         <translation>Tidak bisa mengimpor data formulir</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1302"/>
+        <location filename="../src/app/MainWindow.cpp" line="1320"/>
         <source>Imported form data into %1</source>
         <translation>Data formulir diimpor ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1311"/>
+        <location filename="../src/app/MainWindow.cpp" line="1329"/>
         <source>No editable text boxes yet — add one with the Text tool.</source>
         <translation>Belum ada kotak teks yang bisa disunting — tambahkan dengan alat Teks.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1323"/>
+        <location filename="../src/app/MainWindow.cpp" line="1341"/>
         <source>Save edited PDF</source>
         <translation>Simpan PDF tersunting</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1334"/>
+        <location filename="../src/app/MainWindow.cpp" line="1352"/>
         <source>Deleted the text box</source>
         <translation>Kotak teks dihapus</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1338"/>
+        <location filename="../src/app/MainWindow.cpp" line="1356"/>
         <source>Updated the text</source>
         <translation>Teks diperbarui</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1343"/>
+        <location filename="../src/app/MainWindow.cpp" line="1361"/>
         <source>Couldn&apos;t edit text</source>
         <translation>Tidak bisa menyunting teks</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1358"/>
+        <location filename="../src/app/MainWindow.cpp" line="1376"/>
         <source>LibreOffice not found</source>
         <translation>LibreOffice tidak ditemukan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1359"/>
+        <location filename="../src/app/MainWindow.cpp" line="1377"/>
         <source>Install LibreOffice to edit heavy layout, body text, and images in Draw.</source>
         <translation>Pasang LibreOffice untuk menyunting tata letak berat, teks isi, dan gambar di Draw.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1367"/>
+        <location filename="../src/app/MainWindow.cpp" line="1385"/>
         <source>Couldn&apos;t open LibreOffice Draw</source>
         <translation>Tidak bisa membuka LibreOffice Draw</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1368"/>
+        <location filename="../src/app/MainWindow.cpp" line="1386"/>
         <source>LibreOffice is installed but couldn&apos;t be launched.</source>
         <translation>LibreOffice terpasang tapi tidak bisa dijalankan.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1371"/>
+        <location filename="../src/app/MainWindow.cpp" line="1389"/>
         <source>Opening in LibreOffice Draw…</source>
         <translation>Membuka di LibreOffice Draw…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1399"/>
+        <location filename="../src/app/MainWindow.cpp" line="1417"/>
         <source>Restart Feather PDF to apply the new language.</source>
         <translation>Mulai ulang Feather PDF untuk menerapkan bahasa baru.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1456"/>
+        <location filename="../src/app/MainWindow.cpp" line="1474"/>
         <source>Moved “%1”</source>
         <translation>“%1” dipindah</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1470"/>
+        <location filename="../src/app/MainWindow.cpp" line="1488"/>
         <source>Added “%1” to %2</source>
         <translation>“%1” ditambahkan ke %2</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1475"/>
+        <location filename="../src/app/MainWindow.cpp" line="1493"/>
         <source>Couldn&apos;t save field</source>
         <translation>Tidak bisa menyimpan kolom</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1489"/>
+        <location filename="../src/app/MainWindow.cpp" line="1507"/>
         <source>Export PDF</source>
         <translation>Ekspor PDF</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1501"/>
-        <location filename="../src/app/MainWindow.cpp" line="2232"/>
+        <location filename="../src/app/MainWindow.cpp" line="1519"/>
+        <location filename="../src/app/MainWindow.cpp" line="2250"/>
         <source>Couldn&apos;t export</source>
         <translation>Tidak bisa mengekspor</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1504"/>
+        <location filename="../src/app/MainWindow.cpp" line="1522"/>
         <source>Exported to %1</source>
         <translation>Diekspor ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1657"/>
+        <location filename="../src/app/MainWindow.cpp" line="1675"/>
         <source>Save annotated PDF</source>
         <translation>Simpan PDF beranotasi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1669"/>
+        <location filename="../src/app/MainWindow.cpp" line="1687"/>
         <source>Couldn&apos;t save annotations</source>
         <translation>Tidak bisa menyimpan anotasi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1672"/>
+        <location filename="../src/app/MainWindow.cpp" line="1690"/>
         <source>Saved annotated copy to %1</source>
         <translation>Salinan beranotasi disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1687"/>
+        <location filename="../src/app/MainWindow.cpp" line="1705"/>
         <source>Save redacted PDF</source>
         <translation>Simpan PDF teredaksi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1747"/>
+        <location filename="../src/app/MainWindow.cpp" line="1765"/>
         <source>Couldn&apos;t redact</source>
         <translation>Tidak bisa meredaksi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1750"/>
+        <location filename="../src/app/MainWindow.cpp" line="1768"/>
         <source>Saved redacted copy to %1</source>
         <translation>Salinan teredaksi disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1777"/>
+        <location filename="../src/app/MainWindow.cpp" line="1795"/>
         <source>Choose at least one pattern to search for.</source>
         <translation>Pilih minimal satu pola untuk dicari.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1790"/>
+        <location filename="../src/app/MainWindow.cpp" line="1808"/>
         <source>Couldn&apos;t search</source>
         <translation>Tidak bisa mencari</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1792"/>
+        <location filename="../src/app/MainWindow.cpp" line="1810"/>
         <source>No matching text found.</source>
         <translation>Tidak ada teks yang cocok.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1811"/>
+        <location filename="../src/app/MainWindow.cpp" line="1829"/>
         <source>Found %n match(es) — review the marks, then Apply.</source>
         <translation>
             <numerusform>Ditemukan %n kecocokan — tinjau tanda, lalu Terapkan.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1822"/>
+        <location filename="../src/app/MainWindow.cpp" line="1840"/>
         <source>Choose at least one thing to remove.</source>
         <translation>Pilih minimal satu hal untuk dibuang.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1829"/>
+        <location filename="../src/app/MainWindow.cpp" line="1847"/>
         <source>Save cleaned PDF</source>
         <translation>Simpan PDF bersih</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1842"/>
+        <location filename="../src/app/MainWindow.cpp" line="1860"/>
         <source>Couldn&apos;t clean the document</source>
         <translation>Tidak bisa membersihkan dokumen</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1846"/>
+        <location filename="../src/app/MainWindow.cpp" line="1864"/>
         <source>Nothing hidden to remove — saved a clean copy.</source>
         <translation>Tidak ada yang tersembunyi — salinan bersih disimpan.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1848"/>
+        <location filename="../src/app/MainWindow.cpp" line="1866"/>
         <source>Removed %n hidden item(s) — saved %1</source>
         <translation>
             <numerusform>Membuang %n item tersembunyi — disimpan %1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1879"/>
+        <location filename="../src/app/MainWindow.cpp" line="1897"/>
         <source>Draw the area the link should cover.</source>
         <translation>Gambar area yang dicakup tautan.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1890"/>
+        <location filename="../src/app/MainWindow.cpp" line="1908"/>
         <source>Link cancelled.</source>
         <translation>Tautan dibatalkan.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1894"/>
+        <location filename="../src/app/MainWindow.cpp" line="1912"/>
         <source>Save with link</source>
         <translation>Simpan dengan tautan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1907"/>
+        <location filename="../src/app/MainWindow.cpp" line="1925"/>
         <source>Couldn&apos;t add link</source>
         <translation>Tidak bisa menambah tautan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1910"/>
+        <location filename="../src/app/MainWindow.cpp" line="1928"/>
         <source>Added link to %1</source>
         <translation>Tautan ditambahkan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1924"/>
+        <location filename="../src/app/MainWindow.cpp" line="1942"/>
         <source>No link changes to apply.</source>
         <translation>Tidak ada perubahan tautan untuk diterapkan.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1928"/>
+        <location filename="../src/app/MainWindow.cpp" line="1946"/>
         <source>Save with edited links</source>
         <translation>Simpan dengan tautan tersunting</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1940"/>
+        <location filename="../src/app/MainWindow.cpp" line="1958"/>
         <source>Couldn&apos;t update links</source>
         <translation>Tidak bisa memperbarui tautan</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1943"/>
+        <location filename="../src/app/MainWindow.cpp" line="1961"/>
         <source>Updated %n link(s) — saved %1</source>
         <translation>
             <numerusform>Memperbarui %n tautan — disimpan %1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1968"/>
+        <location filename="../src/app/MainWindow.cpp" line="1986"/>
         <source>Draw where the stamp goes.</source>
         <translation>Gambar tempat stempel akan diletakkan.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1977"/>
+        <location filename="../src/app/MainWindow.cpp" line="1995"/>
         <source>Save with stamp</source>
         <translation>Simpan dengan stempel</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1991"/>
+        <location filename="../src/app/MainWindow.cpp" line="2009"/>
         <source>Couldn&apos;t add stamp</source>
         <translation>Gagal menambahkan stempel</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1994"/>
+        <location filename="../src/app/MainWindow.cpp" line="2012"/>
         <source>Added stamp to %1</source>
         <translation>Stempel ditambahkan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2070"/>
+        <location filename="../src/app/MainWindow.cpp" line="2088"/>
         <source>Create PDF from files</source>
         <translation>Buat PDF dari berkas</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2071"/>
+        <location filename="../src/app/MainWindow.cpp" line="2089"/>
         <source>Documents and images (*.png *.jpg *.jpeg *.bmp *.gif *.tif *.tiff *.webp *.doc *.docx *.odt *.rtf *.txt *.xls *.xlsx *.ods *.csv *.ppt *.pptx *.odp);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2085"/>
-        <location filename="../src/app/MainWindow.cpp" line="2114"/>
+        <location filename="../src/app/MainWindow.cpp" line="2103"/>
+        <location filename="../src/app/MainWindow.cpp" line="2132"/>
         <source>Create PDF</source>
         <translation>Buat PDF</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2086"/>
+        <location filename="../src/app/MainWindow.cpp" line="2104"/>
         <source>Select images to combine into one PDF, or a single document to convert.</source>
         <translation>Pilih gambar untuk digabung jadi satu PDF, atau satu dokumen untuk dikonversi.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2093"/>
+        <location filename="../src/app/MainWindow.cpp" line="2111"/>
         <source>Save PDF</source>
         <translation>Simpan PDF</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2104"/>
-        <location filename="../src/app/MainWindow.cpp" line="2127"/>
+        <location filename="../src/app/MainWindow.cpp" line="2122"/>
+        <location filename="../src/app/MainWindow.cpp" line="2145"/>
         <source>Couldn&apos;t create PDF</source>
         <translation>Tidak bisa membuat PDF</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2107"/>
-        <location filename="../src/app/MainWindow.cpp" line="2131"/>
+        <location filename="../src/app/MainWindow.cpp" line="2125"/>
+        <location filename="../src/app/MainWindow.cpp" line="2149"/>
         <source>Created %1</source>
         <translation>Membuat %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2115"/>
+        <location filename="../src/app/MainWindow.cpp" line="2133"/>
         <source>Converting this document needs LibreOffice, which isn&apos;t installed.</source>
         <translation>Mengonversi dokumen ini butuh LibreOffice, yang belum terpasang.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2120"/>
+        <location filename="../src/app/MainWindow.cpp" line="2138"/>
         <source>Converting…</source>
         <translation>Mengonversi…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2128"/>
+        <location filename="../src/app/MainWindow.cpp" line="2146"/>
         <source>The document couldn&apos;t be converted.</source>
         <translation>Dokumen tidak bisa dikonversi.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2207"/>
+        <location filename="../src/app/MainWindow.cpp" line="2225"/>
         <source>Export</source>
         <translation>Ekspor</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2208"/>
+        <location filename="../src/app/MainWindow.cpp" line="2226"/>
         <source>Exporting to an editable document needs LibreOffice, which isn&apos;t installed.</source>
         <translation>Mengekspor ke dokumen yang bisa disunting butuh LibreOffice, yang belum terpasang.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2216"/>
+        <location filename="../src/app/MainWindow.cpp" line="2234"/>
         <source>Export to editable document</source>
         <translation>Ekspor ke dokumen yang bisa disunting</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2217"/>
+        <location filename="../src/app/MainWindow.cpp" line="2235"/>
         <source>Word document (*.docx);;OpenDocument Text (*.odt);;Rich Text (*.rtf);;Plain text (*.txt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2223"/>
+        <location filename="../src/app/MainWindow.cpp" line="2241"/>
         <source>Exporting…</source>
         <translation>Mengekspor…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2233"/>
+        <location filename="../src/app/MainWindow.cpp" line="2251"/>
         <source>The document couldn&apos;t be exported.</source>
         <translation>Dokumen tidak bisa diekspor.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2238"/>
+        <location filename="../src/app/MainWindow.cpp" line="2256"/>
         <source>Exported %1</source>
         <translation>Diekspor %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2239"/>
+        <location filename="../src/app/MainWindow.cpp" line="2257"/>
         <source>Exported %1 — check the layout; conversion is approximate</source>
         <translation>Diekspor %1 — periksa tata letak; konversi hanya mendekati</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2258"/>
+        <location filename="../src/app/MainWindow.cpp" line="2276"/>
         <source>No pages in that range to export.</source>
         <translation>Tidak ada halaman pada rentang itu untuk diekspor.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2263"/>
-        <location filename="../src/app/MainWindow.cpp" line="2358"/>
+        <location filename="../src/app/MainWindow.cpp" line="2281"/>
+        <location filename="../src/app/MainWindow.cpp" line="2376"/>
         <source>Choose a folder for the images</source>
         <translation>Pilih folder untuk gambar</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2282"/>
+        <location filename="../src/app/MainWindow.cpp" line="2300"/>
         <source>Couldn&apos;t export images</source>
         <translation>Tidak bisa mengekspor gambar</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="2285"/>
+        <location filename="../src/app/MainWindow.cpp" line="2303"/>
         <source>Exported %n image(s) to %1</source>
         <translation>
             <numerusform>%n gambar diekspor ke %1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2295"/>
+        <location filename="../src/app/MainWindow.cpp" line="2313"/>
         <source>Drag to select a region to copy as an image.</source>
         <translation>Seret untuk memilih area yang akan disalin sebagai gambar.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2316"/>
+        <location filename="../src/app/MainWindow.cpp" line="2334"/>
         <source>Couldn&apos;t snapshot</source>
         <translation>Gagal membuat cuplikan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2325"/>
-        <location filename="../src/app/MainWindow.cpp" line="2335"/>
+        <location filename="../src/app/MainWindow.cpp" line="2343"/>
+        <location filename="../src/app/MainWindow.cpp" line="2353"/>
         <source>Snapshot copied to the clipboard.</source>
         <translation>Cuplikan disalin ke papan klip.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2333"/>
+        <location filename="../src/app/MainWindow.cpp" line="2351"/>
         <source>Save snapshot</source>
         <translation>Simpan cuplikan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2333"/>
+        <location filename="../src/app/MainWindow.cpp" line="2351"/>
         <source>PNG image (*.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2339"/>
+        <location filename="../src/app/MainWindow.cpp" line="2357"/>
         <source>Couldn&apos;t save snapshot</source>
         <translation>Gagal menyimpan cuplikan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2340"/>
+        <location filename="../src/app/MainWindow.cpp" line="2358"/>
         <source>The image couldn&apos;t be written to that location.</source>
         <translation>Gambar tidak dapat ditulis ke lokasi tersebut.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2343"/>
+        <location filename="../src/app/MainWindow.cpp" line="2361"/>
         <source>Saved snapshot to %1</source>
         <translation>Cuplikan disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2351"/>
+        <location filename="../src/app/MainWindow.cpp" line="2369"/>
         <source>Extract Embedded Images</source>
         <translation>Ambil Gambar Tertanam</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2352"/>
+        <location filename="../src/app/MainWindow.cpp" line="2370"/>
         <source>Extracting embedded images needs the pdfimages tool (from Poppler), which isn&apos;t installed.</source>
         <translation>Mengambil gambar tertanam butuh alat pdfimages (dari Poppler), yang belum terpasang.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2371"/>
+        <location filename="../src/app/MainWindow.cpp" line="2389"/>
         <source>Couldn&apos;t extract images</source>
         <translation>Tidak bisa mengambil gambar</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2373"/>
+        <location filename="../src/app/MainWindow.cpp" line="2391"/>
         <source>This PDF has no embedded images.</source>
         <translation>PDF ini tidak punya gambar tertanam.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="2376"/>
+        <location filename="../src/app/MainWindow.cpp" line="2394"/>
         <source>Extracted %n image(s) to %1</source>
         <translation>
             <numerusform>%n gambar diambil ke %1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2401"/>
+        <location filename="../src/app/MainWindow.cpp" line="2419"/>
         <source>Save optimized PDF</source>
         <translation>Simpan PDF teroptimalkan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2390"/>
-        <location filename="../src/app/MainWindow.cpp" line="2412"/>
+        <location filename="../src/app/MainWindow.cpp" line="2408"/>
+        <location filename="../src/app/MainWindow.cpp" line="2430"/>
         <source>Couldn&apos;t optimize</source>
         <translation>Tidak bisa mengoptimalkan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2142"/>
+        <location filename="../src/app/MainWindow.cpp" line="394"/>
+        <source>&amp;Create &amp;&amp; Export</source>
+        <translation>&amp;Buat &amp;&amp; Ekspor</translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="396"/>
+        <source>&amp;Text &amp;&amp; Forms</source>
+        <translation>&amp;Teks &amp;&amp; Formulir</translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="402"/>
+        <source>&amp;Pages</source>
+        <translation>&amp;Halaman</translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="404"/>
+        <source>&amp;Review &amp;&amp; Markup</source>
+        <translation>&amp;Tinjau &amp;&amp; Markah</translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="413"/>
+        <source>&amp;Optimize &amp;&amp; Convert</source>
+        <translation>&amp;Optimalkan &amp;&amp; Konversi</translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="417"/>
+        <source>PDF/A &amp;&amp; Preflight…</source>
+        <translation>PDF/A &amp;&amp; Preflight…</translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="418"/>
+        <source>&amp;Security</source>
+        <translation>&amp;Keamanan</translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="429"/>
+        <source>&amp;Batch / Action…</source>
+        <translation>&amp;Batch / Aksi…</translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2160"/>
         <source>Scanning needs SANE (install the “sane-backends” package).</source>
         <translation>Pemindaian butuh SANE (pasang paket “sane-backends”).</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2153"/>
+        <location filename="../src/app/MainWindow.cpp" line="2171"/>
         <source>Save scan</source>
         <translation>Simpan hasil pindai</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2160"/>
-        <location filename="../src/app/MainWindow.cpp" line="2174"/>
-        <location filename="../src/app/MainWindow.cpp" line="2181"/>
+        <location filename="../src/app/MainWindow.cpp" line="2178"/>
+        <location filename="../src/app/MainWindow.cpp" line="2192"/>
+        <location filename="../src/app/MainWindow.cpp" line="2199"/>
         <source>Couldn&apos;t scan</source>
         <translation>Tidak bisa memindai</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2161"/>
+        <location filename="../src/app/MainWindow.cpp" line="2179"/>
         <source>Couldn&apos;t create a temporary working folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2165"/>
+        <location filename="../src/app/MainWindow.cpp" line="2183"/>
         <source>Scanning…</source>
         <translation>Memindai…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2175"/>
+        <location filename="../src/app/MainWindow.cpp" line="2193"/>
         <source>No pages were scanned.</source>
         <translation>Tak ada halaman yang dipindai.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2186"/>
+        <location filename="../src/app/MainWindow.cpp" line="2204"/>
         <source>Recognizing text…</source>
         <translation>Mengenali teks…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2192"/>
+        <location filename="../src/app/MainWindow.cpp" line="2210"/>
         <source>Scanned, but OCR failed: %1</source>
         <translation>Terpindai, tapi OCR gagal: %1</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="2197"/>
+        <location filename="../src/app/MainWindow.cpp" line="2215"/>
         <source>Scanned %n page(s) into %1.</source>
         <translation>
             <numerusform>Memindai %n halaman ke %1.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2417"/>
+        <location filename="../src/app/MainWindow.cpp" line="2435"/>
         <source>Optimized: %1 → %2 (%3% smaller)</source>
         <translation>Dioptimalkan: %1 → %2 (%3% lebih kecil)</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2429"/>
+        <location filename="../src/app/MainWindow.cpp" line="2447"/>
         <source>RGB to CMYK</source>
         <translation>RGB ke CMYK</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2430"/>
+        <location filename="../src/app/MainWindow.cpp" line="2448"/>
         <source>This needs Ghostscript, which isn&apos;t installed. Install the &apos;ghostscript&apos; package and try again.</source>
         <translation>Ini butuh Ghostscript, yang belum terpasang. Pasang paket &apos;ghostscript&apos; lalu coba lagi.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2437"/>
+        <location filename="../src/app/MainWindow.cpp" line="2455"/>
         <source>Save CMYK PDF</source>
         <translation>Simpan PDF CMYK</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2443"/>
+        <location filename="../src/app/MainWindow.cpp" line="2461"/>
         <source>Converting to CMYK…</source>
         <translation>Mengonversi ke CMYK…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2452"/>
+        <location filename="../src/app/MainWindow.cpp" line="2470"/>
         <source>Couldn&apos;t convert to CMYK</source>
         <translation>Tidak bisa mengonversi ke CMYK</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2455"/>
+        <location filename="../src/app/MainWindow.cpp" line="2473"/>
         <source>Converted to CMYK</source>
         <translation>Dikonversi ke CMYK</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2467"/>
+        <location filename="../src/app/MainWindow.cpp" line="2485"/>
         <source>Compare current document with…</source>
         <translation>Bandingkan dokumen sekarang dengan…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2475"/>
+        <location filename="../src/app/MainWindow.cpp" line="2493"/>
         <source>Save comparison PDF</source>
         <translation>Simpan PDF perbandingan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2483"/>
+        <location filename="../src/app/MainWindow.cpp" line="2501"/>
         <source>Comparing…</source>
         <translation>Membandingkan…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2492"/>
-        <location filename="../src/app/MainWindow.cpp" line="2524"/>
+        <location filename="../src/app/MainWindow.cpp" line="2510"/>
+        <location filename="../src/app/MainWindow.cpp" line="2542"/>
         <source>Couldn&apos;t compare</source>
         <translation>Tidak bisa membandingkan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2492"/>
+        <location filename="../src/app/MainWindow.cpp" line="2510"/>
         <source>The comparison failed.</source>
         <translation>Perbandingan gagal.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2495"/>
+        <location filename="../src/app/MainWindow.cpp" line="2513"/>
         <source>No visual differences found</source>
         <translation>Tidak ada perbedaan visual</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="2496"/>
+        <location filename="../src/app/MainWindow.cpp" line="2514"/>
         <source>%n page(s) changed</source>
         <translation>
             <numerusform>%n halaman berubah</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2509"/>
+        <location filename="../src/app/MainWindow.cpp" line="2527"/>
         <source>Compare text with…</source>
         <translation>Bandingkan teks dengan…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2517"/>
+        <location filename="../src/app/MainWindow.cpp" line="2535"/>
         <source>Comparing text…</source>
         <translation>Membandingkan teks…</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2525"/>
+        <location filename="../src/app/MainWindow.cpp" line="2543"/>
         <source>One of the PDFs couldn&apos;t be read for comparison.</source>
         <translation>Salah satu PDF tidak bisa dibaca untuk dibandingkan.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2549"/>
+        <location filename="../src/app/MainWindow.cpp" line="2567"/>
         <source>Save watermarked PDF</source>
         <translation>Simpan PDF ber-watermark</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2576"/>
+        <location filename="../src/app/MainWindow.cpp" line="2594"/>
         <source>Couldn&apos;t add watermark</source>
         <translation>Tidak bisa menambah watermark</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2579"/>
+        <location filename="../src/app/MainWindow.cpp" line="2597"/>
         <source>Watermark added</source>
         <translation>Watermark ditambahkan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2592"/>
+        <location filename="../src/app/MainWindow.cpp" line="2610"/>
         <source>Save numbered PDF</source>
         <translation>Simpan PDF bernomor</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2603"/>
+        <location filename="../src/app/MainWindow.cpp" line="2621"/>
         <source>Couldn&apos;t add numbering</source>
         <translation>Tidak bisa menambah penomoran</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2606"/>
+        <location filename="../src/app/MainWindow.cpp" line="2624"/>
         <source>Bates numbering added</source>
         <translation>Penomoran Bates ditambahkan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2617"/>
+        <location filename="../src/app/MainWindow.cpp" line="2635"/>
         <source>Enter some header or footer text.</source>
         <translation>Masukkan teks header atau footer.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2623"/>
+        <location filename="../src/app/MainWindow.cpp" line="2641"/>
         <source>Save with header &amp; footer</source>
         <translation>Simpan dengan header &amp; footer</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2634"/>
+        <location filename="../src/app/MainWindow.cpp" line="2652"/>
         <source>Couldn&apos;t add header &amp; footer</source>
         <translation>Tidak bisa menambah header &amp; footer</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2637"/>
+        <location filename="../src/app/MainWindow.cpp" line="2655"/>
         <source>Header &amp; footer added</source>
         <translation>Header &amp; footer ditambahkan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2650"/>
+        <location filename="../src/app/MainWindow.cpp" line="2668"/>
         <source>Save flattened PDF</source>
         <translation>Simpan PDF rata</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2663"/>
+        <location filename="../src/app/MainWindow.cpp" line="2681"/>
         <source>Couldn&apos;t flatten</source>
         <translation>Tidak bisa meratakan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2666"/>
+        <location filename="../src/app/MainWindow.cpp" line="2684"/>
         <source>Flattened</source>
         <translation>Diratakan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2678"/>
+        <location filename="../src/app/MainWindow.cpp" line="2696"/>
         <source>Choose a folder for the split files</source>
         <translation>Pilih folder untuk berkas pecahan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2691"/>
+        <location filename="../src/app/MainWindow.cpp" line="2709"/>
         <source>Couldn&apos;t split</source>
         <translation>Tidak bisa memisahkan</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="2694"/>
+        <location filename="../src/app/MainWindow.cpp" line="2712"/>
         <source>Split into %n file(s)</source>
         <translation>
             <numerusform>Dipisah jadi %n berkas</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2709"/>
+        <location filename="../src/app/MainWindow.cpp" line="2727"/>
         <source>Save combined PDF</source>
         <translation>Simpan PDF gabungan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2720"/>
+        <location filename="../src/app/MainWindow.cpp" line="2738"/>
         <source>Couldn&apos;t combine</source>
         <translation>Tidak bisa menggabungkan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2723"/>
+        <location filename="../src/app/MainWindow.cpp" line="2741"/>
         <source>Combined %1 files</source>
         <translation>Menggabungkan %1 berkas</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2733"/>
+        <location filename="../src/app/MainWindow.cpp" line="2751"/>
         <source>No signing certificate</source>
         <translation>Tidak ada sertifikat tanda tangan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2734"/>
+        <location filename="../src/app/MainWindow.cpp" line="2752"/>
         <source>No signing certificate was found in your system&apos;s certificate store. Import a certificate (into the NSS database) to sign documents.</source>
         <translation>Tidak ada sertifikat tanda tangan di penyimpanan sertifikat sistem. Impor sertifikat (ke basis data NSS) untuk menandatangani dokumen.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2755"/>
+        <location filename="../src/app/MainWindow.cpp" line="2773"/>
         <source>Save signed PDF</source>
         <translation>Simpan PDF tertanda</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2768"/>
+        <location filename="../src/app/MainWindow.cpp" line="2786"/>
         <source>Couldn&apos;t sign</source>
         <translation>Tidak bisa menandatangani</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2780"/>
+        <location filename="../src/app/MainWindow.cpp" line="2798"/>
         <source>Signed, and timestamped to %1</source>
         <translation>Ditandatangani, dan diberi stempel waktu ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2782"/>
+        <location filename="../src/app/MainWindow.cpp" line="2800"/>
         <source>Signed, but timestamping failed</source>
         <translation>Ditandatangani, tetapi stempel waktu gagal</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2784"/>
+        <location filename="../src/app/MainWindow.cpp" line="2802"/>
         <source>Signed and saved to %1</source>
         <translation>Ditandatangani dan disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2802"/>
-        <location filename="../src/app/MainWindow.cpp" line="2808"/>
+        <location filename="../src/app/MainWindow.cpp" line="2820"/>
+        <location filename="../src/app/MainWindow.cpp" line="2826"/>
         <source>Recognize Text</source>
         <translation>Kenali Teks</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2803"/>
+        <location filename="../src/app/MainWindow.cpp" line="2821"/>
         <source>Text recognition needs Tesseract, which isn&apos;t installed.</source>
         <translation>Pengenalan teks butuh Tesseract, yang belum terpasang.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2809"/>
+        <location filename="../src/app/MainWindow.cpp" line="2827"/>
         <source>No Tesseract language data is installed.</source>
         <translation>Tidak ada data bahasa Tesseract yang terpasang.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2826"/>
+        <location filename="../src/app/MainWindow.cpp" line="2844"/>
         <source>Save recognized PDF</source>
         <translation>Simpan PDF terkenali</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2832"/>
+        <location filename="../src/app/MainWindow.cpp" line="2850"/>
         <source>Recognizing text… this may take a while.</source>
         <translation>Mengenali teks… ini bisa memakan waktu.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2839"/>
+        <location filename="../src/app/MainWindow.cpp" line="2857"/>
         <source>Couldn&apos;t recognize text</source>
         <translation>Tidak bisa mengenali teks</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2840"/>
+        <location filename="../src/app/MainWindow.cpp" line="2858"/>
         <source>Text recognition failed.</source>
         <translation>Pengenalan teks gagal.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2843"/>
+        <location filename="../src/app/MainWindow.cpp" line="2861"/>
         <source>Recognized text - saved to %1</source>
         <translation>Teks dikenali - disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2866"/>
+        <location filename="../src/app/MainWindow.cpp" line="2884"/>
         <source>Save protected PDF</source>
         <translation>Simpan PDF terlindungi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2883"/>
+        <location filename="../src/app/MainWindow.cpp" line="2901"/>
         <source>Couldn&apos;t protect</source>
         <translation>Tidak bisa melindungi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2888"/>
+        <location filename="../src/app/MainWindow.cpp" line="2906"/>
         <source>Saved protected copy to %1</source>
         <translation>Salinan terlindungi disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2898"/>
+        <location filename="../src/app/MainWindow.cpp" line="2916"/>
         <source>Save unprotected PDF</source>
         <translation>Simpan PDF tanpa proteksi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2910"/>
+        <location filename="../src/app/MainWindow.cpp" line="2928"/>
         <source>Couldn&apos;t remove password</source>
         <translation>Tidak bisa menghapus kata sandi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2913"/>
+        <location filename="../src/app/MainWindow.cpp" line="2931"/>
         <source>Saved unprotected copy to %1</source>
         <translation>Salinan tanpa proteksi disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2931"/>
+        <location filename="../src/app/MainWindow.cpp" line="2949"/>
         <source>Couldn&apos;t save</source>
         <translation>Tidak bisa menyimpan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2937"/>
+        <location filename="../src/app/MainWindow.cpp" line="2955"/>
         <source>Saved</source>
         <translation>Disimpan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2972"/>
+        <location filename="../src/app/MainWindow.cpp" line="2990"/>
         <source>Saved to %1</source>
         <translation>Disimpan ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2973"/>
+        <location filename="../src/app/MainWindow.cpp" line="2991"/>
         <source>Sent to %1</source>
         <translation>Dikirim ke %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3100"/>
+        <location filename="../src/app/MainWindow.cpp" line="3118"/>
         <source>Incorrect password. Try again.</source>
         <translation>Kata sandi salah. Coba lagi.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3106"/>
+        <location filename="../src/app/MainWindow.cpp" line="3124"/>
         <source>Couldn&apos;t open document</source>
         <translation>Tidak bisa membuka dokumen</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3241"/>
+        <location filename="../src/app/MainWindow.cpp" line="3259"/>
         <source>Open PDF</source>
         <translation>Buka PDF</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3241"/>
+        <location filename="../src/app/MainWindow.cpp" line="3259"/>
         <source>PDF documents (*.pdf);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3264"/>
-        <location filename="../src/app/MainWindow.cpp" line="3290"/>
+        <location filename="../src/app/MainWindow.cpp" line="3282"/>
+        <location filename="../src/app/MainWindow.cpp" line="3308"/>
         <source>Unsaved changes</source>
         <translation>Perubahan belum disimpan</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3265"/>
+        <location filename="../src/app/MainWindow.cpp" line="3283"/>
         <source>Save changes to “%1” before closing?</source>
         <translation>Simpan perubahan ke “%1” sebelum menutup?</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3266"/>
+        <location filename="../src/app/MainWindow.cpp" line="3284"/>
         <source>Your changes will be lost if you don&apos;t save them.</source>
         <translation>Perubahanmu akan hilang jika tidak disimpan.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="3291"/>
+        <location filename="../src/app/MainWindow.cpp" line="3309"/>
         <source>%n document(s) have unsaved changes.</source>
         <translation>
             <numerusform>%n dokumen punya perubahan belum disimpan.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3292"/>
+        <location filename="../src/app/MainWindow.cpp" line="3310"/>
         <source>Save them before closing Feather PDF?</source>
         <translation>Simpan sebelum menutup Feather PDF?</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3314"/>
+        <location filename="../src/app/MainWindow.cpp" line="3332"/>
         <source>Close Feather PDF</source>
         <translation>Tutup Feather PDF</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="3315"/>
+        <location filename="../src/app/MainWindow.cpp" line="3333"/>
         <source>%n tab(s) are open. Close them all?</source>
         <translation>
             <numerusform>%n tab terbuka. Tutup semuanya?</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3327"/>
+        <location filename="../src/app/MainWindow.cpp" line="3345"/>
         <source>%1 | Feather PDF</source>
         <translation>%1 | Feather PDF</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3329"/>
-        <location filename="../src/app/MainWindow.cpp" line="3426"/>
+        <location filename="../src/app/MainWindow.cpp" line="3347"/>
+        <location filename="../src/app/MainWindow.cpp" line="3444"/>
         <source>Feather PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3376"/>
+        <location filename="../src/app/MainWindow.cpp" line="3394"/>
         <source>%1 / %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3387"/>
+        <location filename="../src/app/MainWindow.cpp" line="3405"/>
         <source>%1%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3432"/>
+        <location filename="../src/app/MainWindow.cpp" line="3450"/>
         <source>Version %1</source>
         <translation>Versi %1</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3439"/>
+        <location filename="../src/app/MainWindow.cpp" line="3457"/>
         <source>Light on the system, full-featured on PDF.</source>
         <translation>Ringan di sistem, lengkap untuk PDF.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3445"/>
+        <location filename="../src/app/MainWindow.cpp" line="3463"/>
         <source>A native, open-source PDF tool for Linux, licensed under the GPLv3.</source>
         <translation>Alat PDF native sumber-terbuka untuk Linux, berlisensi GPLv3.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3459"/>
+        <location filename="../src/app/MainWindow.cpp" line="3477"/>
         <source>&lt;a style=&apos;%1&apos; href=&apos;https://github.com/s4rt4/featherpdf-linux&apos;&gt;GitHub&lt;/a&gt;&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;&lt;a style=&apos;%1&apos; href=&apos;https://www.gnu.org/licenses/gpl-3.0.html&apos;&gt;License&lt;/a&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3480"/>
+        <location filename="../src/app/MainWindow.cpp" line="3498"/>
         <source>Document properties</source>
         <translation>Properti dokumen</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3498"/>
+        <location filename="../src/app/MainWindow.cpp" line="3516"/>
         <source>Title</source>
         <translation>Judul</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3499"/>
+        <location filename="../src/app/MainWindow.cpp" line="3517"/>
         <source>Author</source>
         <translation>Penulis</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3500"/>
+        <location filename="../src/app/MainWindow.cpp" line="3518"/>
         <source>Subject</source>
         <translation>Subjek</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3501"/>
+        <location filename="../src/app/MainWindow.cpp" line="3519"/>
         <source>Keywords</source>
         <translation>Kata kunci</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3502"/>
+        <location filename="../src/app/MainWindow.cpp" line="3520"/>
         <source>Creator</source>
         <translation>Pembuat</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3503"/>
+        <location filename="../src/app/MainWindow.cpp" line="3521"/>
         <source>Producer</source>
         <translation>Produsen</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3507"/>
+        <location filename="../src/app/MainWindow.cpp" line="3525"/>
         <source>Created</source>
         <translation>Dibuat</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3512"/>
+        <location filename="../src/app/MainWindow.cpp" line="3530"/>
         <source> (was %1)</source>
         <translation> (sebelumnya %1)</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3513"/>
+        <location filename="../src/app/MainWindow.cpp" line="3531"/>
         <source>Pages</source>
         <translation>Halaman</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3516"/>
+        <location filename="../src/app/MainWindow.cpp" line="3534"/>
         <source>Page size</source>
         <translation>Ukuran halaman</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3516"/>
+        <location filename="../src/app/MainWindow.cpp" line="3534"/>
         <source>%1 × %2 pt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3519"/>
+        <location filename="../src/app/MainWindow.cpp" line="3537"/>
         <source>File size</source>
         <translation>Ukuran berkas</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3520"/>
+        <location filename="../src/app/MainWindow.cpp" line="3538"/>
         <source>Location</source>
         <translation>Lokasi</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3531"/>
+        <location filename="../src/app/MainWindow.cpp" line="3549"/>
         <source>%1 arrives in a later milestone.</source>
         <translation>%1 hadir pada milestone berikutnya.</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3553"/>
+        <location filename="../src/app/MainWindow.cpp" line="3571"/>
         <source>No recent documents</source>
         <translation>Tidak ada dokumen terbaru</translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3564"/>
+        <location filename="../src/app/MainWindow.cpp" line="3582"/>
         <source>Clear list</source>
         <translation>Bersihkan daftar</translation>
     </message>
