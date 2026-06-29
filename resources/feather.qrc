@@ -53,6 +53,7 @@
   <file alias="pause.svg">icons/pause.svg</file>
   <file alias="stop.svg">icons/stop.svg</file>
   <file alias="volume-2.svg">icons/volume-2.svg</file>
+  <file alias="scan.svg">icons/scan.svg</file>
   <file alias="file.svg">icons/file.svg</file>
   <file alias="feather-logo.svg">icons/feather-logo.svg</file>
   <file alias="wrench.svg">icons/wrench.svg</file>

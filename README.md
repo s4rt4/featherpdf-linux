@@ -64,9 +64,10 @@ Confidential / For Review, with date and name).
 existing signatures (PAdES/NSS), and attach an optional **RFC 3161 trusted
 timestamp**.
 
-**More** — OCR (Tesseract) and image→PDF, with optional **deskew / despeckle /
-binarize** pre-processing and **automatic language detection**; office/image
-conversion (LibreOffice), **export back to Word/ODT/RTF/text** or **to
+**More** — **scan straight to PDF** from any SANE device (with optional OCR in
+the same pass); OCR (Tesseract) and image→PDF, with optional **deskew /
+despeckle / binarize** pre-processing and **automatic language detection**;
+office/image conversion (LibreOffice), **export back to Word/ODT/RTF/text** or **to
 PNG/JPEG/TIFF images**, AES-256 encryption, redaction (manual or **pattern-based
 Find & Redact**), **sanitize / remove hidden info**, watermarks,
 **headers/footers & page numbers**, **visual or word-level compare**,

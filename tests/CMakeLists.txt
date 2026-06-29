@@ -66,6 +66,19 @@ target_link_libraries(test_readaloud PRIVATE
 add_test(NAME readaloud COMMAND test_readaloud)
 set_tests_properties(readaloud PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+qt_add_executable(test_scanner
+    test_scanner.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Scanner.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/Scanner.h
+)
+target_include_directories(test_scanner PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(test_scanner PRIVATE
+    Qt6::Core
+    Qt6::Test
+)
+add_test(NAME scanner COMMAND test_scanner)
+set_tests_properties(scanner PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 qt_add_executable(test_annotator
     test_annotator.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Annotator.cpp

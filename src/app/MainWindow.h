@@ -130,6 +130,7 @@ private:
     void setMeasureMode(bool on);   // enter/leave the click-to-measure mode
     void activateTool(const QString& id); // route a Tools entry (pane or menu) to its action
     void createPdf();         // make a PDF from images (native) or an office doc (LibreOffice)
+    void scanDocument();      // scan from a SANE device into a new PDF (optional OCR)
     void exportDocument();    // export the PDF to an editable office doc (LibreOffice)
     void exportPagesAsImages(); // render selected pages to PNG/JPEG/TIFF (QPdfDocument)
     void extractEmbeddedImages(); // pull the raster images embedded in the PDF (pdfimages)

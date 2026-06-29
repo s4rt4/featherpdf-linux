@@ -36,6 +36,7 @@
 #include "backends/StampLibrary.h"
 #include "backends/TextEditor.h"
 #include "backends/Ocr.h"
+#include "backends/Scanner.h"
 #include "backends/Signer.h"
 #include "backends/Watermarker.h"
 #include "backends/Xfdf.h"
@@ -78,6 +79,7 @@
 #include "ui/NavigationRail.h"
 #include "ui/NoteDialog.h"
 #include "ui/OcrDialog.h"
+#include "ui/ScanDialog.h"
 #include "ui/OutlinePanel.h"
 #include "ui/PasswordDialog.h"
 #include "ui/PrintDialog.h"
@@ -128,7 +130,9 @@
 #include <QProcess>
 #include <QSettings>
 #include <QStackedWidget>
+#include <QDir>
 #include <QStandardPaths>
+#include <QTemporaryDir>
 #include <QUndoGroup>
 #include <QUndoStack>
 #include <QVBoxLayout>
@@ -382,7 +386,8 @@ void MainWindow::buildMenus() {
         bool sep; // a separator follows
     };
     const ToolEntry toolEntries[] = {
-        {"create", tr("Create PDF…"), false},  {"export", tr("Export…"), false},
+        {"create", tr("Create PDF…"), false},  {"scan", tr("Scan…"), false},
+        {"export", tr("Export…"), false},
         {"ocr", tr("Recognize Text (OCR)…"), false}, {"edit", tr("Edit Text…"), false},
         {"read-aloud", tr("Read Aloud…"), false},
         {"forms", tr("Forms"), false},
@@ -2051,6 +2056,8 @@ void MainWindow::activateTool(const QString& id) {
         runBatch();
     } else if (id == QLatin1String("create")) {
         createPdf();
+    } else if (id == QLatin1String("scan")) {
+        scanDocument();
     } else if (id == QLatin1String("export")) {
         exportDocument();
     } else {
@@ -2128,6 +2135,68 @@ void MainWindow::createPdf() {
         QString error;
         return Converter::officeToPdf(input, out, &error);
     }));
+}
+
+void MainWindow::scanDocument() {
+    if (!Scanner::isAvailable()) {
+        m_toast->show(tr("Scanning needs SANE (install the “sane-backends” package)."));
+        return;
+    }
+
+    ScanDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    const QString suggested =
+        QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation))
+            .filePath(QStringLiteral("scan.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save scan"), suggested,
+                                                     tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QTemporaryDir tmp;
+    if (!tmp.isValid()) {
+        QMessageBox::warning(this, tr("Couldn't scan"),
+                             tr("Couldn't create a temporary working folder."));
+        return;
+    }
+
+    m_toast->show(tr("Scanning…"));
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+    QString error;
+    const QStringList images = Scanner::scanPages(dialog.deviceName(), dialog.resolution(),
+                                                  dialog.mode(), dialog.pageCount(), tmp.path(),
+                                                  &error);
+    if (images.isEmpty()) {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, tr("Couldn't scan"),
+                             error.isEmpty() ? tr("No pages were scanned.") : error);
+        return;
+    }
+
+    if (!Converter::imagesToPdf(images, out, &error)) {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, tr("Couldn't scan"), error);
+        return;
+    }
+
+    if (dialog.runOcr()) {
+        m_toast->show(tr("Recognizing text…"));
+        QApplication::processEvents();
+        Ocr::Options opts; // default clean-up (deskew/despeckle/binarize)
+        QString ocrError;
+        if (!Ocr::addTextLayer(out, out, dialog.ocrLanguage(), opts, &ocrError)) {
+            // The scan still succeeded; OCR is a best-effort extra.
+            m_toast->show(tr("Scanned, but OCR failed: %1").arg(ocrError));
+        }
+    }
+
+    QApplication::restoreOverrideCursor();
+    m_toast->show(tr("Scanned %n page(s) into %1.", "", images.size())
+                      .arg(QFileInfo(out).fileName()));
+    openPath(out);
 }
 
 void MainWindow::exportDocument() {

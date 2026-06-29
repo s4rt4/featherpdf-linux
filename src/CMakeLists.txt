@@ -66,6 +66,8 @@ qt_add_executable(feather-pdf
     backends/StampLibrary.h
     backends/ReadAloud.cpp
     backends/ReadAloud.h
+    backends/Scanner.cpp
+    backends/Scanner.h
     ui/Theme.cpp
     ui/Theme.h
     ui/Viewport.cpp
@@ -158,6 +160,8 @@ qt_add_executable(feather-pdf
     ui/MeasureBar.h
     ui/ReadAloudBar.cpp
     ui/ReadAloudBar.h
+    ui/ScanDialog.cpp
+    ui/ScanDialog.h
     ui/NoteDialog.cpp
     ui/NoteDialog.h
     ui/PrintDialog.cpp

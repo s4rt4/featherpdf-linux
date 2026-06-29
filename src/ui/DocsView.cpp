@@ -422,6 +422,34 @@ QList<Group> buildDocs() {
               "<p>Konversi Office butuh LibreOffice terpasang; jalan pertama bisa beberapa detik. "
               "Jika gagal, buka berkas di LibreOffice untuk memastikan valid.</p>")});
     editing.topics.append(
+        {"scan", "Scan", "Pindai",
+         sect("en", "<p>Scan paper straight into a PDF from a connected device.</p>",
+              "<p>Capture one or more pages from a scanner and, optionally, make them searchable "
+              "with OCR in the same step.</p>",
+              "<p>Scanning uses SANE's <code>scanimage</code> - the standard Linux scanning stack, so "
+              "any SANE-supported device works. Pages are captured as images, assembled into a PDF "
+              "(QPdfWriter), and a Tesseract text layer is added when you ask for one. Everything "
+              "stays on your machine.</p>",
+              "<ul><li><b>Tools ▸ Scan</b>. Pick the device (Refresh re-scans the bus), set "
+              "resolution, colour mode, and page count, then Scan.</li>"
+              "<li>Tick <b>Make it searchable with OCR</b> to add a text layer; choose the "
+              "language.</li></ul>",
+              "<p>Needs the <code>sane-backends</code> package (and a configured scanner). More than "
+              "one page needs a document feeder. OCR needs Tesseract installed.</p>"),
+         sect("id", "<p>Pindai kertas langsung jadi PDF dari perangkat terhubung.</p>",
+              "<p>Tangkap satu atau beberapa halaman dari pemindai dan, jika mau, jadikan bisa dicari "
+              "dengan OCR dalam satu langkah.</p>",
+              "<p>Pemindaian memakai <code>scanimage</code> dari SANE - tumpukan pindai standar Linux, "
+              "jadi perangkat apa pun yang didukung SANE bisa dipakai. Halaman ditangkap sebagai "
+              "gambar, dirakit jadi PDF (QPdfWriter), dan lapisan teks Tesseract ditambahkan bila "
+              "diminta. Semua tetap di mesinmu.</p>",
+              "<ul><li><b>Tools ▸ Scan</b>. Pilih perangkat (Refresh memindai ulang bus), atur "
+              "resolusi, mode warna, dan jumlah halaman, lalu Scan.</li>"
+              "<li>Centang <b>Make it searchable with OCR</b> untuk menambah lapisan teks; pilih "
+              "bahasanya.</li></ul>",
+              "<p>Butuh paket <code>sane-backends</code> (dan pemindai terkonfigurasi). Lebih dari "
+              "satu halaman butuh pengumpan dokumen. OCR butuh Tesseract terpasang.</p>")});
+    editing.topics.append(
         {"export", "Export to editable", "Ekspor ke dokumen",
          sect("en", "<p>Turn a PDF back into an editable document.</p>",
               "<p>Export the open PDF to Word (.docx), OpenDocument Text (.odt), Rich Text (.rtf), "

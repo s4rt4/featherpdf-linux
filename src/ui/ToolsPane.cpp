@@ -168,6 +168,7 @@ ToolsPane::ToolsPane(QWidget* parent) : QWidget(parent) {
     const Def defs[] = {
         {"export", QT_TR_NOOP("Export"), "export", true},
         {"create", QT_TR_NOOP("Create"), "create", true},
+        {"scan", QT_TR_NOOP("Scan"), "scan", false},
         {"ocr", QT_TR_NOOP("Recognize text"), "search", false},
         {"edit", QT_TR_NOOP("Edit text"), "edit", false},
         {"read-aloud", QT_TR_NOOP("Read aloud"), "volume-2", false},

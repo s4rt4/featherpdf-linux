@@ -545,12 +545,12 @@
 <context>
     <name>DocsView</name>
     <message>
-        <location filename="../src/ui/DocsView.cpp" line="1146"/>
+        <location filename="../src/ui/DocsView.cpp" line="1174"/>
         <source>Documentation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/DocsView.cpp" line="1181"/>
+        <location filename="../src/ui/DocsView.cpp" line="1209"/>
         <source>Text size</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1202,571 +1202,577 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="157"/>
+        <location filename="../src/app/MainWindow.cpp" line="161"/>
         <source>&amp;Open…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="161"/>
+        <location filename="../src/app/MainWindow.cpp" line="165"/>
         <source>&amp;Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="165"/>
+        <location filename="../src/app/MainWindow.cpp" line="169"/>
         <source>Save &amp;As…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="169"/>
+        <location filename="../src/app/MainWindow.cpp" line="173"/>
         <source>Pro&amp;tect with Password…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="172"/>
+        <location filename="../src/app/MainWindow.cpp" line="176"/>
         <source>&amp;Remove Password…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="175"/>
+        <location filename="../src/app/MainWindow.cpp" line="179"/>
         <source>&amp;Print…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="182"/>
+        <location filename="../src/app/MainWindow.cpp" line="186"/>
         <source>&amp;Undo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="184"/>
+        <location filename="../src/app/MainWindow.cpp" line="188"/>
         <source>&amp;Redo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="187"/>
+        <location filename="../src/app/MainWindow.cpp" line="191"/>
         <source>Rotate &amp;Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="190"/>
+        <location filename="../src/app/MainWindow.cpp" line="194"/>
         <source>Rotate &amp;Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="194"/>
+        <location filename="../src/app/MainWindow.cpp" line="198"/>
         <source>&amp;Delete Page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="197"/>
+        <location filename="../src/app/MainWindow.cpp" line="201"/>
         <source>&amp;Extract Pages…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="200"/>
+        <location filename="../src/app/MainWindow.cpp" line="204"/>
         <source>&amp;Insert Pages…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="203"/>
+        <location filename="../src/app/MainWindow.cpp" line="207"/>
         <source>&amp;Crop Pages…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="206"/>
+        <location filename="../src/app/MainWindow.cpp" line="210"/>
         <source>Add Form &amp;Field…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="209"/>
+        <location filename="../src/app/MainWindow.cpp" line="213"/>
         <source>&amp;Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="213"/>
+        <location filename="../src/app/MainWindow.cpp" line="217"/>
         <source>&amp;Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="218"/>
+        <location filename="../src/app/MainWindow.cpp" line="222"/>
         <source>Zoom &amp;In</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="221"/>
+        <location filename="../src/app/MainWindow.cpp" line="225"/>
         <source>Zoom &amp;Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="224"/>
+        <location filename="../src/app/MainWindow.cpp" line="228"/>
         <source>&amp;Actual Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="227"/>
+        <location filename="../src/app/MainWindow.cpp" line="231"/>
         <source>Fit &amp;Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="230"/>
+        <location filename="../src/app/MainWindow.cpp" line="234"/>
         <source>Fit &amp;Page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="235"/>
+        <location filename="../src/app/MainWindow.cpp" line="239"/>
         <source>&amp;Single Page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="236"/>
+        <location filename="../src/app/MainWindow.cpp" line="240"/>
         <source>&amp;Continuous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="237"/>
+        <location filename="../src/app/MainWindow.cpp" line="241"/>
         <source>&amp;Two Pages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="250"/>
+        <location filename="../src/app/MainWindow.cpp" line="254"/>
         <source>Toggle &amp;Light / Dark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="253"/>
+        <location filename="../src/app/MainWindow.cpp" line="257"/>
         <source>&amp;Immersive Reading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="268"/>
+        <location filename="../src/app/MainWindow.cpp" line="272"/>
         <source>&amp;About Feather PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="273"/>
+        <location filename="../src/app/MainWindow.cpp" line="277"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="275"/>
+        <location filename="../src/app/MainWindow.cpp" line="279"/>
         <source>Open &amp;Recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="276"/>
+        <location filename="../src/app/MainWindow.cpp" line="280"/>
         <source>Create PDF &amp;from…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="278"/>
+        <location filename="../src/app/MainWindow.cpp" line="282"/>
         <source>&amp;Export to…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="280"/>
+        <location filename="../src/app/MainWindow.cpp" line="284"/>
         <source>Export Pages as &amp;Images…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="282"/>
+        <location filename="../src/app/MainWindow.cpp" line="286"/>
         <source>Extract Embedded I&amp;mages…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="290"/>
+        <location filename="../src/app/MainWindow.cpp" line="294"/>
         <source>Form &amp;Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="291"/>
+        <location filename="../src/app/MainWindow.cpp" line="295"/>
         <source>&amp;Export to XFDF…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="293"/>
+        <location filename="../src/app/MainWindow.cpp" line="297"/>
         <source>&amp;Import from XFDF…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="302"/>
+        <location filename="../src/app/MainWindow.cpp" line="306"/>
         <source>&amp;Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="306"/>
+        <location filename="../src/app/MainWindow.cpp" line="310"/>
         <source>&amp;Find…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="310"/>
+        <location filename="../src/app/MainWindow.cpp" line="314"/>
         <source>&amp;Preferences…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="315"/>
+        <location filename="../src/app/MainWindow.cpp" line="319"/>
         <source>&amp;View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="323"/>
+        <location filename="../src/app/MainWindow.cpp" line="327"/>
         <source>Page &amp;Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="332"/>
+        <location filename="../src/app/MainWindow.cpp" line="336"/>
         <source>&amp;Document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="341"/>
+        <location filename="../src/app/MainWindow.cpp" line="345"/>
         <source>Edit &amp;Text…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="343"/>
+        <location filename="../src/app/MainWindow.cpp" line="347"/>
         <source>Open in &amp;LibreOffice Draw…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="345"/>
+        <location filename="../src/app/MainWindow.cpp" line="349"/>
         <source>Add &amp;Link…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="347"/>
+        <location filename="../src/app/MainWindow.cpp" line="351"/>
         <source>Edit Lin&amp;ks…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="349"/>
+        <location filename="../src/app/MainWindow.cpp" line="353"/>
         <source>Add S&amp;tamp…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="352"/>
+        <location filename="../src/app/MainWindow.cpp" line="356"/>
         <source>Properties…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="355"/>
+        <location filename="../src/app/MainWindow.cpp" line="359"/>
         <source>&amp;Sign…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="357"/>
+        <location filename="../src/app/MainWindow.cpp" line="361"/>
         <source>Si&amp;gnatures…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="360"/>
+        <location filename="../src/app/MainWindow.cpp" line="364"/>
         <source>&amp;Recognize Text (OCR)…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="362"/>
+        <location filename="../src/app/MainWindow.cpp" line="366"/>
         <source>&amp;Optimize…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="364"/>
+        <location filename="../src/app/MainWindow.cpp" line="368"/>
         <source>Co&amp;mpare with…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="366"/>
+        <location filename="../src/app/MainWindow.cpp" line="370"/>
         <source>Compare &amp;Text with…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="368"/>
+        <location filename="../src/app/MainWindow.cpp" line="372"/>
         <source>Header &amp;&amp; &amp;Footer…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="371"/>
+        <location filename="../src/app/MainWindow.cpp" line="375"/>
         <source>&amp;Find &amp;&amp; Redact…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="373"/>
+        <location filename="../src/app/MainWindow.cpp" line="377"/>
         <source>Remove &amp;Hidden Information…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="375"/>
+        <location filename="../src/app/MainWindow.cpp" line="379"/>
         <source>PDF/A &amp;&amp; &amp;Preflight…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="378"/>
+        <location filename="../src/app/MainWindow.cpp" line="382"/>
         <source>&amp;Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="385"/>
+        <location filename="../src/app/MainWindow.cpp" line="389"/>
         <source>Create PDF…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="385"/>
+        <location filename="../src/app/MainWindow.cpp" line="389"/>
+        <source>Scan…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="390"/>
         <source>Export…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="386"/>
+        <location filename="../src/app/MainWindow.cpp" line="391"/>
         <source>Recognize Text (OCR)…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="386"/>
+        <location filename="../src/app/MainWindow.cpp" line="391"/>
         <source>Edit Text…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="387"/>
+        <location filename="../src/app/MainWindow.cpp" line="392"/>
         <source>Read Aloud…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="388"/>
+        <location filename="../src/app/MainWindow.cpp" line="393"/>
         <source>Forms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="389"/>
+        <location filename="../src/app/MainWindow.cpp" line="394"/>
         <source>Prepare Form…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="390"/>
+        <location filename="../src/app/MainWindow.cpp" line="395"/>
         <source>Combine…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="390"/>
+        <location filename="../src/app/MainWindow.cpp" line="395"/>
         <source>Split…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="391"/>
+        <location filename="../src/app/MainWindow.cpp" line="396"/>
         <source>Comment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="391"/>
+        <location filename="../src/app/MainWindow.cpp" line="396"/>
         <source>Redact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="392"/>
+        <location filename="../src/app/MainWindow.cpp" line="397"/>
         <source>Snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="392"/>
+        <location filename="../src/app/MainWindow.cpp" line="397"/>
         <source>Measure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="393"/>
+        <location filename="../src/app/MainWindow.cpp" line="398"/>
         <source>Watermark…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="393"/>
+        <location filename="../src/app/MainWindow.cpp" line="398"/>
         <source>Bates Numbering…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="394"/>
+        <location filename="../src/app/MainWindow.cpp" line="399"/>
         <source>Organize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="394"/>
+        <location filename="../src/app/MainWindow.cpp" line="399"/>
         <source>Compare…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="395"/>
+        <location filename="../src/app/MainWindow.cpp" line="400"/>
         <source>Optimize…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="395"/>
+        <location filename="../src/app/MainWindow.cpp" line="400"/>
         <source>RGB to CMYK…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="396"/>
+        <location filename="../src/app/MainWindow.cpp" line="401"/>
         <source>Flatten…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="397"/>
+        <location filename="../src/app/MainWindow.cpp" line="402"/>
         <source>Protect…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="397"/>
+        <location filename="../src/app/MainWindow.cpp" line="402"/>
         <source>Sign…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="398"/>
+        <location filename="../src/app/MainWindow.cpp" line="403"/>
         <source>Stamp…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="398"/>
+        <location filename="../src/app/MainWindow.cpp" line="403"/>
         <source>PDF/A &amp; Preflight…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="399"/>
+        <location filename="../src/app/MainWindow.cpp" line="404"/>
         <source>Batch / Action…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="409"/>
+        <location filename="../src/app/MainWindow.cpp" line="414"/>
         <source>&amp;Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="410"/>
+        <location filename="../src/app/MainWindow.cpp" line="415"/>
         <source>&amp;Documentation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="572"/>
+        <location filename="../src/app/MainWindow.cpp" line="577"/>
         <source>Press Esc or F11 to leave immersive reading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="674"/>
+        <location filename="../src/app/MainWindow.cpp" line="679"/>
         <source>Email</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="675"/>
+        <location filename="../src/app/MainWindow.cpp" line="680"/>
         <source>Couldn&apos;t reach an email client. Install xdg-utils, or attach the file manually from your mail app.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="697"/>
+        <location filename="../src/app/MainWindow.cpp" line="702"/>
         <source>Zoom to %1%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="754"/>
+        <location filename="../src/app/MainWindow.cpp" line="759"/>
         <source>THUMBNAILS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="758"/>
+        <location filename="../src/app/MainWindow.cpp" line="763"/>
         <source>OUTLINE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="762"/>
+        <location filename="../src/app/MainWindow.cpp" line="767"/>
         <source>ANNOTATIONS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="766"/>
+        <location filename="../src/app/MainWindow.cpp" line="771"/>
         <source>ATTACHMENTS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="770"/>
+        <location filename="../src/app/MainWindow.cpp" line="775"/>
         <source>LAYERS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="774"/>
+        <location filename="../src/app/MainWindow.cpp" line="779"/>
         <source>FORMS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="871"/>
-        <location filename="../src/app/MainWindow.cpp" line="1285"/>
+        <location filename="../src/app/MainWindow.cpp" line="876"/>
+        <location filename="../src/app/MainWindow.cpp" line="1290"/>
         <source>Save filled form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="872"/>
-        <location filename="../src/app/MainWindow.cpp" line="985"/>
-        <location filename="../src/app/MainWindow.cpp" line="1010"/>
-        <location filename="../src/app/MainWindow.cpp" line="1036"/>
-        <location filename="../src/app/MainWindow.cpp" line="1072"/>
-        <location filename="../src/app/MainWindow.cpp" line="1101"/>
-        <location filename="../src/app/MainWindow.cpp" line="1182"/>
-        <location filename="../src/app/MainWindow.cpp" line="1237"/>
-        <location filename="../src/app/MainWindow.cpp" line="1286"/>
-        <location filename="../src/app/MainWindow.cpp" line="1319"/>
-        <location filename="../src/app/MainWindow.cpp" line="1437"/>
-        <location filename="../src/app/MainWindow.cpp" line="1485"/>
-        <location filename="../src/app/MainWindow.cpp" line="1653"/>
-        <location filename="../src/app/MainWindow.cpp" line="1683"/>
-        <location filename="../src/app/MainWindow.cpp" line="1825"/>
-        <location filename="../src/app/MainWindow.cpp" line="1890"/>
-        <location filename="../src/app/MainWindow.cpp" line="1925"/>
-        <location filename="../src/app/MainWindow.cpp" line="1973"/>
-        <location filename="../src/app/MainWindow.cpp" line="2087"/>
-        <location filename="../src/app/MainWindow.cpp" line="2333"/>
-        <location filename="../src/app/MainWindow.cpp" line="2369"/>
-        <location filename="../src/app/MainWindow.cpp" line="2399"/>
-        <location filename="../src/app/MainWindow.cpp" line="2407"/>
-        <location filename="../src/app/MainWindow.cpp" line="2441"/>
-        <location filename="../src/app/MainWindow.cpp" line="2482"/>
-        <location filename="../src/app/MainWindow.cpp" line="2525"/>
-        <location filename="../src/app/MainWindow.cpp" line="2556"/>
-        <location filename="../src/app/MainWindow.cpp" line="2583"/>
-        <location filename="../src/app/MainWindow.cpp" line="2641"/>
-        <location filename="../src/app/MainWindow.cpp" line="2687"/>
-        <location filename="../src/app/MainWindow.cpp" line="2758"/>
-        <location filename="../src/app/MainWindow.cpp" line="2798"/>
-        <location filename="../src/app/MainWindow.cpp" line="2830"/>
+        <location filename="../src/app/MainWindow.cpp" line="877"/>
+        <location filename="../src/app/MainWindow.cpp" line="990"/>
+        <location filename="../src/app/MainWindow.cpp" line="1015"/>
+        <location filename="../src/app/MainWindow.cpp" line="1041"/>
+        <location filename="../src/app/MainWindow.cpp" line="1077"/>
+        <location filename="../src/app/MainWindow.cpp" line="1106"/>
+        <location filename="../src/app/MainWindow.cpp" line="1187"/>
+        <location filename="../src/app/MainWindow.cpp" line="1242"/>
+        <location filename="../src/app/MainWindow.cpp" line="1291"/>
+        <location filename="../src/app/MainWindow.cpp" line="1324"/>
+        <location filename="../src/app/MainWindow.cpp" line="1442"/>
+        <location filename="../src/app/MainWindow.cpp" line="1490"/>
+        <location filename="../src/app/MainWindow.cpp" line="1658"/>
+        <location filename="../src/app/MainWindow.cpp" line="1688"/>
+        <location filename="../src/app/MainWindow.cpp" line="1830"/>
+        <location filename="../src/app/MainWindow.cpp" line="1895"/>
+        <location filename="../src/app/MainWindow.cpp" line="1930"/>
+        <location filename="../src/app/MainWindow.cpp" line="1978"/>
+        <location filename="../src/app/MainWindow.cpp" line="2094"/>
+        <location filename="../src/app/MainWindow.cpp" line="2154"/>
+        <location filename="../src/app/MainWindow.cpp" line="2402"/>
+        <location filename="../src/app/MainWindow.cpp" line="2438"/>
+        <location filename="../src/app/MainWindow.cpp" line="2468"/>
+        <location filename="../src/app/MainWindow.cpp" line="2476"/>
+        <location filename="../src/app/MainWindow.cpp" line="2510"/>
+        <location filename="../src/app/MainWindow.cpp" line="2551"/>
+        <location filename="../src/app/MainWindow.cpp" line="2594"/>
+        <location filename="../src/app/MainWindow.cpp" line="2625"/>
+        <location filename="../src/app/MainWindow.cpp" line="2652"/>
+        <location filename="../src/app/MainWindow.cpp" line="2710"/>
+        <location filename="../src/app/MainWindow.cpp" line="2756"/>
+        <location filename="../src/app/MainWindow.cpp" line="2827"/>
+        <location filename="../src/app/MainWindow.cpp" line="2867"/>
+        <location filename="../src/app/MainWindow.cpp" line="2899"/>
         <source>PDF documents (*.pdf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="880"/>
+        <location filename="../src/app/MainWindow.cpp" line="885"/>
         <source>Couldn&apos;t save form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="883"/>
+        <location filename="../src/app/MainWindow.cpp" line="888"/>
         <source>Saved filled form to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="948"/>
+        <location filename="../src/app/MainWindow.cpp" line="953"/>
         <source>A document must keep at least one page.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="964"/>
+        <location filename="../src/app/MainWindow.cpp" line="969"/>
         <source>No pages in that range to extract.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="983"/>
+        <location filename="../src/app/MainWindow.cpp" line="988"/>
         <source>-extracted</source>
         <comment>suffix for an extracted-pages file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="984"/>
+        <location filename="../src/app/MainWindow.cpp" line="989"/>
         <source>Extract Pages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="996"/>
+        <location filename="../src/app/MainWindow.cpp" line="1001"/>
         <source>Couldn&apos;t extract</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="999"/>
+        <location filename="../src/app/MainWindow.cpp" line="1004"/>
         <source>Extracted %n page(s) to %1</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -1774,32 +1780,32 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1008"/>
+        <location filename="../src/app/MainWindow.cpp" line="1013"/>
         <source>Choose a PDF to insert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1018"/>
+        <location filename="../src/app/MainWindow.cpp" line="1023"/>
         <source>That PDF couldn&apos;t be opened to insert from.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1029"/>
+        <location filename="../src/app/MainWindow.cpp" line="1034"/>
         <source>No pages in that range to insert.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1035"/>
+        <location filename="../src/app/MainWindow.cpp" line="1040"/>
         <source>Save merged PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1048"/>
+        <location filename="../src/app/MainWindow.cpp" line="1053"/>
         <source>Couldn&apos;t insert</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1051"/>
+        <location filename="../src/app/MainWindow.cpp" line="1056"/>
         <source>Inserted %n page(s) into %1</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -1807,78 +1813,78 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1064"/>
+        <location filename="../src/app/MainWindow.cpp" line="1069"/>
         <source>Set a margin on at least one edge to crop.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1071"/>
+        <location filename="../src/app/MainWindow.cpp" line="1076"/>
         <source>Save cropped PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1087"/>
+        <location filename="../src/app/MainWindow.cpp" line="1092"/>
         <source>Couldn&apos;t crop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1090"/>
+        <location filename="../src/app/MainWindow.cpp" line="1095"/>
         <source>Saved cropped copy to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1100"/>
+        <location filename="../src/app/MainWindow.cpp" line="1105"/>
         <source>Save outline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1111"/>
+        <location filename="../src/app/MainWindow.cpp" line="1116"/>
         <source>Couldn&apos;t save outline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1114"/>
+        <location filename="../src/app/MainWindow.cpp" line="1119"/>
         <source>Outline saved to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1126"/>
+        <location filename="../src/app/MainWindow.cpp" line="1131"/>
         <source>Give the field a name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1131"/>
+        <location filename="../src/app/MainWindow.cpp" line="1136"/>
         <source>A radio group needs at least two buttons.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1150"/>
+        <location filename="../src/app/MainWindow.cpp" line="1155"/>
         <source>Draw where the first button goes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1151"/>
+        <location filename="../src/app/MainWindow.cpp" line="1156"/>
         <source>Draw where the field goes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1164"/>
-        <location filename="../src/app/MainWindow.cpp" line="1191"/>
+        <location filename="../src/app/MainWindow.cpp" line="1169"/>
+        <location filename="../src/app/MainWindow.cpp" line="1196"/>
         <source>Couldn&apos;t prepare form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1168"/>
+        <location filename="../src/app/MainWindow.cpp" line="1173"/>
         <source>No fillable areas found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1177"/>
+        <location filename="../src/app/MainWindow.cpp" line="1182"/>
         <source>No fields selected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1195"/>
+        <location filename="../src/app/MainWindow.cpp" line="1200"/>
         <source>Added %n form field(s).</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -1886,206 +1892,206 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1204"/>
+        <location filename="../src/app/MainWindow.cpp" line="1209"/>
         <source>Read aloud needs speech-dispatcher (install the “speech-dispatcher” package).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1217"/>
+        <location filename="../src/app/MainWindow.cpp" line="1222"/>
         <source>There&apos;s no readable text on these pages.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1230"/>
+        <location filename="../src/app/MainWindow.cpp" line="1235"/>
         <source>Draw the new position for “%1”.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1181"/>
-        <location filename="../src/app/MainWindow.cpp" line="1236"/>
-        <location filename="../src/app/MainWindow.cpp" line="1436"/>
+        <location filename="../src/app/MainWindow.cpp" line="1186"/>
+        <location filename="../src/app/MainWindow.cpp" line="1241"/>
+        <location filename="../src/app/MainWindow.cpp" line="1441"/>
         <source>Save form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1245"/>
+        <location filename="../src/app/MainWindow.cpp" line="1250"/>
         <source>Couldn&apos;t delete field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1248"/>
+        <location filename="../src/app/MainWindow.cpp" line="1253"/>
         <source>Deleted “%1”</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1259"/>
+        <location filename="../src/app/MainWindow.cpp" line="1264"/>
         <source>Export form data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1260"/>
-        <location filename="../src/app/MainWindow.cpp" line="1280"/>
+        <location filename="../src/app/MainWindow.cpp" line="1265"/>
+        <location filename="../src/app/MainWindow.cpp" line="1285"/>
         <source>XFDF form data (*.xfdf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1268"/>
+        <location filename="../src/app/MainWindow.cpp" line="1273"/>
         <source>Couldn&apos;t export form data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1271"/>
+        <location filename="../src/app/MainWindow.cpp" line="1276"/>
         <source>Exported form data to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1278"/>
+        <location filename="../src/app/MainWindow.cpp" line="1283"/>
         <source>Import form data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1294"/>
+        <location filename="../src/app/MainWindow.cpp" line="1299"/>
         <source>Couldn&apos;t import form data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1297"/>
+        <location filename="../src/app/MainWindow.cpp" line="1302"/>
         <source>Imported form data into %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1306"/>
+        <location filename="../src/app/MainWindow.cpp" line="1311"/>
         <source>No editable text boxes yet — add one with the Text tool.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1318"/>
+        <location filename="../src/app/MainWindow.cpp" line="1323"/>
         <source>Save edited PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1329"/>
+        <location filename="../src/app/MainWindow.cpp" line="1334"/>
         <source>Deleted the text box</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1333"/>
+        <location filename="../src/app/MainWindow.cpp" line="1338"/>
         <source>Updated the text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1338"/>
+        <location filename="../src/app/MainWindow.cpp" line="1343"/>
         <source>Couldn&apos;t edit text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1353"/>
+        <location filename="../src/app/MainWindow.cpp" line="1358"/>
         <source>LibreOffice not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1354"/>
+        <location filename="../src/app/MainWindow.cpp" line="1359"/>
         <source>Install LibreOffice to edit heavy layout, body text, and images in Draw.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1362"/>
+        <location filename="../src/app/MainWindow.cpp" line="1367"/>
         <source>Couldn&apos;t open LibreOffice Draw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1363"/>
+        <location filename="../src/app/MainWindow.cpp" line="1368"/>
         <source>LibreOffice is installed but couldn&apos;t be launched.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1366"/>
+        <location filename="../src/app/MainWindow.cpp" line="1371"/>
         <source>Opening in LibreOffice Draw…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1394"/>
+        <location filename="../src/app/MainWindow.cpp" line="1399"/>
         <source>Restart Feather PDF to apply the new language.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1451"/>
+        <location filename="../src/app/MainWindow.cpp" line="1456"/>
         <source>Moved “%1”</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1465"/>
+        <location filename="../src/app/MainWindow.cpp" line="1470"/>
         <source>Added “%1” to %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1470"/>
+        <location filename="../src/app/MainWindow.cpp" line="1475"/>
         <source>Couldn&apos;t save field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1484"/>
+        <location filename="../src/app/MainWindow.cpp" line="1489"/>
         <source>Export PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1496"/>
-        <location filename="../src/app/MainWindow.cpp" line="2163"/>
+        <location filename="../src/app/MainWindow.cpp" line="1501"/>
+        <location filename="../src/app/MainWindow.cpp" line="2232"/>
         <source>Couldn&apos;t export</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1499"/>
+        <location filename="../src/app/MainWindow.cpp" line="1504"/>
         <source>Exported to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1652"/>
+        <location filename="../src/app/MainWindow.cpp" line="1657"/>
         <source>Save annotated PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1664"/>
+        <location filename="../src/app/MainWindow.cpp" line="1669"/>
         <source>Couldn&apos;t save annotations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1667"/>
+        <location filename="../src/app/MainWindow.cpp" line="1672"/>
         <source>Saved annotated copy to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1682"/>
+        <location filename="../src/app/MainWindow.cpp" line="1687"/>
         <source>Save redacted PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1742"/>
+        <location filename="../src/app/MainWindow.cpp" line="1747"/>
         <source>Couldn&apos;t redact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1745"/>
+        <location filename="../src/app/MainWindow.cpp" line="1750"/>
         <source>Saved redacted copy to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1772"/>
+        <location filename="../src/app/MainWindow.cpp" line="1777"/>
         <source>Choose at least one pattern to search for.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1785"/>
+        <location filename="../src/app/MainWindow.cpp" line="1790"/>
         <source>Couldn&apos;t search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1787"/>
+        <location filename="../src/app/MainWindow.cpp" line="1792"/>
         <source>No matching text found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1806"/>
+        <location filename="../src/app/MainWindow.cpp" line="1811"/>
         <source>Found %n match(es) — review the marks, then Apply.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2093,27 +2099,27 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1817"/>
+        <location filename="../src/app/MainWindow.cpp" line="1822"/>
         <source>Choose at least one thing to remove.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1824"/>
+        <location filename="../src/app/MainWindow.cpp" line="1829"/>
         <source>Save cleaned PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1837"/>
+        <location filename="../src/app/MainWindow.cpp" line="1842"/>
         <source>Couldn&apos;t clean the document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1841"/>
+        <location filename="../src/app/MainWindow.cpp" line="1846"/>
         <source>Nothing hidden to remove — saved a clean copy.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1843"/>
+        <location filename="../src/app/MainWindow.cpp" line="1848"/>
         <source>Removed %n hidden item(s) — saved %1</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2121,47 +2127,47 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1874"/>
+        <location filename="../src/app/MainWindow.cpp" line="1879"/>
         <source>Draw the area the link should cover.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1885"/>
+        <location filename="../src/app/MainWindow.cpp" line="1890"/>
         <source>Link cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1889"/>
+        <location filename="../src/app/MainWindow.cpp" line="1894"/>
         <source>Save with link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1902"/>
+        <location filename="../src/app/MainWindow.cpp" line="1907"/>
         <source>Couldn&apos;t add link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1905"/>
+        <location filename="../src/app/MainWindow.cpp" line="1910"/>
         <source>Added link to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1919"/>
+        <location filename="../src/app/MainWindow.cpp" line="1924"/>
         <source>No link changes to apply.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1923"/>
+        <location filename="../src/app/MainWindow.cpp" line="1928"/>
         <source>Save with edited links</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1935"/>
+        <location filename="../src/app/MainWindow.cpp" line="1940"/>
         <source>Couldn&apos;t update links</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="1938"/>
+        <location filename="../src/app/MainWindow.cpp" line="1943"/>
         <source>Updated %n link(s) — saved %1</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2169,136 +2175,136 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1963"/>
+        <location filename="../src/app/MainWindow.cpp" line="1968"/>
         <source>Draw where the stamp goes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1972"/>
+        <location filename="../src/app/MainWindow.cpp" line="1977"/>
         <source>Save with stamp</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1986"/>
+        <location filename="../src/app/MainWindow.cpp" line="1991"/>
         <source>Couldn&apos;t add stamp</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="1989"/>
+        <location filename="../src/app/MainWindow.cpp" line="1994"/>
         <source>Added stamp to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2063"/>
+        <location filename="../src/app/MainWindow.cpp" line="2070"/>
         <source>Create PDF from files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2064"/>
+        <location filename="../src/app/MainWindow.cpp" line="2071"/>
         <source>Documents and images (*.png *.jpg *.jpeg *.bmp *.gif *.tif *.tiff *.webp *.doc *.docx *.odt *.rtf *.txt *.xls *.xlsx *.ods *.csv *.ppt *.pptx *.odp);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2078"/>
-        <location filename="../src/app/MainWindow.cpp" line="2107"/>
+        <location filename="../src/app/MainWindow.cpp" line="2085"/>
+        <location filename="../src/app/MainWindow.cpp" line="2114"/>
         <source>Create PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2079"/>
+        <location filename="../src/app/MainWindow.cpp" line="2086"/>
         <source>Select images to combine into one PDF, or a single document to convert.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2086"/>
+        <location filename="../src/app/MainWindow.cpp" line="2093"/>
         <source>Save PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2097"/>
-        <location filename="../src/app/MainWindow.cpp" line="2120"/>
+        <location filename="../src/app/MainWindow.cpp" line="2104"/>
+        <location filename="../src/app/MainWindow.cpp" line="2127"/>
         <source>Couldn&apos;t create PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2100"/>
-        <location filename="../src/app/MainWindow.cpp" line="2124"/>
+        <location filename="../src/app/MainWindow.cpp" line="2107"/>
+        <location filename="../src/app/MainWindow.cpp" line="2131"/>
         <source>Created %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2108"/>
+        <location filename="../src/app/MainWindow.cpp" line="2115"/>
         <source>Converting this document needs LibreOffice, which isn&apos;t installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2113"/>
+        <location filename="../src/app/MainWindow.cpp" line="2120"/>
         <source>Converting…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2121"/>
+        <location filename="../src/app/MainWindow.cpp" line="2128"/>
         <source>The document couldn&apos;t be converted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2138"/>
+        <location filename="../src/app/MainWindow.cpp" line="2207"/>
         <source>Export</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2139"/>
+        <location filename="../src/app/MainWindow.cpp" line="2208"/>
         <source>Exporting to an editable document needs LibreOffice, which isn&apos;t installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2147"/>
+        <location filename="../src/app/MainWindow.cpp" line="2216"/>
         <source>Export to editable document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2148"/>
+        <location filename="../src/app/MainWindow.cpp" line="2217"/>
         <source>Word document (*.docx);;OpenDocument Text (*.odt);;Rich Text (*.rtf);;Plain text (*.txt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2154"/>
+        <location filename="../src/app/MainWindow.cpp" line="2223"/>
         <source>Exporting…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2164"/>
+        <location filename="../src/app/MainWindow.cpp" line="2233"/>
         <source>The document couldn&apos;t be exported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2169"/>
+        <location filename="../src/app/MainWindow.cpp" line="2238"/>
         <source>Exported %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2170"/>
+        <location filename="../src/app/MainWindow.cpp" line="2239"/>
         <source>Exported %1 — check the layout; conversion is approximate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2189"/>
+        <location filename="../src/app/MainWindow.cpp" line="2258"/>
         <source>No pages in that range to export.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2194"/>
-        <location filename="../src/app/MainWindow.cpp" line="2289"/>
+        <location filename="../src/app/MainWindow.cpp" line="2263"/>
+        <location filename="../src/app/MainWindow.cpp" line="2358"/>
         <source>Choose a folder for the images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2213"/>
+        <location filename="../src/app/MainWindow.cpp" line="2282"/>
         <source>Couldn&apos;t export images</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="2216"/>
+        <location filename="../src/app/MainWindow.cpp" line="2285"/>
         <source>Exported %n image(s) to %1</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2306,68 +2312,68 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2226"/>
+        <location filename="../src/app/MainWindow.cpp" line="2295"/>
         <source>Drag to select a region to copy as an image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2247"/>
+        <location filename="../src/app/MainWindow.cpp" line="2316"/>
         <source>Couldn&apos;t snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2256"/>
-        <location filename="../src/app/MainWindow.cpp" line="2266"/>
+        <location filename="../src/app/MainWindow.cpp" line="2325"/>
+        <location filename="../src/app/MainWindow.cpp" line="2335"/>
         <source>Snapshot copied to the clipboard.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2264"/>
+        <location filename="../src/app/MainWindow.cpp" line="2333"/>
         <source>Save snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2264"/>
+        <location filename="../src/app/MainWindow.cpp" line="2333"/>
         <source>PNG image (*.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2270"/>
+        <location filename="../src/app/MainWindow.cpp" line="2339"/>
         <source>Couldn&apos;t save snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2271"/>
+        <location filename="../src/app/MainWindow.cpp" line="2340"/>
         <source>The image couldn&apos;t be written to that location.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2274"/>
+        <location filename="../src/app/MainWindow.cpp" line="2343"/>
         <source>Saved snapshot to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2282"/>
+        <location filename="../src/app/MainWindow.cpp" line="2351"/>
         <source>Extract Embedded Images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2283"/>
+        <location filename="../src/app/MainWindow.cpp" line="2352"/>
         <source>Extracting embedded images needs the pdfimages tool (from Poppler), which isn&apos;t installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2302"/>
+        <location filename="../src/app/MainWindow.cpp" line="2371"/>
         <source>Couldn&apos;t extract images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2304"/>
+        <location filename="../src/app/MainWindow.cpp" line="2373"/>
         <source>This PDF has no embedded images.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="2307"/>
+        <location filename="../src/app/MainWindow.cpp" line="2376"/>
         <source>Extracted %n image(s) to %1</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2375,84 +2381,134 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2332"/>
+        <location filename="../src/app/MainWindow.cpp" line="2401"/>
         <source>Save optimized PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2321"/>
-        <location filename="../src/app/MainWindow.cpp" line="2343"/>
+        <location filename="../src/app/MainWindow.cpp" line="2390"/>
+        <location filename="../src/app/MainWindow.cpp" line="2412"/>
         <source>Couldn&apos;t optimize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2348"/>
+        <location filename="../src/app/MainWindow.cpp" line="2142"/>
+        <source>Scanning needs SANE (install the “sane-backends” package).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2153"/>
+        <source>Save scan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2160"/>
+        <location filename="../src/app/MainWindow.cpp" line="2174"/>
+        <location filename="../src/app/MainWindow.cpp" line="2181"/>
+        <source>Couldn&apos;t scan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2161"/>
+        <source>Couldn&apos;t create a temporary working folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2165"/>
+        <source>Scanning…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2175"/>
+        <source>No pages were scanned.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2186"/>
+        <source>Recognizing text…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2192"/>
+        <source>Scanned, but OCR failed: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/app/MainWindow.cpp" line="2197"/>
+        <source>Scanned %n page(s) into %1.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/app/MainWindow.cpp" line="2417"/>
         <source>Optimized: %1 → %2 (%3% smaller)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2360"/>
+        <location filename="../src/app/MainWindow.cpp" line="2429"/>
         <source>RGB to CMYK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2361"/>
+        <location filename="../src/app/MainWindow.cpp" line="2430"/>
         <source>This needs Ghostscript, which isn&apos;t installed. Install the &apos;ghostscript&apos; package and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2368"/>
+        <location filename="../src/app/MainWindow.cpp" line="2437"/>
         <source>Save CMYK PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2374"/>
+        <location filename="../src/app/MainWindow.cpp" line="2443"/>
         <source>Converting to CMYK…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2383"/>
+        <location filename="../src/app/MainWindow.cpp" line="2452"/>
         <source>Couldn&apos;t convert to CMYK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2386"/>
+        <location filename="../src/app/MainWindow.cpp" line="2455"/>
         <source>Converted to CMYK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2398"/>
+        <location filename="../src/app/MainWindow.cpp" line="2467"/>
         <source>Compare current document with…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2406"/>
+        <location filename="../src/app/MainWindow.cpp" line="2475"/>
         <source>Save comparison PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2414"/>
+        <location filename="../src/app/MainWindow.cpp" line="2483"/>
         <source>Comparing…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2423"/>
-        <location filename="../src/app/MainWindow.cpp" line="2455"/>
+        <location filename="../src/app/MainWindow.cpp" line="2492"/>
+        <location filename="../src/app/MainWindow.cpp" line="2524"/>
         <source>Couldn&apos;t compare</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2423"/>
+        <location filename="../src/app/MainWindow.cpp" line="2492"/>
         <source>The comparison failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2426"/>
+        <location filename="../src/app/MainWindow.cpp" line="2495"/>
         <source>No visual differences found</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="2427"/>
+        <location filename="../src/app/MainWindow.cpp" line="2496"/>
         <source>%n page(s) changed</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2460,97 +2516,97 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2440"/>
+        <location filename="../src/app/MainWindow.cpp" line="2509"/>
         <source>Compare text with…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2448"/>
+        <location filename="../src/app/MainWindow.cpp" line="2517"/>
         <source>Comparing text…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2456"/>
+        <location filename="../src/app/MainWindow.cpp" line="2525"/>
         <source>One of the PDFs couldn&apos;t be read for comparison.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2480"/>
+        <location filename="../src/app/MainWindow.cpp" line="2549"/>
         <source>Save watermarked PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2507"/>
+        <location filename="../src/app/MainWindow.cpp" line="2576"/>
         <source>Couldn&apos;t add watermark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2510"/>
+        <location filename="../src/app/MainWindow.cpp" line="2579"/>
         <source>Watermark added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2523"/>
+        <location filename="../src/app/MainWindow.cpp" line="2592"/>
         <source>Save numbered PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2534"/>
+        <location filename="../src/app/MainWindow.cpp" line="2603"/>
         <source>Couldn&apos;t add numbering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2537"/>
+        <location filename="../src/app/MainWindow.cpp" line="2606"/>
         <source>Bates numbering added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2548"/>
+        <location filename="../src/app/MainWindow.cpp" line="2617"/>
         <source>Enter some header or footer text.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2554"/>
+        <location filename="../src/app/MainWindow.cpp" line="2623"/>
         <source>Save with header &amp; footer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2565"/>
+        <location filename="../src/app/MainWindow.cpp" line="2634"/>
         <source>Couldn&apos;t add header &amp; footer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2568"/>
+        <location filename="../src/app/MainWindow.cpp" line="2637"/>
         <source>Header &amp; footer added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2581"/>
+        <location filename="../src/app/MainWindow.cpp" line="2650"/>
         <source>Save flattened PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2594"/>
+        <location filename="../src/app/MainWindow.cpp" line="2663"/>
         <source>Couldn&apos;t flatten</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2597"/>
+        <location filename="../src/app/MainWindow.cpp" line="2666"/>
         <source>Flattened</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2609"/>
+        <location filename="../src/app/MainWindow.cpp" line="2678"/>
         <source>Choose a folder for the split files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2622"/>
+        <location filename="../src/app/MainWindow.cpp" line="2691"/>
         <source>Couldn&apos;t split</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="2625"/>
+        <location filename="../src/app/MainWindow.cpp" line="2694"/>
         <source>Split into %n file(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2558,184 +2614,184 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2640"/>
+        <location filename="../src/app/MainWindow.cpp" line="2709"/>
         <source>Save combined PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2651"/>
+        <location filename="../src/app/MainWindow.cpp" line="2720"/>
         <source>Couldn&apos;t combine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2654"/>
+        <location filename="../src/app/MainWindow.cpp" line="2723"/>
         <source>Combined %1 files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2664"/>
+        <location filename="../src/app/MainWindow.cpp" line="2733"/>
         <source>No signing certificate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2665"/>
+        <location filename="../src/app/MainWindow.cpp" line="2734"/>
         <source>No signing certificate was found in your system&apos;s certificate store. Import a certificate (into the NSS database) to sign documents.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2686"/>
+        <location filename="../src/app/MainWindow.cpp" line="2755"/>
         <source>Save signed PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2699"/>
+        <location filename="../src/app/MainWindow.cpp" line="2768"/>
         <source>Couldn&apos;t sign</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2711"/>
+        <location filename="../src/app/MainWindow.cpp" line="2780"/>
         <source>Signed, and timestamped to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2713"/>
+        <location filename="../src/app/MainWindow.cpp" line="2782"/>
         <source>Signed, but timestamping failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2715"/>
+        <location filename="../src/app/MainWindow.cpp" line="2784"/>
         <source>Signed and saved to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2733"/>
-        <location filename="../src/app/MainWindow.cpp" line="2739"/>
+        <location filename="../src/app/MainWindow.cpp" line="2802"/>
+        <location filename="../src/app/MainWindow.cpp" line="2808"/>
         <source>Recognize Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2734"/>
+        <location filename="../src/app/MainWindow.cpp" line="2803"/>
         <source>Text recognition needs Tesseract, which isn&apos;t installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2740"/>
+        <location filename="../src/app/MainWindow.cpp" line="2809"/>
         <source>No Tesseract language data is installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2757"/>
+        <location filename="../src/app/MainWindow.cpp" line="2826"/>
         <source>Save recognized PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2763"/>
+        <location filename="../src/app/MainWindow.cpp" line="2832"/>
         <source>Recognizing text… this may take a while.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2770"/>
+        <location filename="../src/app/MainWindow.cpp" line="2839"/>
         <source>Couldn&apos;t recognize text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2771"/>
+        <location filename="../src/app/MainWindow.cpp" line="2840"/>
         <source>Text recognition failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2774"/>
+        <location filename="../src/app/MainWindow.cpp" line="2843"/>
         <source>Recognized text - saved to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2797"/>
+        <location filename="../src/app/MainWindow.cpp" line="2866"/>
         <source>Save protected PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2814"/>
+        <location filename="../src/app/MainWindow.cpp" line="2883"/>
         <source>Couldn&apos;t protect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2819"/>
+        <location filename="../src/app/MainWindow.cpp" line="2888"/>
         <source>Saved protected copy to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2829"/>
+        <location filename="../src/app/MainWindow.cpp" line="2898"/>
         <source>Save unprotected PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2841"/>
+        <location filename="../src/app/MainWindow.cpp" line="2910"/>
         <source>Couldn&apos;t remove password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2844"/>
+        <location filename="../src/app/MainWindow.cpp" line="2913"/>
         <source>Saved unprotected copy to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2862"/>
+        <location filename="../src/app/MainWindow.cpp" line="2931"/>
         <source>Couldn&apos;t save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2868"/>
+        <location filename="../src/app/MainWindow.cpp" line="2937"/>
         <source>Saved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2903"/>
+        <location filename="../src/app/MainWindow.cpp" line="2972"/>
         <source>Saved to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="2904"/>
+        <location filename="../src/app/MainWindow.cpp" line="2973"/>
         <source>Sent to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3031"/>
+        <location filename="../src/app/MainWindow.cpp" line="3100"/>
         <source>Incorrect password. Try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3037"/>
+        <location filename="../src/app/MainWindow.cpp" line="3106"/>
         <source>Couldn&apos;t open document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3172"/>
+        <location filename="../src/app/MainWindow.cpp" line="3241"/>
         <source>Open PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3172"/>
+        <location filename="../src/app/MainWindow.cpp" line="3241"/>
         <source>PDF documents (*.pdf);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3195"/>
-        <location filename="../src/app/MainWindow.cpp" line="3221"/>
+        <location filename="../src/app/MainWindow.cpp" line="3264"/>
+        <location filename="../src/app/MainWindow.cpp" line="3290"/>
         <source>Unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3196"/>
+        <location filename="../src/app/MainWindow.cpp" line="3265"/>
         <source>Save changes to “%1” before closing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3197"/>
+        <location filename="../src/app/MainWindow.cpp" line="3266"/>
         <source>Your changes will be lost if you don&apos;t save them.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="3222"/>
+        <location filename="../src/app/MainWindow.cpp" line="3291"/>
         <source>%n document(s) have unsaved changes.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2743,17 +2799,17 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3223"/>
+        <location filename="../src/app/MainWindow.cpp" line="3292"/>
         <source>Save them before closing Feather PDF?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3245"/>
+        <location filename="../src/app/MainWindow.cpp" line="3314"/>
         <source>Close Feather PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/app/MainWindow.cpp" line="3246"/>
+        <location filename="../src/app/MainWindow.cpp" line="3315"/>
         <source>%n tab(s) are open. Close them all?</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -2761,128 +2817,128 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3258"/>
+        <location filename="../src/app/MainWindow.cpp" line="3327"/>
         <source>%1 | Feather PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3260"/>
-        <location filename="../src/app/MainWindow.cpp" line="3357"/>
+        <location filename="../src/app/MainWindow.cpp" line="3329"/>
+        <location filename="../src/app/MainWindow.cpp" line="3426"/>
         <source>Feather PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3307"/>
+        <location filename="../src/app/MainWindow.cpp" line="3376"/>
         <source>%1 / %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3318"/>
+        <location filename="../src/app/MainWindow.cpp" line="3387"/>
         <source>%1%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3363"/>
+        <location filename="../src/app/MainWindow.cpp" line="3432"/>
         <source>Version %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3370"/>
+        <location filename="../src/app/MainWindow.cpp" line="3439"/>
         <source>Light on the system, full-featured on PDF.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3376"/>
+        <location filename="../src/app/MainWindow.cpp" line="3445"/>
         <source>A native, open-source PDF tool for Linux, licensed under the GPLv3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3390"/>
+        <location filename="../src/app/MainWindow.cpp" line="3459"/>
         <source>&lt;a style=&apos;%1&apos; href=&apos;https://github.com/s4rt4/featherpdf-linux&apos;&gt;GitHub&lt;/a&gt;&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;&lt;a style=&apos;%1&apos; href=&apos;https://www.gnu.org/licenses/gpl-3.0.html&apos;&gt;License&lt;/a&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3411"/>
+        <location filename="../src/app/MainWindow.cpp" line="3480"/>
         <source>Document properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3429"/>
+        <location filename="../src/app/MainWindow.cpp" line="3498"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3430"/>
+        <location filename="../src/app/MainWindow.cpp" line="3499"/>
         <source>Author</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3431"/>
+        <location filename="../src/app/MainWindow.cpp" line="3500"/>
         <source>Subject</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3432"/>
+        <location filename="../src/app/MainWindow.cpp" line="3501"/>
         <source>Keywords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3433"/>
+        <location filename="../src/app/MainWindow.cpp" line="3502"/>
         <source>Creator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3434"/>
+        <location filename="../src/app/MainWindow.cpp" line="3503"/>
         <source>Producer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3438"/>
+        <location filename="../src/app/MainWindow.cpp" line="3507"/>
         <source>Created</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3443"/>
+        <location filename="../src/app/MainWindow.cpp" line="3512"/>
         <source> (was %1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3444"/>
+        <location filename="../src/app/MainWindow.cpp" line="3513"/>
         <source>Pages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3447"/>
+        <location filename="../src/app/MainWindow.cpp" line="3516"/>
         <source>Page size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3447"/>
+        <location filename="../src/app/MainWindow.cpp" line="3516"/>
         <source>%1 × %2 pt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3450"/>
+        <location filename="../src/app/MainWindow.cpp" line="3519"/>
         <source>File size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3451"/>
+        <location filename="../src/app/MainWindow.cpp" line="3520"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3462"/>
+        <location filename="../src/app/MainWindow.cpp" line="3531"/>
         <source>%1 arrives in a later milestone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3484"/>
+        <location filename="../src/app/MainWindow.cpp" line="3553"/>
         <source>No recent documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/app/MainWindow.cpp" line="3495"/>
+        <location filename="../src/app/MainWindow.cpp" line="3564"/>
         <source>Clear list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3959,6 +4015,23 @@ Result: %3
         <source>Couldn&apos;t open the document to read it aloud.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../src/backends/Scanner.cpp" line="67"/>
+        <location filename="../src/backends/Scanner.cpp" line="93"/>
+        <source>scanimage (SANE) isn&apos;t installed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Scanner.cpp" line="77"/>
+        <source>Listing scanners timed out.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/backends/Scanner.cpp" line="119"/>
+        <location filename="../src/backends/Scanner.cpp" line="142"/>
+        <source>Scanning timed out.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ReadAloudBar</name>
@@ -4098,6 +4171,90 @@ Result: %3
     <message>
         <location filename="../src/ui/SanitizeDialog.cpp" line="67"/>
         <source>Clean</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ScanDialog</name>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="45"/>
+        <location filename="../src/ui/ScanDialog.cpp" line="126"/>
+        <source>Scan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="68"/>
+        <source>Scan from a connected device into a new PDF. Pages are captured with SANE; you can add a searchable text layer with OCR.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="84"/>
+        <source>Refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="89"/>
+        <source>Scanner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="93"/>
+        <source>%1 DPI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="95"/>
+        <source>Resolution</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="98"/>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="99"/>
+        <source>Grayscale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="100"/>
+        <source>Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="105"/>
+        <source>More than one page needs a document feeder (ADF).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="106"/>
+        <source>Pages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="108"/>
+        <source>Make it searchable with OCR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="115"/>
+        <source>OCR language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="140"/>
+        <source>Install Tesseract to add a searchable text layer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="169"/>
+        <source>No scanners found. Connect one and choose Refresh.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ScanDialog.cpp" line="170"/>
+        <source>Couldn&apos;t list scanners: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4654,7 +4811,7 @@ Result: %3
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="137"/>
-        <location filename="../src/ui/ToolsPane.cpp" line="284"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="285"/>
         <source>Collapse the tools pane</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4670,123 +4827,128 @@ Result: %3
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="171"/>
-        <source>Recognize text</source>
+        <source>Scan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="172"/>
-        <source>Edit text</source>
+        <source>Recognize text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="173"/>
-        <source>Read aloud</source>
+        <source>Edit text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="174"/>
-        <source>Forms</source>
+        <source>Read aloud</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="175"/>
-        <source>Comment</source>
+        <source>Forms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="176"/>
-        <source>Combine</source>
+        <source>Comment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="177"/>
-        <source>Split</source>
+        <source>Combine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="178"/>
-        <source>Compare</source>
+        <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="179"/>
-        <source>Optimize</source>
+        <source>Compare</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="180"/>
-        <source>RGB to CMYK</source>
+        <source>Optimize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="181"/>
-        <source>Watermark</source>
+        <source>RGB to CMYK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="182"/>
-        <source>Bates numbering</source>
+        <source>Watermark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="183"/>
-        <source>Protect</source>
+        <source>Bates numbering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="184"/>
-        <source>Flatten</source>
+        <source>Protect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="185"/>
-        <source>Organize</source>
+        <source>Flatten</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="186"/>
-        <source>Redact</source>
+        <source>Organize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="187"/>
-        <source>Snapshot</source>
+        <source>Redact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="188"/>
-        <source>Measure</source>
+        <source>Snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="189"/>
-        <source>Sign</source>
+        <source>Measure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="190"/>
-        <source>Stamp</source>
+        <source>Sign</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="191"/>
-        <source>PDF/A</source>
+        <source>Stamp</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/ToolsPane.cpp" line="192"/>
+        <source>PDF/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ToolsPane.cpp" line="193"/>
         <source>Batch / Action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="205"/>
-        <location filename="../src/ui/ToolsPane.cpp" line="282"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="206"/>
         <location filename="../src/ui/ToolsPane.cpp" line="283"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="284"/>
         <source>Customize tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/ToolsPane.cpp" line="284"/>
+        <location filename="../src/ui/ToolsPane.cpp" line="285"/>
         <source>Expand the tools pane</source>
         <translation type="unfinished"></translation>
     </message>
