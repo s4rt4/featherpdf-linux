@@ -1030,12 +1030,17 @@ QList<Group> buildDocs() {
               "for-byte intact and keep validating. <code>openssl</code> reads the certificates; "
               "<code>curl</code> fetches revocation data.</p>",
               "<ul><li><b>Document ▸ Long-Term Validation</b> (or the <b>Add long-term validation</b> "
-              "button in <b>Document ▸ Signatures</b>): choose where to save the enhanced copy.</li>"
-              "<li>Command line: <code>feather-pdf ltv signed.pdf out.pdf</code>.</li></ul>",
+              "button in <b>Document ▸ Signatures</b>): choose whether to also embed an archive "
+              "timestamp, then where to save the enhanced copy.</li>"
+              "<li>Command line: <code>feather-pdf ltv signed.pdf out.pdf</code>, adding "
+              "<code>--timestamp</code> (and an optional <code>--tsa URL</code>) for the archive "
+              "timestamp.</li></ul>",
               "<p>The document must already be signed. Revocation data needs the certificates to "
               "publish OCSP/CRL endpoints and a working network; without it the store still embeds "
               "the certificate chain, which is valid LTV material. A self-signed certificate has no "
-              "revocation data to fetch.</p>"),
+              "revocation data to fetch. The optional archive timestamp (a PDF <code>/DocTimeStamp</code> "
+              "covering the whole document, the final step of PAdES-LTA) needs a reachable Time Stamp "
+              "Authority; it reuses the TSA URL set in the Sign dialog.</p>"),
          sect("id",
               "<p>Sematkan bukti yang dibutuhkan tanda tangan agar tetap sah setelah sertifikat "
               "penandatangan kedaluwarsa.</p>",
@@ -1049,12 +1054,18 @@ QList<Group> buildDocs() {
               "tetap sah. <code>openssl</code> membaca sertifikat; <code>curl</code> mengambil data "
               "pencabutan.</p>",
               "<ul><li><b>Document ▸ Long-Term Validation</b> (atau tombol <b>Add long-term "
-              "validation</b> di <b>Document ▸ Signatures</b>): pilih lokasi menyimpan salinan.</li>"
-              "<li>Baris perintah: <code>feather-pdf ltv signed.pdf out.pdf</code>.</li></ul>",
+              "validation</b> di <b>Document ▸ Signatures</b>): pilih apakah ikut menyematkan archive "
+              "timestamp, lalu lokasi menyimpan salinan.</li>"
+              "<li>Baris perintah: <code>feather-pdf ltv signed.pdf out.pdf</code>, tambahkan "
+              "<code>--timestamp</code> (dan opsional <code>--tsa URL</code>) untuk archive "
+              "timestamp.</li></ul>",
               "<p>Dokumen harus sudah ditandatangani. Data pencabutan butuh sertifikat yang "
               "menerbitkan endpoint OCSP/CRL dan jaringan yang berfungsi; tanpa itu store tetap "
               "menyematkan rantai sertifikat, yang sudah merupakan materi LTV sah. Sertifikat "
-              "swatanda tak punya data pencabutan untuk diambil.</p>")});
+              "swatanda tak punya data pencabutan untuk diambil. Archive timestamp opsional (sebuah "
+              "<code>/DocTimeStamp</code> PDF yang menutupi seluruh dokumen, langkah akhir PAdES-LTA) "
+              "butuh Time Stamp Authority yang terjangkau; ia memakai URL TSA yang diset di dialog "
+              "Sign.</p>")});
     review.topics.append(
         {"ocr", "Recognize text (OCR)", "Pengenalan teks (OCR)",
          sect("en", "<p>Make a scanned PDF searchable and selectable, with optional image clean-up "

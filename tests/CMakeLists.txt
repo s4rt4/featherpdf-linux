@@ -364,6 +364,7 @@ target_include_directories(test_signer PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(test_signer PRIVATE
     Qt6::Core
     Qt6::Gui
+    Qt6::Network
     Qt6::Test
     PkgConfig::POPPLER_QT6
     PkgConfig::QPDF

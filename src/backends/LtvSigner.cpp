@@ -17,10 +17,13 @@
 #include "backends/LtvSigner.h"
 
 #include <QByteArray>
+#include <QByteArrayView>
 #include <QCryptographicHash>
+#include <QDateTime>
 #include <QFile>
 #include <QFileInfo>
 #include <QList>
+#include <QMap>
 #include <QObject>
 #include <QProcess>
 #include <QRegularExpression>
@@ -29,12 +32,15 @@
 #include <QTemporaryDir>
 
 #include <algorithm>
+#include <cstring>
 #include <set>
 
 #include <qpdf/QPDF.hh>
 #include <qpdf/QPDFExc.hh>
 #include <qpdf/QPDFObjGen.hh>
 #include <qpdf/QPDFObjectHandle.hh>
+#include <qpdf/QPDFPageDocumentHelper.hh>
+#include <qpdf/QPDFPageObjectHelper.hh>
 
 namespace {
 
@@ -282,6 +288,36 @@ void collectSignatureContents(QPDFObjectHandle field, QList<QByteArray>* out,
             for (int i = 0; i < kids.getArrayNItems(); ++i)
                 collectSignatureContents(kids.getArrayItem(i), out, seen);
     }
+}
+
+// Serialise a dictionary, substituting `overrides[key]` for those keys and keeping
+// every other key's value as-is (indirect references preserved). Keys present in
+// `overrides` but not in the dictionary are appended.
+QByteArray rebuildDict(QPDFObjectHandle dict, const QMap<QByteArray, QByteArray>& overrides) {
+    QByteArray out = "<<";
+    QSet<QByteArray> written;
+    for (const std::string& k : dict.getKeys()) {
+        const QByteArray key = QByteArray::fromStdString(k);
+        out += ' ' + key + ' ';
+        out += overrides.contains(key) ? overrides.value(key)
+                                       : QByteArray::fromStdString(dict.getKey(k).unparse());
+        written.insert(key);
+    }
+    for (auto it = overrides.constBegin(); it != overrides.constEnd(); ++it)
+        if (!written.contains(it.key()))
+            out += ' ' + it.key() + ' ' + it.value();
+    out += " >>";
+    return out;
+}
+
+// "[ a 0 R b 0 R ... ]" for an existing array's items plus one freshly added ref.
+QByteArray arrayWithAppended(QPDFObjectHandle array, int newId) {
+    QByteArray a = "[";
+    if (array.isArray())
+        for (int i = 0; i < array.getArrayNItems(); ++i)
+            a += ' ' + QByteArray::fromStdString(array.getArrayItem(i).unparse());
+    a += ' ' + QByteArray::number(newId) + " 0 R ]";
+    return a;
 }
 
 } // namespace
@@ -545,5 +581,210 @@ bool LtvSigner::addValidationInfo(const QString& inputPath, const QString& outpu
         result->ocsps = ocspBlobs.size();
         result->crls = crlBlobs.size();
     }
+    return true;
+}
+
+bool LtvSigner::addDocumentTimestamp(const QString& inputPath, const QString& outputPath,
+                                     const QString& tsaUrl, QString* error) {
+    const auto fail = [&](const QString& m) {
+        if (error)
+            *error = m;
+        return false;
+    };
+
+    const QString openssl = QStandardPaths::findExecutable(QStringLiteral("openssl"));
+    const QString curl = QStandardPaths::findExecutable(QStringLiteral("curl"));
+    if (openssl.isEmpty() || curl.isEmpty())
+        return fail(QObject::tr("Archive timestamping needs 'openssl' and 'curl' on your PATH."));
+    if (tsaUrl.isEmpty())
+        return fail(QObject::tr("No timestamp authority (TSA) URL was given."));
+
+    // 1) Read the structure we have to extend: the AcroForm (to register the
+    //    timestamp field) and a page (to carry its invisible widget).
+    QPDF pdf;
+    int rootId = 0, rootGen = 0, originalSize = 0;
+    QByteArray idArray;
+    QList<Obj> objs;
+    int nextId = 0;
+    int dtsId = 0; // the /DocTimeStamp value dictionary
+    try {
+        pdf.processFile(inputPath.toLocal8Bit().constData());
+        QPDFObjectHandle root = pdf.getRoot();
+        rootId = root.getObjGen().getObj();
+        rootGen = root.getObjGen().getGen();
+
+        QPDFObjectHandle trailer = pdf.getTrailer();
+        if (trailer.hasKey("/Size"))
+            originalSize = static_cast<int>(trailer.getKey("/Size").getIntValue());
+        if (trailer.hasKey("/ID"))
+            idArray = QByteArray::fromStdString(trailer.getKey("/ID").unparseResolved());
+
+        QPDFObjectHandle acro = root.getKey("/AcroForm");
+        if (!acro.isDictionary() || !acro.isIndirect())
+            return fail(QObject::tr("The document has no signature form to attach a timestamp to."));
+
+        std::vector<QPDFPageObjectHelper> pages = QPDFPageDocumentHelper(pdf).getAllPages();
+        if (pages.empty())
+            return fail(QObject::tr("The document has no pages."));
+        QPDFObjectHandle page = pages.front().getObjectHandle();
+        if (!page.isIndirect())
+            return fail(QObject::tr("The document's first page couldn't be addressed."));
+
+        nextId = std::max(originalSize, rootId + 1);
+        dtsId = nextId++;
+        const int widgetId = nextId++;
+
+        // The invisible widget/field that owns the timestamp signature value.
+        const QByteArray widgetName =
+            "(FeatherDocTS" + QByteArray::number(QDateTime::currentMSecsSinceEpoch()) + ")";
+        QByteArray widget = "<< /Type /Annot /Subtype /Widget /FT /Sig /F 2 "
+                            "/Rect [0 0 0 0] /T "
+            + widgetName + " /P " + QByteArray::number(page.getObjGen().getObj()) + " 0 R /V "
+            + QByteArray::number(dtsId) + " 0 R >>";
+        objs << Obj{widgetId, 0, makeObj(widgetId, 0, widget)};
+
+        // The /DocTimeStamp value, with fixed-width placeholders we patch after the
+        // file is assembled: /ByteRange numbers (three 10-char fields) and a large
+        // /Contents slot for the RFC 3161 token (zeros = valid hex padding).
+        const QByteArray brSlots(32, ' ');
+        const QByteArray contents(2 * 16384, '0');
+        QByteArray dts = "<< /Type /DocTimeStamp /Filter /Adobe.PPKLite /SubFilter /ETSI.RFC3161 "
+                         "/ByteRange [0 "
+            + brSlots + "] /Contents <" + contents + "> >>";
+        objs << Obj{dtsId, 0, makeObj(dtsId, 0, dts)};
+
+        // Register the widget in the AcroForm /Fields, and make sure /SigFlags marks
+        // the document as append-only-with-signatures.
+        QPDFObjectHandle fields = acro.getKey("/Fields");
+        if (fields.isIndirect()) {
+            objs << Obj{fields.getObjGen().getObj(), fields.getObjGen().getGen(),
+                        makeObj(fields.getObjGen().getObj(), fields.getObjGen().getGen(),
+                                arrayWithAppended(fields, widgetId))};
+            QMap<QByteArray, QByteArray> ov;
+            ov["/SigFlags"] = "3";
+            objs << Obj{acro.getObjGen().getObj(), acro.getObjGen().getGen(),
+                        makeObj(acro.getObjGen().getObj(), acro.getObjGen().getGen(),
+                                rebuildDict(acro, ov))};
+        } else {
+            QMap<QByteArray, QByteArray> ov;
+            ov["/Fields"] = arrayWithAppended(fields, widgetId);
+            ov["/SigFlags"] = "3";
+            objs << Obj{acro.getObjGen().getObj(), acro.getObjGen().getGen(),
+                        makeObj(acro.getObjGen().getObj(), acro.getObjGen().getGen(),
+                                rebuildDict(acro, ov))};
+        }
+
+        // Add the widget to the first page's /Annots.
+        QPDFObjectHandle annots = page.getKey("/Annots");
+        if (annots.isArray() && annots.isIndirect()) {
+            objs << Obj{annots.getObjGen().getObj(), annots.getObjGen().getGen(),
+                        makeObj(annots.getObjGen().getObj(), annots.getObjGen().getGen(),
+                                arrayWithAppended(annots, widgetId))};
+        } else {
+            QMap<QByteArray, QByteArray> ov;
+            ov["/Annots"] = arrayWithAppended(annots, widgetId);
+            objs << Obj{page.getObjGen().getObj(), page.getObjGen().getGen(),
+                        makeObj(page.getObjGen().getObj(), page.getObjGen().getGen(),
+                                rebuildDict(page, ov))};
+        }
+    } catch (const std::exception& e) {
+        return fail(QObject::tr("The document couldn't be read for timestamping. %1")
+                        .arg(QString::fromUtf8(e.what())));
+    }
+
+    const QByteArray original = [&] {
+        QFile f(inputPath);
+        return f.open(QIODevice::ReadOnly) ? f.readAll() : QByteArray();
+    }();
+    if (original.isEmpty())
+        return fail(QObject::tr("The document couldn't be opened."));
+    const qint64 prevXref = lastStartxref(original);
+    if (prevXref < 0)
+        return fail(QObject::tr("The document's cross-reference table couldn't be located."));
+
+    const int newSize = std::max(originalSize, nextId);
+    QByteArray bytes =
+        writeIncrementalUpdate(original, prevXref, objs, rootId, rootGen, newSize, idArray);
+
+    // 2) Locate the placeholders we just wrote (only within the appended region, so
+    //    the document's existing signature isn't mistaken for ours).
+    const int from = original.size();
+    const QByteArray brTag = "/ByteRange [0 ";
+    const int brAt = bytes.indexOf(brTag, from);
+    const int contAt = bytes.indexOf("/Contents <", from);
+    if (brAt < 0 || contAt < 0)
+        return fail(QObject::tr("The timestamp placeholder couldn't be located."));
+    const int slot = brAt + brTag.size();      // first byte of the three ByteRange fields
+    const int gapStart = contAt + 10;          // the '<' of /Contents <...>
+    const int gapEnd = bytes.indexOf('>', gapStart);
+    if (gapEnd < 0)
+        return fail(QObject::tr("The timestamp placeholder couldn't be located."));
+
+    // 3) Fill the ByteRange first (its bytes are part of what gets signed), then
+    //    hash everything except the contents gap.
+    const qint64 a = gapStart;                 // length of the first signed segment
+    const qint64 b = gapEnd + 1;               // start of the second signed segment
+    const qint64 c = bytes.size() - (gapEnd + 1);
+    char br[40];
+    std::snprintf(br, sizeof(br), "%10lld %10lld %10lld", static_cast<long long>(a),
+                  static_cast<long long>(b), static_cast<long long>(c));
+    std::memcpy(bytes.data() + slot, br, 32);
+
+    QCryptographicHash hash(QCryptographicHash::Sha256);
+    hash.addData(QByteArrayView(bytes).first(gapStart));
+    hash.addData(QByteArrayView(bytes).sliced(gapEnd + 1));
+    const QByteArray digestHex = hash.result().toHex();
+
+    // 4) Ask the TSA to sign that digest, and pull the bare timestamp token out of
+    //    its reply (ETSI.RFC3161 wants the token, not the full response).
+    QTemporaryDir tmp;
+    if (!tmp.isValid())
+        return fail(QObject::tr("Couldn't create a temporary working directory."));
+    const QString tsq = tmp.filePath(QStringLiteral("req.tsq"));
+    const QString tsr = tmp.filePath(QStringLiteral("resp.tsr"));
+    const QString tok = tmp.filePath(QStringLiteral("token.der"));
+
+    QByteArray ignore;
+    if (!run(openssl,
+             {QStringLiteral("ts"), QStringLiteral("-query"), QStringLiteral("-digest"),
+              QString::fromLatin1(digestHex), QStringLiteral("-sha256"), QStringLiteral("-cert"),
+              QStringLiteral("-out"), tsq},
+             &ignore))
+        return fail(QObject::tr("Couldn't build the timestamp request."));
+    if (!run(curl,
+             {QStringLiteral("-fsS"), QStringLiteral("--max-time"), QStringLiteral("25"),
+              QStringLiteral("-H"), QStringLiteral("Content-Type: application/timestamp-query"),
+              QStringLiteral("--data-binary"), QStringLiteral("@") + tsq, tsaUrl,
+              QStringLiteral("-o"), tsr},
+             &ignore))
+        return fail(QObject::tr("Couldn't reach the timestamp authority. Check the TSA URL and "
+                                "your connection."));
+    if (!run(openssl,
+             {QStringLiteral("ts"), QStringLiteral("-reply"), QStringLiteral("-in"), tsr,
+              QStringLiteral("-token_out"), QStringLiteral("-out"), tok},
+             &ignore))
+        return fail(QObject::tr("The timestamp authority's reply wasn't a valid RFC 3161 token."));
+
+    QByteArray token;
+    {
+        QFile f(tok);
+        if (f.open(QIODevice::ReadOnly))
+            token = f.readAll();
+    }
+    if (token.isEmpty())
+        return fail(QObject::tr("The timestamp token was empty."));
+    const QByteArray tokenHex = token.toHex();
+    if (tokenHex.size() > gapEnd - (gapStart + 1))
+        return fail(QObject::tr("The timestamp token is larger than the reserved space."));
+
+    // 5) Drop the token into the contents gap (the rest stays zero padding). This
+    //    region is excluded from the byte range, so the digest stays valid.
+    std::memcpy(bytes.data() + gapStart + 1, tokenHex.constData(), tokenHex.size());
+
+    QFile out(outputPath);
+    if (!out.open(QIODevice::WriteOnly))
+        return fail(QObject::tr("The result couldn't be written."));
+    if (out.write(bytes) != bytes.size())
+        return fail(QObject::tr("The result couldn't be fully written."));
     return true;
 }

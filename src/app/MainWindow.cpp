@@ -2855,6 +2855,26 @@ void MainWindow::addLongTermValidation() {
         return;
     }
 
+    // Offer the PAdES-LTA archive timestamp too. Embedding it covers the whole
+    // document (including the validation data) and renews trust over time, but it
+    // needs a reachable Time Stamp Authority, so make it an explicit opt-in.
+    QMessageBox ask(this);
+    ask.setIcon(QMessageBox::Question);
+    ask.setWindowTitle(tr("Long-Term Validation"));
+    ask.setText(tr("Add the certificate chain so the signature keeps validating after the "
+                   "certificate expires?"));
+    ask.setInformativeText(tr("Optionally also embed a trusted archive timestamp (PAdES-LTA). "
+                              "That covers the whole document and needs a reachable timestamp "
+                              "authority."));
+    QPushButton* withTs = ask.addButton(tr("Add with timestamp"), QMessageBox::AcceptRole);
+    QPushButton* dssOnly = ask.addButton(tr("Add without timestamp"), QMessageBox::AcceptRole);
+    ask.addButton(QMessageBox::Cancel);
+    withTs->setObjectName(QStringLiteral("Share"));
+    ask.exec();
+    const bool wantTimestamp = ask.clickedButton() == withTs;
+    if (ask.clickedButton() != withTs && ask.clickedButton() != dssOnly)
+        return;
+
     const QFileInfo info(m_doc->filePath());
     const QString suggested =
         info.dir().filePath(info.completeBaseName() + QStringLiteral("-ltv.pdf"));
@@ -2882,7 +2902,29 @@ void MainWindow::addLongTermValidation() {
         parts << tr("%n OCSP response(s)", nullptr, res.ocsps);
     if (res.crls > 0)
         parts << tr("%n CRL(s)", nullptr, res.crls);
-    m_toast->show(tr("Long-term validation added (%1)").arg(parts.join(QStringLiteral(", "))));
+
+    if (wantTimestamp) {
+        QSettings settings;
+        const QString tsaUrl = settings.value(QStringLiteral("sign/tsaUrl"),
+                                              QStringLiteral("https://freetsa.org/tsr"))
+                                   .toString();
+        const QString tmp = out + QStringLiteral(".ts.tmp");
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        QString tsError;
+        const bool stamped = LtvSigner::addDocumentTimestamp(out, tmp, tsaUrl, &tsError);
+        QApplication::restoreOverrideCursor();
+        if (stamped && QFile::remove(out) && QFile::rename(tmp, out)) {
+            m_toast->show(tr("Long-term validation added (%1) with an archive timestamp")
+                              .arg(parts.join(QStringLiteral(", "))));
+        } else {
+            QFile::remove(tmp);
+            QMessageBox::warning(this, tr("Validation added, but the timestamp failed"),
+                                 tsError.isEmpty() ? tr("The archive timestamp couldn't be written.")
+                                                   : tsError);
+        }
+    } else {
+        m_toast->show(tr("Long-term validation added (%1)").arg(parts.join(QStringLiteral(", "))));
+    }
     openPath(out);
 }
 

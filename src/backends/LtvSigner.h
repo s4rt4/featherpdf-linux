@@ -48,4 +48,17 @@ public:
     // document has no signatures). *result, when given, reports what was embedded.
     static bool addValidationInfo(const QString& inputPath, const QString& outputPath,
                                   QString* error, Result* result = nullptr);
+
+    // Embed a trusted archive timestamp (a PDF /DocTimeStamp signed by the TSA at
+    // `tsaUrl`) into `inputPath`, writing `outputPath`. This is the final step of
+    // PAdES-LTA: applied after a DSS, the timestamp covers the whole document
+    // including the validation data, so its trustworthiness can be re-established
+    // for as long as the timestamp chain stays valid. Like the DSS, it is written
+    // as an incremental update, so existing signatures stay intact.
+    //
+    // Uses the `openssl` and `curl` CLIs and reaches out to the TSA over RFC 3161.
+    // Returns false with a human-readable message in *error when the tools are
+    // missing, the document can't be read, or the TSA is unreachable.
+    static bool addDocumentTimestamp(const QString& inputPath, const QString& outputPath,
+                                     const QString& tsaUrl, QString* error);
 };

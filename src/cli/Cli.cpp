@@ -30,6 +30,7 @@
 
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QFile>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QPdfDocument>
@@ -477,6 +478,11 @@ int cmdLtv(const QStringList& a) {
         "signatures are left intact."));
     p.addPositionalArgument(QStringLiteral("input"), QStringLiteral("Signed source PDF."));
     p.addPositionalArgument(QStringLiteral("output"), QStringLiteral("Destination PDF."));
+    p.addOption({QStringLiteral("timestamp"),
+                 QStringLiteral("Also embed a trusted archive timestamp (PAdES-LTA).")});
+    p.addOption({QStringLiteral("tsa"),
+                 QStringLiteral("Timestamp authority URL. Default: https://freetsa.org/tsr."),
+                 QStringLiteral("url"), QStringLiteral("https://freetsa.org/tsr")});
     int rc = 0;
     if (!parseCommand(p, a, &rc))
         return rc;
@@ -490,6 +496,21 @@ int cmdLtv(const QStringList& a) {
     out() << "Added long-term validation to " << pos[1] << ": " << res.certs
           << " certificate(s), " << res.ocsps << " OCSP, " << res.crls << " CRL across "
           << res.signatures << " signature(s)" << Qt::endl;
+
+    if (p.isSet(QStringLiteral("timestamp"))) {
+        const QString tmp = pos[1] + QStringLiteral(".ts.tmp");
+        if (!LtvSigner::addDocumentTimestamp(pos[1], tmp, p.value(QStringLiteral("tsa")), &why)) {
+            QFile::remove(tmp);
+            return fail(why);
+        }
+        QFile::remove(pos[1]);
+        if (!QFile::rename(tmp, pos[1])) {
+            QFile::remove(tmp);
+            return fail(QStringLiteral("Couldn't finalize the timestamped file"));
+        }
+        out() << "Embedded an archive timestamp from " << p.value(QStringLiteral("tsa"))
+              << Qt::endl;
+    }
     return 0;
 }
 
