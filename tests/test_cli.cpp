@@ -8,8 +8,11 @@
 // have their own unit tests.
 
 #include <QByteArray>
+#include <QFile>
+#include <QFileInfo>
 #include <QImage>
 #include <QPageSize>
+#include <QProcessEnvironment>
 #include <QPainter>
 #include <QPdfWriter>
 #include <QProcess>
@@ -31,6 +34,22 @@ private:
     Result run(const QStringList& args) {
         QProcess p;
         p.start(QStringLiteral(FEATHERPDF_BIN), args);
+        if (!p.waitForFinished(30000))
+            return {};
+        return {p.exitCode(), QString::fromUtf8(p.readAllStandardOutput()),
+                QString::fromUtf8(p.readAllStandardError())};
+    }
+
+    // Drive the file-manager helper script. It calls `feather-pdf` by name, so
+    // put the freshly built binary's directory on PATH for the child process.
+    Result runHelper(const QStringList& args) {
+        QProcess p;
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        const QString binDir = QFileInfo(QStringLiteral(FEATHERPDF_BIN)).absolutePath();
+        env.insert(QStringLiteral("PATH"),
+                   binDir + QLatin1Char(':') + env.value(QStringLiteral("PATH")));
+        p.setProcessEnvironment(env);
+        p.start(QStringLiteral(FEATHERPDF_ACTION), args);
         if (!p.waitForFinished(30000))
             return {};
         return {p.exitCode(), QString::fromUtf8(p.readAllStandardOutput()),
@@ -91,6 +110,21 @@ private slots:
         QVERIFY(!img.isNull());
         // A4 portrait -> the longest edge lands exactly on the requested size.
         QCOMPARE(qMax(img.width(), img.height()), 128);
+    }
+
+    void actionHelperWritesBesideSource() {
+        // Work on a copy so the output name is predictable next to it.
+        const QString src = m_dir.filePath(QStringLiteral("action-src.pdf"));
+        QVERIFY(QFile::copy(m_pdf, src));
+        const Result r = runHelper({QStringLiteral("compress"), src});
+        QCOMPARE(r.code, 0);
+        QVERIFY2(QFileInfo::exists(m_dir.filePath(QStringLiteral("action-src-compressed.pdf"))),
+                 qPrintable(r.err));
+    }
+
+    void actionHelperRejectsBadArgs() {
+        QCOMPARE(runHelper({}).code, 2);                                  // no action, no file
+        QCOMPARE(runHelper({QStringLiteral("bogus"), m_pdf}).code, 2);    // unknown action
     }
 
     void mergeConcatenates() {

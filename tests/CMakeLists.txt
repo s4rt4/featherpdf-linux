@@ -395,7 +395,8 @@ set_tests_properties(batchrunner PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscre
 
 qt_add_executable(test_cli test_cli.cpp)
 target_include_directories(test_cli PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_compile_definitions(test_cli PRIVATE FEATHERPDF_BIN="$<TARGET_FILE:feather-pdf>")
+target_compile_definitions(test_cli PRIVATE FEATHERPDF_BIN="$<TARGET_FILE:feather-pdf>"
+    FEATHERPDF_ACTION="${CMAKE_SOURCE_DIR}/packaging/feather-pdf-action")
 target_link_libraries(test_cli PRIVATE Qt6::Core Qt6::Gui Qt6::Test)
 add_dependencies(test_cli feather-pdf)
 add_test(NAME cli COMMAND test_cli)

@@ -92,7 +92,11 @@ feather-pdf --help          # merge · split · rotate · watermark · bates · 
 **Desktop integration** — installing registers Feather as a PDF handler
 (*Open With…*) and as a **thumbnailer**, so GNOME Files / Dolphin show a
 page-one preview for every PDF instead of a generic icon (it shells out to
-`feather-pdf thumbnail`, rendering in-process with no external tools).
+`feather-pdf thumbnail`, rendering in-process with no external tools). It also
+adds a **right-click "Feather PDF" menu** — *Compress*, *Remove Hidden Info*,
+*Extract Text* — for GNOME Files (via a nautilus-python extension) and Dolphin
+(via a KDE service menu); each runs headless and drops the result beside the
+source with a desktop notification.
 
 ## Building
 

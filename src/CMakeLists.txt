@@ -234,3 +234,13 @@ install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.metainfo.
 # Dolphin via Tumbler) render page-one previews for PDFs instead of a generic icon.
 install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.thumbnailer
     DESTINATION share/thumbnailers)
+
+# Right-click actions. A shared POSIX helper runs a headless feather-pdf op on
+# the picked PDF(s) and reports via notify-send; the Nautilus extension (GNOME)
+# and the KDE service menu (Dolphin) both call it, so the behaviour lives once.
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/feather-pdf-action
+    DESTINATION bin)
+install(FILES ${CMAKE_SOURCE_DIR}/packaging/feather-pdf-nautilus.py
+    DESTINATION share/nautilus-python/extensions)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.servicemenu.desktop
+    DESTINATION share/kio/servicemenus)

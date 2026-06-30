@@ -51,3 +51,7 @@ ui_*.h
 
 # --- Misc ---
 *.log
+
+# Python bytecode (from packaging/test tooling)
+__pycache__/
+*.pyc
