@@ -41,6 +41,13 @@ public:
     static int renderPages(QPdfDocument* doc, const QVector<PageSpec>& pages, const QString& outDir,
                            const QString& baseName, Format fmt, int dpi, QString* error);
 
+    // Render page one of `inputPath` to a PNG at `outPath`, scaled so its longest
+    // edge is `size` pixels (the freedesktop thumbnailer convention), flattened
+    // onto white. Loads the document itself. Returns false and sets *error on
+    // failure (missing/locked/empty PDF, unrenderable page, unwritable output).
+    static bool renderThumbnail(const QString& inputPath, const QString& outPath, int size,
+                                QString* error);
+
     // True if `pdfimages` (Poppler util) is installed for embedded-image extraction.
     static bool hasImageExtractor();
 

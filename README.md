@@ -85,8 +85,14 @@ feather-pdf extract in.pdf out.pdf --pages 1-3,5
 feather-pdf encrypt in.pdf out.pdf --password secret --no-print
 feather-pdf optimize in.pdf out.pdf --dpi 150
 feather-pdf ocr scan.pdf searchable.pdf --lang eng
-feather-pdf --help          # merge · split · rotate · watermark · bates · sanitize · images · info · …
+feather-pdf thumbnail in.pdf cover.png --size 256
+feather-pdf --help          # merge · split · rotate · watermark · bates · sanitize · images · thumbnail · info · …
 ```
+
+**Desktop integration** — installing registers Feather as a PDF handler
+(*Open With…*) and as a **thumbnailer**, so GNOME Files / Dolphin show a
+page-one preview for every PDF instead of a generic icon (it shells out to
+`feather-pdf thumbnail`, rendering in-process with no external tools).
 
 ## Building
 

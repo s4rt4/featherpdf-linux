@@ -553,6 +553,31 @@ int cmdImages(const QStringList& a) {
     return 0;
 }
 
+int cmdThumbnail(const QStringList& a) {
+    QCommandLineParser p;
+    p.setApplicationDescription(
+        QStringLiteral("Render page one to a PNG thumbnail (for file managers)."));
+    p.addPositionalArgument(QStringLiteral("input"), QStringLiteral("Source PDF."));
+    p.addPositionalArgument(QStringLiteral("output"), QStringLiteral("Destination PNG."));
+    p.addOption({QStringLiteral("size"), QStringLiteral("Longest edge in pixels. Default: 256."),
+                 QStringLiteral("size"), QStringLiteral("256")});
+    int rc = 0;
+    if (!parseCommand(p, a, &rc))
+        return rc;
+    const QStringList pos = p.positionalArguments();
+    if (pos.size() != 2)
+        return usage(QStringLiteral("thumbnail needs an input PDF and an output PNG"));
+    bool ok = false;
+    const int size = p.value(QStringLiteral("size")).toInt(&ok);
+    if (!ok || size <= 0)
+        return usage(QStringLiteral("--size must be a positive number of pixels"));
+    QString why;
+    if (!ImageExporter::renderThumbnail(pos[0], pos[1], size, &why))
+        return fail(why);
+    out() << "Wrote " << pos[1] << Qt::endl;
+    return 0;
+}
+
 int cmdToText(const QStringList& a) {
     QCommandLineParser p;
     p.setApplicationDescription(QStringLiteral("Extract the text of a PDF to a .txt file."));
@@ -692,6 +717,7 @@ const Command kCommands[] = {
     {"sanitize", cmdSanitize, "Strip metadata, attachments, and scripts"},
     {"ocr", cmdOcr, "Add a searchable text layer (OCR)"},
     {"images", cmdImages, "Render pages to image files"},
+    {"thumbnail", cmdThumbnail, "Render page one to a PNG thumbnail"},
     {"to-text", cmdToText, "Extract text to a .txt file"},
     {"to-office", cmdToOffice, "Convert to .docx/.odt/.rtf"},
     {"from-images", cmdFromImages, "Build a PDF from images"},

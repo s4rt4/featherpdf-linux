@@ -8,6 +8,7 @@
 // have their own unit tests.
 
 #include <QByteArray>
+#include <QImage>
 #include <QPageSize>
 #include <QPainter>
 #include <QPdfWriter>
@@ -78,6 +79,18 @@ private slots:
         QVERIFY(QFileInfo::exists(out));
         const Result info = run({QStringLiteral("info"), out});
         QVERIFY2(info.out.contains(QStringLiteral("Pages:     1")), qPrintable(info.out));
+    }
+
+    void thumbnailRendersSizedPng() {
+        const QString png = m_dir.filePath(QStringLiteral("thumb.png"));
+        const Result r = run({QStringLiteral("thumbnail"), m_pdf, png, QStringLiteral("--size"),
+                              QStringLiteral("128")});
+        QCOMPARE(r.code, 0);
+        QVERIFY(QFileInfo::exists(png));
+        const QImage img(png);
+        QVERIFY(!img.isNull());
+        // A4 portrait -> the longest edge lands exactly on the requested size.
+        QCOMPARE(qMax(img.width(), img.height()), 128);
     }
 
     void mergeConcatenates() {

@@ -120,6 +120,48 @@ int ImageExporter::renderPages(QPdfDocument* doc, const QVector<PageSpec>& pages
     return written;
 }
 
+bool ImageExporter::renderThumbnail(const QString& inputPath, const QString& outPath, int size,
+                                    QString* error) {
+    size = qBound(16, size, 2048);
+    QPdfDocument doc;
+    if (doc.load(inputPath) != QPdfDocument::Error::None || doc.pageCount() <= 0) {
+        if (error)
+            *error = QStringLiteral("Couldn't open '%1'.").arg(inputPath);
+        return false;
+    }
+    const QSizeF pt = doc.pagePointSize(0);
+    if (pt.width() <= 0 || pt.height() <= 0) {
+        if (error)
+            *error = QStringLiteral("The first page has no size.");
+        return false;
+    }
+    // Scale so the longest edge lands exactly on `size` px (the thumbnailer
+    // convention); the short edge keeps the page's aspect ratio.
+    const double scale = size / qMax(pt.width(), pt.height());
+    const QSize px(qMax(1, qRound(pt.width() * scale)), qMax(1, qRound(pt.height() * scale)));
+
+    QPdfDocumentRenderOptions opts;
+    opts.setRenderFlags(QPdfDocumentRenderOptions::RenderFlag::Annotations);
+    const QImage rendered = doc.render(0, px, opts);
+    if (rendered.isNull()) {
+        if (error)
+            *error = QStringLiteral("The first page couldn't be rendered.");
+        return false;
+    }
+    // Flatten onto white - the render is transparent.
+    QImage img(rendered.size(), QImage::Format_RGB32);
+    img.fill(Qt::white);
+    QPainter painter(&img);
+    painter.drawImage(0, 0, rendered);
+    painter.end();
+    if (!img.save(outPath, "PNG")) {
+        if (error)
+            *error = QStringLiteral("Couldn't write '%1'.").arg(outPath);
+        return false;
+    }
+    return true;
+}
+
 bool ImageExporter::hasImageExtractor() {
     return !QStandardPaths::findExecutable(QStringLiteral("pdfimages")).isEmpty();
 }

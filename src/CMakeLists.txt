@@ -230,3 +230,7 @@ install(FILES ${CMAKE_SOURCE_DIR}/resources/icons/feather-logo.svg
     RENAME io.github.s4rt4.FeatherPDF.svg)
 install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.metainfo.xml
     DESTINATION share/metainfo)
+# Thumbnailer: registers `feather-pdf thumbnail` so file managers (Nautilus,
+# Dolphin via Tumbler) render page-one previews for PDFs instead of a generic icon.
+install(FILES ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.thumbnailer
+    DESTINATION share/thumbnailers)
