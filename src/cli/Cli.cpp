@@ -24,13 +24,17 @@
 #include "backends/PdfEditor.h"
 #include "backends/Sanitizer.h"
 #include "backends/Splitter.h"
+#include "backends/WatchFolder.h"
 #include "backends/Watermarker.h"
 
 #include <QCommandLineParser>
+#include <QCoreApplication>
 #include <QFileInfo>
+#include <QFileSystemWatcher>
 #include <QPdfDocument>
 #include <QSet>
 #include <QTextStream>
+#include <QTimer>
 
 #include <memory>
 
@@ -691,6 +695,77 @@ int cmdBatch(const QStringList& a) {
     return 0;
 }
 
+int cmdWatch(const QStringList& a) {
+    QCommandLineParser p;
+    p.setApplicationDescription(
+        QStringLiteral("Watch a folder and run a saved action on each PDF that appears."));
+    p.addOption({QStringLiteral("action"), QStringLiteral("Action file (JSON)."),
+                 QStringLiteral("file")});
+    p.addOption({QStringLiteral("in"), QStringLiteral("Folder to watch."), QStringLiteral("dir")});
+    p.addOption({QStringLiteral("out"), QStringLiteral("Where results go. Default: <in>/_out."),
+                 QStringLiteral("dir")});
+    p.addOption({QStringLiteral("done"),
+                 QStringLiteral("Where processed sources move. Default: <in>/_done."),
+                 QStringLiteral("dir")});
+    p.addOption({QStringLiteral("once"),
+                 QStringLiteral("Process what's there now, then exit (don't keep watching).")});
+    p.addOption({QStringLiteral("quiet-ms"),
+                 QStringLiteral("Skip files touched within this many ms. Default: 1000."),
+                 QStringLiteral("ms"), QStringLiteral("1000")});
+    int rc = 0;
+    if (!parseCommand(p, a, &rc))
+        return rc;
+    if (!p.isSet(QStringLiteral("action")) || !p.isSet(QStringLiteral("in")))
+        return usage(QStringLiteral("watch needs --action and --in"));
+    QList<BatchRunner::Step> steps;
+    QString why;
+    if (!BatchRunner::loadAction(p.value(QStringLiteral("action")), &steps, &why))
+        return fail(why);
+
+    const QString inDir = p.value(QStringLiteral("in"));
+    const QString outDir = p.value(QStringLiteral("out"));
+    const QString doneDir = p.value(QStringLiteral("done"));
+    const bool once = p.isSet(QStringLiteral("once"));
+    // A single pass processes everything present now, so don't hold files back;
+    // the live watcher waits out in-flight writes.
+    const int quiet = once ? 0 : p.value(QStringLiteral("quiet-ms")).toInt();
+
+    const auto pass = [&] {
+        WatchFolder::Counts c;
+        QString w;
+        if (!WatchFolder::processPending(inDir, outDir, doneDir, steps, quiet, &c, &w)) {
+            err() << "feather-pdf: " << w << Qt::endl;
+            return false;
+        }
+        if (c.processed || c.failed)
+            out() << "Processed " << c.processed << ", failed " << c.failed << Qt::endl;
+        return true;
+    };
+
+    if (once)
+        return pass() ? 0 : 1;
+
+    if (!pass()) // initial sweep; a bad folder fails fast before we start watching
+        return 1;
+    QFileSystemWatcher watcher;
+    if (!watcher.addPath(inDir))
+        return fail(QStringLiteral("couldn't watch '%1'").arg(inDir));
+    // Debounce a burst of changes; also poll periodically in case a change is
+    // missed (e.g. files arriving over a network mount).
+    QTimer debounce;
+    debounce.setSingleShot(true);
+    debounce.setInterval(800);
+    QObject::connect(&debounce, &QTimer::timeout, [&] { pass(); });
+    QObject::connect(&watcher, &QFileSystemWatcher::directoryChanged,
+                     [&](const QString&) { debounce.start(); });
+    QTimer poll;
+    poll.setInterval(5000);
+    QObject::connect(&poll, &QTimer::timeout, [&] { pass(); });
+    poll.start();
+    out() << "Watching " << inDir << " (Ctrl+C to stop)" << Qt::endl;
+    return QCoreApplication::exec();
+}
+
 int cmdInfo(const QStringList& a) {
     QCommandLineParser p;
     p.setApplicationDescription(QStringLiteral("Print a PDF's page count, metadata, and status."));
@@ -751,6 +826,7 @@ const Command kCommands[] = {
     {"from-images", cmdFromImages, "Build a PDF from images"},
     {"from-office", cmdFromOffice, "Convert a document/image to PDF"},
     {"batch", cmdBatch, "Run a saved action over a PDF"},
+    {"watch", cmdWatch, "Watch a folder and run an action on new PDFs"},
     {"info", cmdInfo, "Print page count and metadata"},
 };
 

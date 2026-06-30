@@ -37,6 +37,7 @@ qt_add_executable(feather-pdf
     backends/Watermarker.cpp
     backends/Watermarker.h
     backends/BatchRunner.cpp
+    backends/WatchFolder.cpp
     backends/BatchRunner.h
     backends/Flattener.cpp
     backends/Flattener.h
@@ -257,3 +258,8 @@ install(FILES
         ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf.types
         ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf.convs
     DESTINATION share/feather-pdf/cups)
+
+# Watch-folder automation: an example systemd user service for `feather-pdf
+# watch` (the user copies it to ~/.config/systemd/user and edits the paths).
+install(FILES ${CMAKE_SOURCE_DIR}/packaging/systemd/feather-pdf-watch.service
+    DESTINATION share/feather-pdf/systemd)

@@ -86,8 +86,15 @@ feather-pdf encrypt in.pdf out.pdf --password secret --no-print
 feather-pdf optimize in.pdf out.pdf --dpi 150
 feather-pdf ocr scan.pdf searchable.pdf --lang eng
 feather-pdf thumbnail in.pdf cover.png --size 256
-feather-pdf --help          # merge · split · rotate · watermark · bates · sanitize · images · thumbnail · info · …
+feather-pdf batch in.pdf out.pdf --action my-action.json
+feather-pdf watch --action my-action.json --in ~/Inbox --out ~/Done
+feather-pdf --help          # merge · split · rotate · watermark · bates · sanitize · images · batch · watch · …
 ```
+
+**Folder automation** — assemble a multi-step *action* in the Batch wizard,
+**Save action…**, then run it over a whole folder. `feather-pdf watch` keeps
+watching and processes each PDF as it arrives — point a systemd user service
+(example shipped under `share/feather-pdf/systemd/`) at an inbox to automate it.
 
 **Desktop integration** — installing registers Feather as a PDF handler
 (*Open With…*) and as a **thumbnailer**, so GNOME Files / Dolphin show a

@@ -183,6 +183,29 @@ private slots:
         QVERIFY2(QFileInfo::exists(out), qPrintable(r.err));
     }
 
+    void watchOnceProcessesAndRetires() {
+        QTemporaryDir in, out, done;
+        QVERIFY(in.isValid() && out.isValid() && done.isValid());
+        QVERIFY(QFile::copy(m_pdf, in.filePath(QStringLiteral("a.pdf"))));
+        QVERIFY(QFile::copy(m_pdf, in.filePath(QStringLiteral("b.pdf"))));
+        const QString action = m_dir.filePath(QStringLiteral("watch-act.json"));
+        QFile f(action);
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write(R"({"feather-action":1,"steps":[{"op":"sanitize","params":{}}]})");
+        f.close();
+
+        const Result r = run({QStringLiteral("watch"), QStringLiteral("--once"),
+                              QStringLiteral("--action"), action, QStringLiteral("--in"), in.path(),
+                              QStringLiteral("--out"), out.path(), QStringLiteral("--done"),
+                              done.path()});
+        QCOMPARE(r.code, 0);
+        QVERIFY2(QFileInfo::exists(out.filePath(QStringLiteral("a.pdf"))), qPrintable(r.err));
+        QVERIFY(QFileInfo::exists(out.filePath(QStringLiteral("b.pdf"))));
+        // Sources are retired into done/, so they aren't seen on the next pass.
+        QVERIFY(!QFileInfo::exists(in.filePath(QStringLiteral("a.pdf"))));
+        QVERIFY(QFileInfo::exists(done.filePath(QStringLiteral("a.pdf"))));
+    }
+
     void mergeConcatenates() {
         const QString out = m_dir.filePath(QStringLiteral("four.pdf"));
         const Result r = run({QStringLiteral("merge"), out, m_pdf, m_pdf});
