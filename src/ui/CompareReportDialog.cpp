@@ -65,7 +65,7 @@ CompareReportDialog::CompareReportDialog(const TextComparer::Result& result, con
         summary->setText(tr("No text differences found."));
     else
         summary->setText(tr("%n page(s) changed", "", result.pages.size()) +
-                         tr(" — %1 added, %2 removed")
+                         tr(": %1 added, %2 removed")
                              .arg(result.addedWords)
                              .arg(result.removedWords));
     root->addWidget(summary);

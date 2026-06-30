@@ -231,17 +231,17 @@
     </message>
     <message numerus="yes">
         <location filename="../src/ui/BatchDialog.cpp" line="353"/>
-        <source>Done — processed %n file(s) into %1.</source>
+        <source>Done, processed %n file(s) into %1.</source>
         <translation>
-            <numerusform>Selesai — memproses %n berkas ke %1.</numerusform>
+            <numerusform>Selesai, memproses %n berkas ke %1.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../src/ui/BatchDialog.cpp" line="356"/>
-        <source>Done — %1 succeeded, %n failed:
+        <source>Done, %1 succeeded, %n failed:
 %2</source>
         <translation>
-            <numerusform>Selesai — %1 berhasil, %n gagal:
+            <numerusform>Selesai, %1 berhasil, %n gagal:
 %2</numerusform>
         </translation>
     </message>
@@ -431,8 +431,8 @@
     </message>
     <message>
         <location filename="../src/ui/CompareReportDialog.cpp" line="68"/>
-        <source> — %1 added, %2 removed</source>
-        <translation> — %1 ditambah, %2 dihapus</translation>
+        <source>: %1 added, %2 removed</source>
+        <translation>: %1 ditambah, %2 dihapus</translation>
     </message>
     <message>
         <location filename="../src/ui/CompareReportDialog.cpp" line="74"/>
@@ -459,8 +459,8 @@
     </message>
     <message>
         <location filename="../src/ui/CropDialog.cpp" line="63"/>
-        <source>Trim the margins off your pages. The content stays — only the visible crop changes.</source>
-        <translation>Pangkas margin halaman. Kontennya tetap — hanya area terlihat yang berubah.</translation>
+        <source>Trim the margins off your pages. The content stays, only the visible crop changes.</source>
+        <translation>Pangkas margin halaman. Kontennya tetap, hanya area terlihat yang berubah.</translation>
     </message>
     <message>
         <location filename="../src/ui/CropDialog.cpp" line="75"/>
@@ -596,8 +596,8 @@
     </message>
     <message>
         <location filename="../src/ui/ExportImageDialog.cpp" line="83"/>
-        <source>all pages — or e.g. 1-3, 5, 8-10</source>
-        <translation>semua halaman — atau mis. 1-3, 5, 8-10</translation>
+        <source>all pages, or e.g. 1-3, 5, 8-10</source>
+        <translation>semua halaman, atau mis. 1-3, 5, 8-10</translation>
     </message>
     <message>
         <location filename="../src/ui/ExportImageDialog.cpp" line="84"/>
@@ -611,8 +611,8 @@
     </message>
     <message>
         <location filename="../src/ui/ExportImageDialog.cpp" line="100"/>
-        <source>all pages — current is %1</source>
-        <translation>semua halaman — sekarang %1</translation>
+        <source>all pages, current is %1</source>
+        <translation>semua halaman, sekarang %1</translation>
     </message>
 </context>
 <context>
@@ -715,7 +715,7 @@
     </message>
     <message>
         <location filename="../src/ui/FindRedactDialog.cpp" line="86"/>
-        <source>optional — e.g. \bSECRET-\d+\b</source>
+        <source>optional, e.g. \bSECRET-\d+\b</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -935,8 +935,8 @@
     </message>
     <message>
         <location filename="../src/ui/FormPanel.cpp" line="96"/>
-        <source>Prepare Form — detect fillable areas</source>
-        <translation>Siapkan Formulir — deteksi area isian</translation>
+        <source>Prepare Form: detect fillable areas</source>
+        <translation>Siapkan Formulir: deteksi area isian</translation>
     </message>
     <message>
         <location filename="../src/ui/FormPanel.cpp" line="97"/>
@@ -1945,8 +1945,8 @@
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="1329"/>
-        <source>No editable text boxes yet — add one with the Text tool.</source>
-        <translation>Belum ada kotak teks yang bisa disunting — tambahkan dengan alat Teks.</translation>
+        <source>No editable text boxes yet, add one with the Text tool.</source>
+        <translation>Belum ada kotak teks yang bisa disunting, tambahkan dengan alat Teks.</translation>
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="1341"/>
@@ -2076,9 +2076,9 @@
     </message>
     <message numerus="yes">
         <location filename="../src/app/MainWindow.cpp" line="1829"/>
-        <source>Found %n match(es) — review the marks, then Apply.</source>
+        <source>Found %n match(es): review the marks, then Apply.</source>
         <translation>
-            <numerusform>Ditemukan %n kecocokan — tinjau tanda, lalu Terapkan.</numerusform>
+            <numerusform>Ditemukan %n kecocokan: tinjau tanda, lalu Terapkan.</numerusform>
         </translation>
     </message>
     <message>
@@ -2098,14 +2098,14 @@
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="1864"/>
-        <source>Nothing hidden to remove — saved a clean copy.</source>
-        <translation>Tidak ada yang tersembunyi — salinan bersih disimpan.</translation>
+        <source>Nothing hidden to remove: saved a clean copy.</source>
+        <translation>Tidak ada yang tersembunyi: salinan bersih disimpan.</translation>
     </message>
     <message numerus="yes">
         <location filename="../src/app/MainWindow.cpp" line="1866"/>
-        <source>Removed %n hidden item(s) — saved %1</source>
+        <source>Removed %n hidden item(s): saved %1</source>
         <translation>
-            <numerusform>Membuang %n item tersembunyi — disimpan %1</numerusform>
+            <numerusform>Membuang %n item tersembunyi: disimpan %1</numerusform>
         </translation>
     </message>
     <message>
@@ -2150,9 +2150,9 @@
     </message>
     <message numerus="yes">
         <location filename="../src/app/MainWindow.cpp" line="1961"/>
-        <source>Updated %n link(s) — saved %1</source>
+        <source>Updated %n link(s): saved %1</source>
         <translation>
-            <numerusform>Memperbarui %n tautan — disimpan %1</numerusform>
+            <numerusform>Memperbarui %n tautan: disimpan %1</numerusform>
         </translation>
     </message>
     <message>
@@ -2265,8 +2265,8 @@
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="2257"/>
-        <source>Exported %1 — check the layout; conversion is approximate</source>
-        <translation>Diekspor %1 — periksa tata letak; konversi hanya mendekati</translation>
+        <source>Exported %1: check the layout; conversion is approximate</source>
+        <translation>Diekspor %1: periksa tata letak; konversi hanya mendekati</translation>
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="2276"/>
@@ -3277,8 +3277,8 @@
     </message>
     <message>
         <location filename="../src/ui/PdfADialog.cpp" line="73"/>
-        <source>veraPDF isn&apos;t installed — tagging works, preflight won&apos;t.</source>
-        <translation>veraPDF belum terpasang — penandaan tetap jalan, preflight tidak.</translation>
+        <source>veraPDF isn&apos;t installed, tagging works, preflight won&apos;t.</source>
+        <translation>veraPDF belum terpasang, penandaan tetap jalan, preflight tidak.</translation>
     </message>
     <message>
         <location filename="../src/ui/PdfADialog.cpp" line="80"/>
@@ -3354,13 +3354,13 @@ Pasang dan tambahkan &apos;verapdf&apos; ke PATH Anda, lalu coba lagi.</translat
     </message>
     <message>
         <location filename="../src/ui/PdfADialog.cpp" line="156"/>
-        <source>PASS — valid PDF/A-1b</source>
-        <translation>LULUS — PDF/A-1b valid</translation>
+        <source>PASS: valid PDF/A-1b</source>
+        <translation>LULUS: PDF/A-1b valid</translation>
     </message>
     <message>
         <location filename="../src/ui/PdfADialog.cpp" line="156"/>
-        <source>FAIL — not valid PDF/A-1b</source>
-        <translation>GAGAL — PDF/A-1b tidak valid</translation>
+        <source>FAIL: not valid PDF/A-1b</source>
+        <translation>GAGAL: PDF/A-1b tidak valid</translation>
     </message>
     <message>
         <location filename="../src/ui/PdfADialog.cpp" line="157"/>
@@ -4802,8 +4802,8 @@ Hasil: %3
     </message>
     <message>
         <location filename="../src/ui/TextEditDialog.cpp" line="54"/>
-        <source>Edit the text boxes you&apos;ve added. Pick one, change its words, and Save — or Delete it.</source>
-        <translation>Sunting kotak teks yang kamu tambahkan. Pilih satu, ubah katanya, dan Simpan — atau Hapus.</translation>
+        <source>Edit the text boxes you&apos;ve added. Pick one, change its words, and Save, or Delete it.</source>
+        <translation>Sunting kotak teks yang kamu tambahkan. Pilih satu, ubah katanya, dan Simpan, atau Hapus.</translation>
     </message>
     <message>
         <location filename="../src/ui/TextEditDialog.cpp" line="67"/>
@@ -4812,8 +4812,8 @@ Hasil: %3
     </message>
     <message>
         <location filename="../src/ui/TextEditDialog.cpp" line="68"/>
-        <source>Page %1 — %2</source>
-        <translation>Halaman %1 — %2</translation>
+        <source>Page %1: %2</source>
+        <translation>Halaman %1: %2</translation>
     </message>
     <message>
         <location filename="../src/ui/TextEditDialog.cpp" line="78"/>

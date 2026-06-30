@@ -232,11 +232,11 @@ bool PdfA::validate(const QString& inputPath, PreflightReport* report, QString* 
                           ? QStringLiteral("veraPDF produced no readable verdict.")
                           : out.trimmed();
     } else if (rep.pass) {
-        rep.summary = QStringLiteral("Valid PDF/A-1b — the file conforms.");
+        rep.summary = QStringLiteral("Valid PDF/A-1b: the file conforms.");
     } else {
         rep.summary = rep.violations.isEmpty()
                           ? QStringLiteral("Not valid PDF/A-1b.")
-                          : QStringLiteral("Not valid PDF/A-1b — %n issue(s) found.").replace(
+                          : QStringLiteral("Not valid PDF/A-1b: %n issue(s) found.").replace(
                                 QStringLiteral("%n"), QString::number(rep.violations.size()));
     }
 

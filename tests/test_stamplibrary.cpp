@@ -62,10 +62,10 @@ private slots:
                  QStringLiteral("APPROVED"));
         QCOMPARE(StampLibrary::caption(StampLibrary::Preset::Confidential,
                                        QStringLiteral("2026-06-27"), QStringLiteral("Vinvan")),
-                 QStringLiteral("CONFIDENTIAL — 2026-06-27 — Vinvan"));
+                 QStringLiteral("CONFIDENTIAL - 2026-06-27 - Vinvan"));
         QCOMPARE(StampLibrary::caption(StampLibrary::Preset::ForReview, QString(),
                                        QStringLiteral("Vinvan")),
-                 QStringLiteral("FOR REVIEW — Vinvan"));
+                 QStringLiteral("FOR REVIEW - Vinvan"));
     }
 
     void placeAndReadBack() {
@@ -73,7 +73,7 @@ private slots:
         const QRectF rect(0.30, 0.20, 0.40, 0.10); // top-left, displayed fractions
         const QString date = QStringLiteral("2026-06-27");
         const QString name = QStringLiteral("Vinvan");
-        const QString expected = QStringLiteral("CONFIDENTIAL — 2026-06-27 — Vinvan");
+        const QString expected = QStringLiteral("CONFIDENTIAL - 2026-06-27 - Vinvan");
 
         QString err;
         QVERIFY2(StampLibrary::addStamp(m_base, out, 0, rect, StampLibrary::Preset::Confidential,

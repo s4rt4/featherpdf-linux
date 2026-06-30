@@ -83,7 +83,7 @@ FindRedactDialog::FindRedactDialog(QWidget* parent) : QDialog(parent) {
     root->addSpacing(6);
     root->addWidget(new QLabel(tr("Custom (regular expression):"), this));
     m_custom = new QLineEdit(this);
-    m_custom->setPlaceholderText(tr("optional — e.g. \\bSECRET-\\d+\\b"));
+    m_custom->setPlaceholderText(tr("optional, e.g. \\bSECRET-\\d+\\b"));
     root->addWidget(m_custom);
 
     root->addStretch(1);

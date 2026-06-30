@@ -149,9 +149,9 @@ const char* presetLabel(StampLibrary::Preset preset) {
 QString StampLibrary::caption(Preset preset, const QString& date, const QString& name) {
     QString c = QString::fromLatin1(presetLabel(preset));
     if (!date.trimmed().isEmpty())
-        c += QStringLiteral(" — ") + date.trimmed();
+        c += QStringLiteral(" - ") + date.trimmed();
     if (!name.trimmed().isEmpty())
-        c += QStringLiteral(" — ") + name.trimmed();
+        c += QStringLiteral(" - ") + name.trimmed();
     return c;
 }
 

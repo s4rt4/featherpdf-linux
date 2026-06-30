@@ -60,7 +60,7 @@ QList<Group> buildDocs() {
     start.topics.append(
         {"overview", "Overview", "Ringkasan",
          sect("en",
-              "<p>Feather PDF is a native, full-featured PDF tool for Linux — light on the system, "
+              "<p>Feather PDF is a native, full-featured PDF tool for Linux, light on the system, "
               "powered by mature libraries (PDFium, Poppler, QPDF, Tesseract, LibreOffice).</p>",
               "<p>One app to read, organize, secure, annotate, fill, sign, recognize, and create "
               "PDFs without a web engine.</p>",

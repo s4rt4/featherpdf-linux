@@ -340,7 +340,7 @@ void BatchDialog::run() {
         if (BatchRunner::runFile(input, output, m_stepData, &error)) {
             ++ok;
         } else {
-            failures.append(QStringLiteral("%1 — %2").arg(info.fileName(), error));
+            failures.append(QStringLiteral("%1: %2").arg(info.fileName(), error));
         }
         m_progress->setValue(i + 1);
         QApplication::processEvents();
@@ -350,10 +350,10 @@ void BatchDialog::run() {
     updateRunState();
 
     if (failures.isEmpty()) {
-        m_status->setText(tr("Done — processed %n file(s) into %1.", "", ok)
+        m_status->setText(tr("Done, processed %n file(s) into %1.", "", ok)
                               .arg(QDir::toNativeSeparators(m_outputFolder)));
     } else {
-        m_status->setText(tr("Done — %1 succeeded, %n failed:\n%2", "", failures.size())
+        m_status->setText(tr("Done, %1 succeeded, %n failed:\n%2", "", failures.size())
                               .arg(ok)
                               .arg(failures.join(QStringLiteral("\n"))));
     }

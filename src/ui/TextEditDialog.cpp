@@ -52,7 +52,7 @@ TextEditDialog::TextEditDialog(const QList<TextEditor::TextBox>& boxes, QWidget*
     root->setSpacing(8);
 
     auto* hint = new QLabel(tr("Edit the text boxes you've added. Pick one, change its words, "
-                               "and Save — or Delete it."),
+                               "and Save, or Delete it."),
                             this);
     hint->setObjectName(QStringLiteral("Hint"));
     hint->setWordWrap(true);
@@ -65,7 +65,7 @@ TextEditDialog::TextEditDialog(const QList<TextEditor::TextBox>& boxes, QWidget*
             snippet = snippet.left(45) + QStringLiteral("…");
         if (snippet.isEmpty())
             snippet = tr("(empty)");
-        m_list->addItem(tr("Page %1 — %2").arg(b.page + 1).arg(snippet));
+        m_list->addItem(tr("Page %1: %2").arg(b.page + 1).arg(snippet));
     }
     m_list->setMinimumHeight(120);
     root->addWidget(m_list, 1);

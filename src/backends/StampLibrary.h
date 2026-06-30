@@ -29,8 +29,8 @@ public:
     enum class Preset { Approved, Draft, Confidential, ForReview };
 
     // The caption for a preset plus optional add-ons. `date` and `name` are
-    // appended (when non-empty) after an em-dash, e.g. "APPROVED — 2026-06-27"
-    // or "CONFIDENTIAL — Vinvan".
+    // appended (when non-empty) after a dash, e.g. "APPROVED - 2026-06-27"
+    // or "CONFIDENTIAL - Vinvan".
     static QString caption(Preset preset, const QString& date, const QString& name);
 
     // The accent colour for a preset (green/amber/red/blue).

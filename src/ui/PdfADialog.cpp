@@ -70,7 +70,7 @@ PdfADialog::PdfADialog(const QString& inputPath, QWidget* parent)
     m_status->setObjectName(QStringLiteral("Status"));
     m_status->setWordWrap(true);
     if (!PdfA::hasValidator())
-        m_status->setText(tr("veraPDF isn't installed — tagging works, preflight won't."));
+        m_status->setText(tr("veraPDF isn't installed, tagging works, preflight won't."));
     root->addWidget(m_status);
 
     m_report = new QPlainTextEdit(this);
@@ -153,7 +153,7 @@ void PdfADialog::doValidate() {
         return;
     }
 
-    m_status->setText(rep.pass ? tr("PASS — valid PDF/A-1b") : tr("FAIL — not valid PDF/A-1b"));
+    m_status->setText(rep.pass ? tr("PASS: valid PDF/A-1b") : tr("FAIL: not valid PDF/A-1b"));
     QString body = tr("Checked: %1\nProfile: %2\nResult: %3\n")
                        .arg(QFileInfo(m_lastOutput).fileName(), rep.profile,
                             rep.pass ? tr("PASS") : tr("FAIL"));

@@ -80,7 +80,7 @@ ExportImageDialog::ExportImageDialog(int pageCount, int current, QWidget* parent
     form->addRow(tr("Resolution:"), m_dpi);
 
     m_pages = new QLineEdit(this);
-    m_pages->setPlaceholderText(tr("all pages — or e.g. 1-3, 5, 8-10"));
+    m_pages->setPlaceholderText(tr("all pages, or e.g. 1-3, 5, 8-10"));
     form->addRow(tr("Pages:"), m_pages);
 
     root->addLayout(form);
@@ -97,7 +97,7 @@ ExportImageDialog::ExportImageDialog(int pageCount, int current, QWidget* parent
 
     if (current >= 1 && current <= m_pageCount)
         m_pages->setPlaceholderText(
-            tr("all pages — current is %1").arg(current));
+            tr("all pages, current is %1").arg(current));
 
     resize(420, 0);
 }

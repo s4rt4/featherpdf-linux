@@ -93,7 +93,7 @@ FormPanel::FormPanel(QWidget* parent) : QWidget(parent) {
         return b;
     };
     m_add = makeBtn(tr("Add a field"));
-    m_prepare = makeBtn(tr("Prepare Form — detect fillable areas"));
+    m_prepare = makeBtn(tr("Prepare Form: detect fillable areas"));
     m_save = makeBtn(tr("Save the form"));
     auto* footer = new QHBoxLayout;
     footer->setContentsMargins(12, 8, 12, 12);

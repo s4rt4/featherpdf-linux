@@ -232,7 +232,7 @@
     </message>
     <message numerus="yes">
         <location filename="../src/ui/BatchDialog.cpp" line="353"/>
-        <source>Done — processed %n file(s) into %1.</source>
+        <source>Done, processed %n file(s) into %1.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
             <numerusform></numerusform>
@@ -240,7 +240,7 @@
     </message>
     <message numerus="yes">
         <location filename="../src/ui/BatchDialog.cpp" line="356"/>
-        <source>Done — %1 succeeded, %n failed:
+        <source>Done, %1 succeeded, %n failed:
 %2</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -434,7 +434,7 @@
     </message>
     <message>
         <location filename="../src/ui/CompareReportDialog.cpp" line="68"/>
-        <source> — %1 added, %2 removed</source>
+        <source>: %1 added, %2 removed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -462,7 +462,7 @@
     </message>
     <message>
         <location filename="../src/ui/CropDialog.cpp" line="63"/>
-        <source>Trim the margins off your pages. The content stays — only the visible crop changes.</source>
+        <source>Trim the margins off your pages. The content stays, only the visible crop changes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -599,7 +599,7 @@
     </message>
     <message>
         <location filename="../src/ui/ExportImageDialog.cpp" line="83"/>
-        <source>all pages — or e.g. 1-3, 5, 8-10</source>
+        <source>all pages, or e.g. 1-3, 5, 8-10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -614,7 +614,7 @@
     </message>
     <message>
         <location filename="../src/ui/ExportImageDialog.cpp" line="100"/>
-        <source>all pages — current is %1</source>
+        <source>all pages, current is %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -718,7 +718,7 @@
     </message>
     <message>
         <location filename="../src/ui/FindRedactDialog.cpp" line="86"/>
-        <source>optional — e.g. \bSECRET-\d+\b</source>
+        <source>optional, e.g. \bSECRET-\d+\b</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -938,7 +938,7 @@
     </message>
     <message>
         <location filename="../src/ui/FormPanel.cpp" line="96"/>
-        <source>Prepare Form — detect fillable areas</source>
+        <source>Prepare Form: detect fillable areas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1951,7 +1951,7 @@
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="1329"/>
-        <source>No editable text boxes yet — add one with the Text tool.</source>
+        <source>No editable text boxes yet, add one with the Text tool.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2082,7 +2082,7 @@
     </message>
     <message numerus="yes">
         <location filename="../src/app/MainWindow.cpp" line="1829"/>
-        <source>Found %n match(es) — review the marks, then Apply.</source>
+        <source>Found %n match(es): review the marks, then Apply.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
             <numerusform></numerusform>
@@ -2105,12 +2105,12 @@
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="1864"/>
-        <source>Nothing hidden to remove — saved a clean copy.</source>
+        <source>Nothing hidden to remove: saved a clean copy.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <location filename="../src/app/MainWindow.cpp" line="1866"/>
-        <source>Removed %n hidden item(s) — saved %1</source>
+        <source>Removed %n hidden item(s): saved %1</source>
         <translation type="unfinished">
             <numerusform></numerusform>
             <numerusform></numerusform>
@@ -2158,7 +2158,7 @@
     </message>
     <message numerus="yes">
         <location filename="../src/app/MainWindow.cpp" line="1961"/>
-        <source>Updated %n link(s) — saved %1</source>
+        <source>Updated %n link(s): saved %1</source>
         <translation type="unfinished">
             <numerusform></numerusform>
             <numerusform></numerusform>
@@ -2274,7 +2274,7 @@
     </message>
     <message>
         <location filename="../src/app/MainWindow.cpp" line="2257"/>
-        <source>Exported %1 — check the layout; conversion is approximate</source>
+        <source>Exported %1: check the layout; conversion is approximate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3293,7 +3293,7 @@
     </message>
     <message>
         <location filename="../src/ui/PdfADialog.cpp" line="73"/>
-        <source>veraPDF isn&apos;t installed — tagging works, preflight won&apos;t.</source>
+        <source>veraPDF isn&apos;t installed, tagging works, preflight won&apos;t.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3362,12 +3362,12 @@ Install it and put &apos;verapdf&apos; on your PATH, then try again.</source>
     </message>
     <message>
         <location filename="../src/ui/PdfADialog.cpp" line="156"/>
-        <source>PASS — valid PDF/A-1b</source>
+        <source>PASS: valid PDF/A-1b</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/PdfADialog.cpp" line="156"/>
-        <source>FAIL — not valid PDF/A-1b</source>
+        <source>FAIL: not valid PDF/A-1b</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4808,7 +4808,7 @@ Result: %3
     </message>
     <message>
         <location filename="../src/ui/TextEditDialog.cpp" line="54"/>
-        <source>Edit the text boxes you&apos;ve added. Pick one, change its words, and Save — or Delete it.</source>
+        <source>Edit the text boxes you&apos;ve added. Pick one, change its words, and Save, or Delete it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4818,7 +4818,7 @@ Result: %3
     </message>
     <message>
         <location filename="../src/ui/TextEditDialog.cpp" line="68"/>
-        <source>Page %1 — %2</source>
+        <source>Page %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

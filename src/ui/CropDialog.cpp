@@ -60,7 +60,7 @@ CropDialog::CropDialog(int pageCount, QWidget* parent)
     root->setSpacing(8);
 
     auto* hint = new QLabel(
-        tr("Trim the margins off your pages. The content stays — only the visible crop changes."),
+        tr("Trim the margins off your pages. The content stays, only the visible crop changes."),
         this);
     hint->setObjectName(QStringLiteral("Hint"));
     hint->setWordWrap(true);

@@ -1326,7 +1326,7 @@ void MainWindow::editTextBoxes() {
         return;
     const QList<TextEditor::TextBox> boxes = TextEditor::read(m_doc->filePath());
     if (boxes.isEmpty()) {
-        m_toast->show(tr("No editable text boxes yet — add one with the Text tool."));
+        m_toast->show(tr("No editable text boxes yet, add one with the Text tool."));
         return;
     }
 
@@ -1826,7 +1826,7 @@ void MainWindow::findAndRedact() {
 
     setRedactionMode(true);
     m_viewport->addRedactions(bySlot);
-    m_toast->show(tr("Found %n match(es) — review the marks, then Apply.", "", total));
+    m_toast->show(tr("Found %n match(es): review the marks, then Apply.", "", total));
 }
 
 void MainWindow::sanitizeDocument() {
@@ -1861,9 +1861,9 @@ void MainWindow::sanitizeDocument() {
         return;
     }
     if (report.total() == 0)
-        m_toast->show(tr("Nothing hidden to remove — saved a clean copy."));
+        m_toast->show(tr("Nothing hidden to remove: saved a clean copy."));
     else
-        m_toast->show(tr("Removed %n hidden item(s) — saved %1", "", report.total())
+        m_toast->show(tr("Removed %n hidden item(s): saved %1", "", report.total())
                           .arg(QFileInfo(out).fileName()));
     openPath(out);
 }
@@ -1958,7 +1958,7 @@ void MainWindow::editLinks() {
         QMessageBox::warning(this, tr("Couldn't update links"), error);
         return;
     }
-    m_toast->show(tr("Updated %n link(s) — saved %1", "", int(edits.size()))
+    m_toast->show(tr("Updated %n link(s): saved %1", "", int(edits.size()))
                       .arg(QFileInfo(out).fileName()));
     openPath(out);
 }
@@ -2254,7 +2254,7 @@ void MainWindow::exportDocument() {
         // Word/ODT come from LibreOffice's PDF import, which approximates layout
         // and can repeat text - say so once so the result isn't a surprise.
         m_toast->show(isText ? tr("Exported %1").arg(QFileInfo(out).fileName())
-                             : tr("Exported %1 — check the layout; conversion is approximate")
+                             : tr("Exported %1: check the layout; conversion is approximate")
                                    .arg(QFileInfo(out).fileName()));
     });
     watcher->setFuture(QtConcurrent::run([input, out] {
