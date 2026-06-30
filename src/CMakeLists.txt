@@ -26,6 +26,8 @@ qt_add_executable(feather-pdf
     backends/TextEditor.h
     backends/Signer.cpp
     backends/Signer.h
+    backends/LtvSigner.cpp
+    backends/LtvSigner.h
     backends/Converter.cpp
     backends/Converter.h
     backends/Ocr.cpp

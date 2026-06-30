@@ -8,6 +8,7 @@
 // the NSS tooling isn't present (or Poppler can't see the cert) those checks
 // skip rather than fail, so the suite stays green on minimal build hosts.
 
+#include "backends/LtvSigner.h"
 #include "backends/Signer.h"
 
 #include <QImage>
@@ -20,6 +21,12 @@
 #include <QtTest>
 
 #include <poppler-form.h>
+
+#include <memory>
+
+#include <qpdf/Buffer.hh>
+#include <qpdf/QPDF.hh>
+#include <qpdf/QPDFObjectHandle.hh>
 
 namespace {
 bool run(const QString& prog, const QStringList& args, int ms = 30000) {
@@ -178,6 +185,63 @@ private slots:
         QVERIFY2(Signer::removeSecurityDevice(QStringLiteral("FeatherTestToken"), &err),
                  qPrintable(err));
         QVERIFY(!Signer::securityDevices().contains(QStringLiteral("FeatherTestToken")));
+    }
+
+    // Long-term validation: adding a DSS to a signed document embeds the signer's
+    // certificate chain, keeps the original signature intact (the incremental
+    // update never touches the signed byte range), and records a VRI entry keyed by
+    // the signature. Runs fully offline — a self-signed cert has no OCSP/CRL, so the
+    // DSS holds just the certificate(s), which is still valid LTV material.
+    void ltvAddsDssAndPreservesSignature() {
+        if (!m_haveCert)
+            QSKIP("NSS signing certificate unavailable in this environment");
+
+        const QString signed_ = m_dir.path() + QStringLiteral("/ltv-in.pdf");
+        QString error;
+        QVERIFY2(Signer::sign(m_pdf, signed_, QStringLiteral("Feather Test Signer"), QString(),
+                              QStringLiteral("Approved"), QStringLiteral("Jakarta"), 0,
+                              QRectF(48, 40, 220, 60), QString(), &error),
+                 qPrintable(error));
+        QVERIFY(Signer::verify(signed_).size() == 1 && Signer::verify(signed_).first().valid);
+
+        const QString out = m_dir.path() + QStringLiteral("/ltv-out.pdf");
+        LtvSigner::Result res;
+        QVERIFY2(LtvSigner::addValidationInfo(signed_, out, &error, &res), qPrintable(error));
+        QVERIFY(QFileInfo::exists(out));
+
+        // The store carried at least the signer's own certificate.
+        QCOMPARE(res.signatures, 1);
+        QVERIFY(res.certs >= 1);
+
+        // The original signature still validates: the byte range wasn't disturbed.
+        const QList<Signer::SignatureInfo> sigs = Signer::verify(out);
+        QCOMPARE(sigs.size(), 1);
+        QVERIFY2(sigs.first().valid, qPrintable(sigs.first().status));
+
+        // The catalog now references a /DSS with a non-empty /Certs and a /VRI.
+        QPDF pdf;
+        pdf.processFile(out.toLocal8Bit().constData());
+        QPDFObjectHandle dss = pdf.getRoot().getKey("/DSS");
+        QVERIFY(dss.isDictionary());
+        QPDFObjectHandle certs = dss.getKey("/Certs");
+        QVERIFY(certs.isArray());
+        QVERIFY(certs.getArrayNItems() >= 1);
+        QVERIFY(dss.getKey("/VRI").isDictionary());
+
+        // The embedded cert really is a certificate stream (DER starts with a SEQUENCE).
+        QPDFObjectHandle cert0 = certs.getArrayItem(0);
+        std::shared_ptr<Buffer> buf = cert0.getStreamData();
+        QVERIFY(buf && buf->getSize() > 0);
+        QCOMPARE(static_cast<unsigned char>(buf->getBuffer()[0]), static_cast<unsigned char>(0x30));
+    }
+
+    // LTV refuses a document that has no signatures, with a clear message.
+    void ltvRejectsUnsignedDocument() {
+        const QString out = m_dir.path() + QStringLiteral("/ltv-unsigned.pdf");
+        QString error;
+        QVERIFY(!LtvSigner::addValidationInfo(m_pdf, out, &error));
+        QVERIFY(!error.isEmpty());
+        QVERIFY(!QFileInfo::exists(out));
     }
 
     // A missing module path is rejected before touching NSS.

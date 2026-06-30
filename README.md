@@ -61,8 +61,10 @@ page region to the clipboard or a PNG; a **stamp library** (Approved / Draft /
 Confidential / For Review, with date and name).
 
 **Signing** — sign with a **text or graphical (image) appearance**, verify
-existing signatures (PAdES/NSS), and attach an optional **RFC 3161 trusted
-timestamp**.
+existing signatures (PAdES/NSS), attach an optional **RFC 3161 trusted
+timestamp**, and add **long-term validation (LTV)** — embed each signature's
+certificate chain (plus OCSP/CRL when available) in a **/DSS** so signatures
+keep validating after the certificate expires.
 
 **More** — **scan straight to PDF** from any SANE device (with optional OCR in
 the same pass); OCR (Tesseract) and image→PDF, with optional **deskew /

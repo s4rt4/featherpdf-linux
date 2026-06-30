@@ -20,10 +20,20 @@
 
 #include "backends/Signer.h"
 
-// Shows the signatures present in a document and their validity.
+// Shows the signatures present in a document and their validity. When `offerLtv`
+// is set and the document has signatures, it also offers to embed long-term
+// validation data; the caller checks ltvRequested() after exec() to act on it.
 class SignaturesDialog : public QDialog {
     Q_OBJECT
 
 public:
-    SignaturesDialog(const QList<Signer::SignatureInfo>& signatures, QWidget* parent = nullptr);
+    SignaturesDialog(const QList<Signer::SignatureInfo>& signatures, QWidget* parent = nullptr,
+                     bool offerLtv = false);
+
+    // True if the user asked to add long-term validation (the dialog was accepted
+    // via the "Add long-term validation" button).
+    bool ltvRequested() const { return m_ltvRequested; }
+
+private:
+    bool m_ltvRequested = false;
 };

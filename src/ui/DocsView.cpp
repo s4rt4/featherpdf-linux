@@ -991,7 +991,8 @@ QList<Group> buildDocs() {
               "exist the app says so - import a PKCS#12 certificate first. Timestamping needs "
               "<code>openssl</code> and <code>curl</code> and a reachable TSA; if it can't reach one "
               "the signature is still saved and you're told the timestamp failed. The <code>.tsr</code> "
-              "is a standalone token, not embedded in the PDF (LTV/PAdES-LTA isn't supported yet).</p>"),
+              "is a standalone token; to embed validation data in the PDF itself, use "
+              "<b>Long-Term Validation</b> (next topic).</p>"),
          sect("id", "<p>Tanda tangani dokumen - dengan tampilan teks atau gambar tanda tangan "
               "tangan - verifikasi tanda tangan yang ada, dan opsional tambahkan stempel waktu "
               "tepercaya.</p>",
@@ -1012,8 +1013,48 @@ QList<Group> buildDocs() {
               "ada, aplikasi memberi tahu - impor sertifikat PKCS#12 dulu. Stempel waktu butuh "
               "<code>openssl</code> dan <code>curl</code> serta TSA yang terjangkau; bila tak "
               "terjangkau, tanda tangan tetap tersimpan dan kamu diberi tahu stempel waktu gagal. "
-              "<code>.tsr</code> adalah token mandiri, tidak tersemat di PDF (LTV/PAdES-LTA belum "
-              "didukung).</p>")});
+              "<code>.tsr</code> adalah token mandiri; untuk menyematkan data validasi di dalam PDF, "
+              "pakai <b>Long-Term Validation</b> (topik berikutnya).</p>")});
+    review.topics.append(
+        {"ltv", "Long-term validation (LTV)", "Validasi jangka panjang (LTV)",
+         sect("en",
+              "<p>Embed the proof a signature needs so it keeps validating after the signing "
+              "certificate expires.</p>",
+              "<p>A signature is only trustworthy while its certificate is valid. LTV stores that "
+              "proof inside the document, so years later a verifier doesn't need to reach back out to "
+              "the certificate authority.</p>",
+              "<p>Feather builds a Document Security Store (PDF <code>/DSS</code>) holding each "
+              "signature's certificate chain, plus OCSP/CRL revocation responses when the "
+              "certificates advertise them and the network is reachable. It's written as an "
+              "<i>incremental update</i> appended to the file, so the existing signatures stay byte-"
+              "for-byte intact and keep validating. <code>openssl</code> reads the certificates; "
+              "<code>curl</code> fetches revocation data.</p>",
+              "<ul><li><b>Document ▸ Long-Term Validation</b> (or the <b>Add long-term validation</b> "
+              "button in <b>Document ▸ Signatures</b>): choose where to save the enhanced copy.</li>"
+              "<li>Command line: <code>feather-pdf ltv signed.pdf out.pdf</code>.</li></ul>",
+              "<p>The document must already be signed. Revocation data needs the certificates to "
+              "publish OCSP/CRL endpoints and a working network; without it the store still embeds "
+              "the certificate chain, which is valid LTV material. A self-signed certificate has no "
+              "revocation data to fetch.</p>"),
+         sect("id",
+              "<p>Sematkan bukti yang dibutuhkan tanda tangan agar tetap sah setelah sertifikat "
+              "penandatangan kedaluwarsa.</p>",
+              "<p>Tanda tangan hanya tepercaya selama sertifikatnya berlaku. LTV menyimpan bukti itu "
+              "di dalam dokumen, sehingga bertahun kemudian pemverifikasi tak perlu menghubungi "
+              "otoritas sertifikat lagi.</p>",
+              "<p>Feather membangun Document Security Store (<code>/DSS</code> PDF) berisi rantai "
+              "sertifikat tiap tanda tangan, ditambah respons pencabutan OCSP/CRL bila sertifikat "
+              "mengiklankannya dan jaringan terjangkau. Ditulis sebagai <i>incremental update</i> "
+              "yang ditambahkan ke berkas, jadi tanda tangan yang ada tetap utuh bita demi bita dan "
+              "tetap sah. <code>openssl</code> membaca sertifikat; <code>curl</code> mengambil data "
+              "pencabutan.</p>",
+              "<ul><li><b>Document ▸ Long-Term Validation</b> (atau tombol <b>Add long-term "
+              "validation</b> di <b>Document ▸ Signatures</b>): pilih lokasi menyimpan salinan.</li>"
+              "<li>Baris perintah: <code>feather-pdf ltv signed.pdf out.pdf</code>.</li></ul>",
+              "<p>Dokumen harus sudah ditandatangani. Data pencabutan butuh sertifikat yang "
+              "menerbitkan endpoint OCSP/CRL dan jaringan yang berfungsi; tanpa itu store tetap "
+              "menyematkan rantai sertifikat, yang sudah merupakan materi LTV sah. Sertifikat "
+              "swatanda tak punya data pencabutan untuk diambil.</p>")});
     review.topics.append(
         {"ocr", "Recognize text (OCR)", "Pengenalan teks (OCR)",
          sect("en", "<p>Make a scanned PDF searchable and selectable, with optional image clean-up "

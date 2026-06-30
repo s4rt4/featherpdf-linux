@@ -19,6 +19,7 @@
 #include "backends/BatchRunner.h"
 #include "backends/Converter.h"
 #include "backends/ImageExporter.h"
+#include "backends/LtvSigner.h"
 #include "backends/Ocr.h"
 #include "backends/Optimizer.h"
 #include "backends/PdfEditor.h"
@@ -467,6 +468,31 @@ int cmdSanitize(const QStringList& a) {
     return 0;
 }
 
+int cmdLtv(const QStringList& a) {
+    QCommandLineParser p;
+    p.setApplicationDescription(QStringLiteral(
+        "Add long-term validation to a signed PDF: a Document Security Store holding "
+        "each signature's certificate chain, plus OCSP/CRL responses when the "
+        "certificates advertise them and the network is reachable. The existing "
+        "signatures are left intact."));
+    p.addPositionalArgument(QStringLiteral("input"), QStringLiteral("Signed source PDF."));
+    p.addPositionalArgument(QStringLiteral("output"), QStringLiteral("Destination PDF."));
+    int rc = 0;
+    if (!parseCommand(p, a, &rc))
+        return rc;
+    const QStringList pos = p.positionalArguments();
+    if (pos.size() != 2)
+        return usage(QStringLiteral("ltv needs a signed input and an output PDF"));
+    LtvSigner::Result res;
+    QString why;
+    if (!LtvSigner::addValidationInfo(pos[0], pos[1], &why, &res))
+        return fail(why);
+    out() << "Added long-term validation to " << pos[1] << ": " << res.certs
+          << " certificate(s), " << res.ocsps << " OCSP, " << res.crls << " CRL across "
+          << res.signatures << " signature(s)" << Qt::endl;
+    return 0;
+}
+
 int cmdOcr(const QStringList& a) {
     QCommandLineParser p;
     p.setApplicationDescription(QStringLiteral("Add a searchable text layer to a scanned PDF."));
@@ -818,6 +844,7 @@ const Command kCommands[] = {
     {"watermark", cmdWatermark, "Stamp a text watermark"},
     {"bates", cmdBates, "Stamp sequential Bates numbers"},
     {"sanitize", cmdSanitize, "Strip metadata, attachments, and scripts"},
+    {"ltv", cmdLtv, "Add long-term validation to a signed PDF"},
     {"ocr", cmdOcr, "Add a searchable text layer (OCR)"},
     {"images", cmdImages, "Render pages to image files"},
     {"thumbnail", cmdThumbnail, "Render page one to a PNG thumbnail"},

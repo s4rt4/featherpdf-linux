@@ -24,6 +24,7 @@
 #include "backends/ImageExporter.h"
 #include "backends/SnapshotExporter.h"
 #include "backends/LinkEditor.h"
+#include "backends/LtvSigner.h"
 #include "backends/Optimizer.h"
 #include "backends/PatternRedactor.h"
 #include "backends/Sanitizer.h"
@@ -417,7 +418,10 @@ void MainWindow::buildMenus() {
           {"cmyk", tr("RGB to CMYK…")},
           {"flatten", tr("Flatten…")},
           {"pdfa", tr("PDF/A && Preflight…")}}},
-        {tr("&Security"), {{"protect", tr("Protect…")}, {"sign", tr("Sign…")}}},
+        {tr("&Security"),
+         {{"protect", tr("Protect…")},
+          {"sign", tr("Sign…")},
+          {"ltv", tr("Long-Term Validation…")}}},
     };
     for (const ToolGroup& g : toolGroups) {
         QMenu* sub = tools->addMenu(g.title);
@@ -2054,6 +2058,8 @@ void MainWindow::activateTool(const QString& id) {
             setMeasureMode(!m_viewport->measureMode());
     } else if (id == QLatin1String("sign")) {
         signDocument();
+    } else if (id == QLatin1String("ltv")) {
+        addLongTermValidation();
     } else if (id == QLatin1String("stamp")) {
         addStamp();
     } else if (id == QLatin1String("edit")) {
@@ -2819,14 +2825,65 @@ void MainWindow::signDocument() {
         m_toast->show(tr("Signed and saved to %1").arg(QFileInfo(out).fileName()));
     }
     openPath(out);
-    // Show the verification result for the freshly signed copy.
-    SignaturesDialog(Signer::verify(out), this).exec();
+    // Show the verification result for the freshly signed copy, offering to lock in
+    // long-term validation data while we're here.
+    SignaturesDialog sigs(Signer::verify(out), this, /*offerLtv=*/true);
+    sigs.exec();
+    if (sigs.ltvRequested())
+        addLongTermValidation();
 }
 
 void MainWindow::viewSignatures() {
     if (!hasActiveDoc())
         return;
-    SignaturesDialog(Signer::verify(m_doc->filePath()), this).exec();
+    SignaturesDialog dialog(Signer::verify(m_doc->filePath()), this, /*offerLtv=*/true);
+    dialog.exec();
+    if (dialog.ltvRequested())
+        addLongTermValidation();
+}
+
+void MainWindow::addLongTermValidation() {
+    if (!hasActiveDoc())
+        return;
+
+    // Nothing to enhance unless the document is actually signed.
+    if (Signer::verify(m_doc->filePath()).isEmpty()) {
+        QMessageBox::information(
+            this, tr("Long-Term Validation"),
+            tr("This document isn't signed yet. Sign it first, then add long-term validation so "
+               "the signature keeps validating after the certificate expires."));
+        return;
+    }
+
+    const QFileInfo info(m_doc->filePath());
+    const QString suggested =
+        info.dir().filePath(info.completeBaseName() + QStringLiteral("-ltv.pdf"));
+    const QString out = QFileDialog::getSaveFileName(this, tr("Save with long-term validation"),
+                                                     suggested, tr("PDF documents (*.pdf)"));
+    if (out.isEmpty())
+        return;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString error;
+    LtvSigner::Result res;
+    const bool ok = LtvSigner::addValidationInfo(m_doc->filePath(), out, &error, &res);
+    QApplication::restoreOverrideCursor();
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Couldn't add long-term validation"), error);
+        return;
+    }
+
+    // Report what got embedded; revocation data is only present when the
+    // certificates advertise it and the network is reachable.
+    QStringList parts;
+    parts << tr("%n certificate(s)", nullptr, res.certs);
+    if (res.ocsps > 0)
+        parts << tr("%n OCSP response(s)", nullptr, res.ocsps);
+    if (res.crls > 0)
+        parts << tr("%n CRL(s)", nullptr, res.crls);
+    m_toast->show(tr("Long-term validation added (%1)").arg(parts.join(QStringLiteral(", "))));
+    openPath(out);
 }
 
 void MainWindow::recognizeText() {

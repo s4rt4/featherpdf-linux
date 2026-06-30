@@ -24,7 +24,8 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-SignaturesDialog::SignaturesDialog(const QList<Signer::SignatureInfo>& signatures, QWidget* parent)
+SignaturesDialog::SignaturesDialog(const QList<Signer::SignatureInfo>& signatures, QWidget* parent,
+                                   bool offerLtv)
     : QDialog(parent) {
     setWindowTitle(tr("Signatures"));
 
@@ -88,6 +89,18 @@ SignaturesDialog::SignaturesDialog(const QList<Signer::SignatureInfo>& signature
     root->addStretch(1);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    // Long-term validation only makes sense for a document that has signatures.
+    if (offerLtv && !signatures.isEmpty()) {
+        auto* ltv = buttons->addButton(tr("Add long-term validation"),
+                                       QDialogButtonBox::ActionRole);
+        ltv->setObjectName(QStringLiteral("Share"));
+        ltv->setToolTip(tr("Embed the certificate chain (and revocation data when available) so "
+                           "the signature keeps validating after the certificate expires."));
+        connect(ltv, &QPushButton::clicked, this, [this] {
+            m_ltvRequested = true;
+            accept();
+        });
+    }
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     root->addWidget(buttons);

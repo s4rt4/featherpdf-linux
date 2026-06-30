@@ -357,6 +357,8 @@ qt_add_executable(test_signer
     test_signer.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Signer.cpp
     ${CMAKE_SOURCE_DIR}/src/backends/Signer.h
+    ${CMAKE_SOURCE_DIR}/src/backends/LtvSigner.cpp
+    ${CMAKE_SOURCE_DIR}/src/backends/LtvSigner.h
 )
 target_include_directories(test_signer PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(test_signer PRIVATE
@@ -364,6 +366,7 @@ target_link_libraries(test_signer PRIVATE
     Qt6::Gui
     Qt6::Test
     PkgConfig::POPPLER_QT6
+    PkgConfig::QPDF
 )
 add_test(NAME signer COMMAND test_signer)
 set_tests_properties(signer PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
