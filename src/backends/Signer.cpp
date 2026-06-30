@@ -17,10 +17,12 @@
 #include "backends/Signer.h"
 
 #include <QDateTime>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QObject>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTemporaryDir>
 
@@ -49,7 +51,127 @@ QString statusText(Poppler::SignatureValidationInfo::SignatureStatus s, bool* va
         return QObject::tr("The signature could not be verified.");
     }
 }
+
+// The NSS database the signing stack uses. Empty means the shared user store.
+QString g_nssDir;
+QString currentNssDir() {
+    return g_nssDir.isEmpty() ? QDir::homePath() + QStringLiteral("/.pki/nssdb") : g_nssDir;
+}
+QString nssDbArg() { return QStringLiteral("sql:") + currentNssDir(); }
+
+// Run a tool, capturing stdout. True on a clean exit 0. We answer a possible
+// confirmation prompt with a newline (modutil still asks "press enter to
+// continue" even with -force when p11-kit is enabled) and close stdin, so the
+// tool proceeds instead of hanging on input.
+bool runTool(const QString& prog, const QStringList& args, QString* stdoutText, int ms = 20000) {
+    QProcess p;
+    p.start(prog, args);
+    if (!p.waitForStarted(ms))
+        return false;
+    p.write("\n");
+    p.closeWriteChannel();
+    if (!p.waitForFinished(ms)) {
+        p.kill();
+        p.waitForFinished(2000);
+        return false;
+    }
+    if (stdoutText)
+        *stdoutText = QString::fromUtf8(p.readAllStandardOutput());
+    return p.exitStatus() == QProcess::NormalExit && p.exitCode() == 0;
+}
+
+// Create the NSS database (empty password) if it doesn't exist yet.
+bool ensureNssDb(QString* error) {
+    QDir().mkpath(currentNssDir());
+    if (QFileInfo::exists(currentNssDir() + QStringLiteral("/cert9.db")))
+        return true;
+    const QString certutil = QStandardPaths::findExecutable(QStringLiteral("certutil"));
+    if (certutil.isEmpty()) {
+        if (error)
+            *error = QObject::tr("'certutil' (nss-tools) is needed to set up the certificate store.");
+        return false;
+    }
+    if (!runTool(certutil,
+                 {QStringLiteral("-N"), QStringLiteral("-d"), nssDbArg(),
+                  QStringLiteral("--empty-password")},
+                 nullptr)) {
+        if (error)
+            *error = QObject::tr("Couldn't create the certificate store.");
+        return false;
+    }
+    return true;
+}
 } // namespace
+
+void Signer::useNssDatabase(const QString& dir) {
+    g_nssDir = dir;
+    Poppler::setNSSDir(dir);
+}
+
+bool Signer::hasSecurityDeviceTools() {
+    return !QStandardPaths::findExecutable(QStringLiteral("modutil")).isEmpty();
+}
+
+bool Signer::addSecurityDevice(const QString& name, const QString& modulePath, QString* error) {
+    const auto fail = [&](const QString& m) {
+        if (error)
+            *error = m;
+        return false;
+    };
+    const QString modutil = QStandardPaths::findExecutable(QStringLiteral("modutil"));
+    if (modutil.isEmpty())
+        return fail(QObject::tr("'modutil' (nss-tools) isn't installed."));
+    if (name.trimmed().isEmpty())
+        return fail(QObject::tr("Give the security device a name."));
+    if (!QFileInfo::exists(modulePath))
+        return fail(QObject::tr("The PKCS#11 module '%1' wasn't found.").arg(modulePath));
+    if (!ensureNssDb(error))
+        return false;
+    QString outText;
+    if (!runTool(modutil,
+                 {QStringLiteral("-force"), QStringLiteral("-add"), name, QStringLiteral("-libfile"),
+                  modulePath, QStringLiteral("-dbdir"), nssDbArg()},
+                 &outText))
+        return fail(QObject::tr("Couldn't register the security device. %1").arg(outText.trimmed()));
+    return true;
+}
+
+bool Signer::removeSecurityDevice(const QString& name, QString* error) {
+    const QString modutil = QStandardPaths::findExecutable(QStringLiteral("modutil"));
+    if (modutil.isEmpty()) {
+        if (error)
+            *error = QObject::tr("'modutil' (nss-tools) isn't installed.");
+        return false;
+    }
+    QString outText;
+    if (!runTool(modutil,
+                 {QStringLiteral("-force"), QStringLiteral("-delete"), name, QStringLiteral("-dbdir"),
+                  nssDbArg()},
+                 &outText)) {
+        if (error)
+            *error = QObject::tr("Couldn't remove the security device. %1").arg(outText.trimmed());
+        return false;
+    }
+    return true;
+}
+
+QStringList Signer::securityDevices() {
+    QStringList names;
+    const QString modutil = QStandardPaths::findExecutable(QStringLiteral("modutil"));
+    if (modutil.isEmpty())
+        return names;
+    QString out;
+    if (!runTool(modutil, {QStringLiteral("-list"), QStringLiteral("-dbdir"), nssDbArg()}, &out))
+        return names;
+    // Numbered entries like "  2. MyToken"; skip the built-in internal module.
+    static const QRegularExpression re(QStringLiteral("^\\s*\\d+\\.\\s+(.+?)\\s*$"));
+    for (const QString& line : out.split(QLatin1Char('\n'))) {
+        const QRegularExpressionMatch m = re.match(line);
+        if (m.hasMatch() && !m.captured(1).contains(QStringLiteral("NSS Internal")))
+            names << m.captured(1);
+    }
+    return names;
+}
 
 QStringList Signer::availableCertificates() {
     QStringList names;

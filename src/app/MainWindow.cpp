@@ -86,6 +86,7 @@
 #include "ui/ProtectDialog.h"
 #include "ui/MeasureBar.h"
 #include "ui/RedactionBar.h"
+#include "ui/SecurityDevicesDialog.h"
 #include "ui/SignDialog.h"
 #include "ui/SignaturesDialog.h"
 #include "ui/SplitDialog.h"
@@ -128,6 +129,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QProcess>
+#include <QPushButton>
 #include <QSettings>
 #include <QStackedWidget>
 #include <QDir>
@@ -2745,13 +2747,28 @@ void MainWindow::combineDocuments() {
 void MainWindow::signDocument() {
     if (!hasActiveDoc())
         return;
-    const QStringList certs = Signer::availableCertificates();
+    QStringList certs = Signer::availableCertificates();
     if (certs.isEmpty()) {
-        QMessageBox::information(
-            this, tr("No signing certificate"),
-            tr("No signing certificate was found in your system's certificate store. "
-               "Import a certificate (into the NSS database) to sign documents."));
-        return;
+        // Dead end unless we offer a way in: a hardware token's certificate only
+        // appears after its PKCS#11 module is registered as a security device.
+        QMessageBox box(this);
+        box.setIcon(QMessageBox::Information);
+        box.setWindowTitle(tr("No signing certificate"));
+        box.setText(
+            tr("No signing certificate was found in your certificate store. Import a certificate "
+               "into the NSS database, or register a hardware token (smartcard / YubiKey) as a "
+               "security device."));
+        QAbstractButton* devicesBtn = nullptr;
+        if (Signer::hasSecurityDeviceTools())
+            devicesBtn = box.addButton(tr("Security devices…"), QMessageBox::ActionRole);
+        box.addButton(QMessageBox::Close);
+        box.exec();
+        if (!devicesBtn || box.clickedButton() != devicesBtn)
+            return;
+        SecurityDevicesDialog(this).exec();
+        certs = Signer::availableCertificates();
+        if (certs.isEmpty())
+            return;
     }
 
     SignDialog dialog(certs, this);

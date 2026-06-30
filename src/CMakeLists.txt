@@ -91,6 +91,8 @@ qt_add_executable(feather-pdf
     ui/FormPanel.h
     ui/SignDialog.cpp
     ui/SignDialog.h
+    ui/SecurityDevicesDialog.cpp
+    ui/SecurityDevicesDialog.h
     ui/SignaturesDialog.cpp
     ui/SignaturesDialog.h
     ui/OcrDialog.cpp

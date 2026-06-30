@@ -26,9 +26,28 @@
 // the signatures already in a document.
 class Signer {
 public:
+    // Point the signing stack at an NSS certificate database directory. The app
+    // calls this once at start-up with the shared user store (~/.pki/nssdb) so
+    // certificate listing, signing, and security-device management all agree.
+    static void useNssDatabase(const QString& dir);
+
     // Display names (NSS nicknames) of certificates available for signing. Empty
     // if none are set up in the NSS database.
     static QStringList availableCertificates();
+
+    // ── Hardware tokens (PKCS#11) ───────────────────────────────────────────
+    // True if the NSS tooling (modutil) for managing security devices is present.
+    static bool hasSecurityDeviceTools();
+    // Register a PKCS#11 module (e.g. /usr/lib64/opensc-pkcs11.so for smartcards
+    // and YubiKeys) under `name` in the NSS database, so certificates on an
+    // inserted token show up in availableCertificates(). The token PIN is then
+    // entered as the certificate password when signing. Returns false + *error.
+    static bool addSecurityDevice(const QString& name, const QString& modulePath, QString* error);
+    // Remove a previously registered module by name.
+    static bool removeSecurityDevice(const QString& name, QString* error);
+    // Names of the external security modules currently registered (the NSS
+    // internal module is excluded).
+    static QStringList securityDevices();
 
     // Sign `inputPath` with the named certificate, writing `outputPath`. `rect`
     // is the signature's position on `page` (0-based) in page points (origin

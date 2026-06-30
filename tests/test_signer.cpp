@@ -145,6 +145,53 @@ private slots:
         QVERIFY(!error.isEmpty());
         QVERIFY(!QFileInfo::exists(token));
     }
+
+    // PKCS#11: registering a security module makes it appear in the device list,
+    // and removing it takes it away. Uses a real module that's present on the box
+    // (no physical token needed to register one) against a throwaway NSS DB.
+    void securityDeviceRegisterListRemove() {
+        if (!Signer::hasSecurityDeviceTools())
+            QSKIP("modutil (nss-tools) not available");
+        // p11-kit-trust is the system trust module: it always loads (no reader or
+        // pcscd needed), so it's a reliable stand-in for exercising the register
+        // / list / remove plumbing. A real token uses e.g. opensc-pkcs11.so.
+        QString module;
+        for (const QString& c : {QStringLiteral("/usr/lib64/pkcs11/p11-kit-trust.so"),
+                                 QStringLiteral("/usr/lib/pkcs11/p11-kit-trust.so"),
+                                 QStringLiteral("/usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so")})
+            if (QFileInfo::exists(c)) {
+                module = c;
+                break;
+            }
+        if (module.isEmpty())
+            QSKIP("no loadable PKCS#11 module available to register");
+
+        QTemporaryDir nss;
+        QVERIFY(nss.isValid());
+        Signer::useNssDatabase(nss.path());
+
+        QString err;
+        QVERIFY2(Signer::addSecurityDevice(QStringLiteral("FeatherTestToken"), module, &err),
+                 qPrintable(err));
+        QVERIFY2(Signer::securityDevices().contains(QStringLiteral("FeatherTestToken")),
+                 qPrintable(Signer::securityDevices().join(QStringLiteral(", "))));
+        QVERIFY2(Signer::removeSecurityDevice(QStringLiteral("FeatherTestToken"), &err),
+                 qPrintable(err));
+        QVERIFY(!Signer::securityDevices().contains(QStringLiteral("FeatherTestToken")));
+    }
+
+    // A missing module path is rejected before touching NSS.
+    void addSecurityDeviceRejectsMissingModule() {
+        if (!Signer::hasSecurityDeviceTools())
+            QSKIP("modutil (nss-tools) not available");
+        QTemporaryDir nss;
+        QVERIFY(nss.isValid());
+        Signer::useNssDatabase(nss.path());
+        QString err;
+        QVERIFY(!Signer::addSecurityDevice(QStringLiteral("X"),
+                                           QStringLiteral("/no/such/module.so"), &err));
+        QVERIFY(!err.isEmpty());
+    }
 };
 
 QTEST_MAIN(TestSigner)

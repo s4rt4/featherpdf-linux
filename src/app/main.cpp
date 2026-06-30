@@ -16,10 +16,12 @@
 
 #include "app/MainWindow.h"
 
+#include "backends/Signer.h"
 #include "cli/Cli.h"
 #include "ui/Theme.h"
 
 #include <QApplication>
+#include <QDir>
 #include <QGuiApplication>
 #include <QIcon>
 #include <QLibraryInfo>
@@ -76,6 +78,11 @@ int main(int argc, char** argv) {
     // The design system: tokens + global style sheet, following the system
     // light/dark preference (ui-guidelines §2).
     Theme::instance().apply();
+
+    // Point the signing stack at the shared NSS store, so signing certificates
+    // and any registered PKCS#11 security devices resolve from one place. Must
+    // happen before the first signature operation.
+    Signer::useNssDatabase(QDir::homePath() + QStringLiteral("/.pki/nssdb"));
 
     MainWindow window;
     window.show();
