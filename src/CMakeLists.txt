@@ -244,3 +244,16 @@ install(FILES ${CMAKE_SOURCE_DIR}/packaging/feather-pdf-nautilus.py
     DESTINATION share/nautilus-python/extensions)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/io.github.s4rt4.FeatherPDF.servicemenu.desktop
     DESTINATION share/kio/servicemenus)
+
+# "Print to Feather PDF" virtual CUPS printer. The backend, PPD, and MIME rules
+# ship as data; `feather-pdf-setup-printer` (run with sudo) copies the backend
+# into CUPS' private dirs and creates the queue, since that step needs root.
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf-setup-printer
+    DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf-print
+    DESTINATION share/feather-pdf/cups)
+install(FILES
+        ${CMAKE_SOURCE_DIR}/packaging/cups/Feather-PDF.ppd
+        ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf.types
+        ${CMAKE_SOURCE_DIR}/packaging/cups/feather-pdf.convs
+    DESTINATION share/feather-pdf/cups)

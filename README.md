@@ -98,6 +98,11 @@ adds a **right-click "Feather PDF" menu** — *Compress*, *Remove Hidden Info*,
 (via a KDE service menu); each runs headless and drops the result beside the
 source with a desktop notification.
 
+A **"Print to Feather PDF" virtual printer** is available too: run
+`sudo feather-pdf-setup-printer` once, then *Print* from any app to capture the
+output as a PDF in `~/Documents/Feather PDF/`, which opens in Feather PDF.
+(`feather-pdf-setup-printer --uninstall` removes it.)
+
 ## Building
 
 Feather targets **Fedora / GNOME (Wayland)** first. On Fedora 43:
