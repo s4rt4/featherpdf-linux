@@ -16,6 +16,7 @@
 
 #include "cli/Cli.h"
 
+#include "backends/BatchRunner.h"
 #include "backends/Converter.h"
 #include "backends/ImageExporter.h"
 #include "backends/Ocr.h"
@@ -663,6 +664,33 @@ int cmdFromOffice(const QStringList& a) {
     return 0;
 }
 
+int cmdBatch(const QStringList& a) {
+    QCommandLineParser p;
+    p.setApplicationDescription(
+        QStringLiteral("Run a saved action (a sequence of steps) over one PDF."));
+    p.addPositionalArgument(QStringLiteral("input"), QStringLiteral("Source PDF."));
+    p.addPositionalArgument(QStringLiteral("output"), QStringLiteral("Destination PDF."));
+    p.addOption({QStringLiteral("action"),
+                 QStringLiteral("Action file (JSON) saved from the Batch wizard."),
+                 QStringLiteral("action")});
+    int rc = 0;
+    if (!parseCommand(p, a, &rc))
+        return rc;
+    const QStringList pos = p.positionalArguments();
+    if (pos.size() != 2)
+        return usage(QStringLiteral("batch needs an input and an output PDF"));
+    if (!p.isSet(QStringLiteral("action")))
+        return usage(QStringLiteral("batch needs --action"));
+    QList<BatchRunner::Step> steps;
+    QString why;
+    if (!BatchRunner::loadAction(p.value(QStringLiteral("action")), &steps, &why))
+        return fail(why);
+    if (!BatchRunner::runFile(pos[0], pos[1], steps, &why))
+        return fail(why);
+    out() << "Wrote " << pos[1] << " (" << steps.size() << " steps)" << Qt::endl;
+    return 0;
+}
+
 int cmdInfo(const QStringList& a) {
     QCommandLineParser p;
     p.setApplicationDescription(QStringLiteral("Print a PDF's page count, metadata, and status."));
@@ -722,6 +750,7 @@ const Command kCommands[] = {
     {"to-office", cmdToOffice, "Convert to .docx/.odt/.rtf"},
     {"from-images", cmdFromImages, "Build a PDF from images"},
     {"from-office", cmdFromOffice, "Convert a document/image to PDF"},
+    {"batch", cmdBatch, "Run a saved action over a PDF"},
     {"info", cmdInfo, "Print page count and metadata"},
 };
 

@@ -118,6 +118,51 @@ private slots:
         QVERIFY2(err.contains(BatchRunner::opLabel(BatchRunner::Op::Optimize)), qPrintable(err));
     }
 
+    void actionSavesAndLoadsRoundTrip() {
+        QList<BatchRunner::Step> steps;
+        QVariantMap wm = BatchRunner::defaultParams(BatchRunner::Op::Watermark);
+        wm[QStringLiteral("text")] = QStringLiteral("SECRET");
+        wm[QStringLiteral("opacity")] = 0.5;
+        steps.append({BatchRunner::Op::Watermark, wm});
+        steps.append({BatchRunner::Op::Sanitize, BatchRunner::defaultParams(BatchRunner::Op::Sanitize)});
+
+        const QString file = m_dir.filePath(QStringLiteral("action.json"));
+        QString err;
+        QVERIFY2(BatchRunner::saveAction(file, steps, &err), qPrintable(err));
+
+        QList<BatchRunner::Step> back;
+        QVERIFY2(BatchRunner::loadAction(file, &back, &err), qPrintable(err));
+        QCOMPARE(back.size(), 2);
+        QCOMPARE(back[0].op, BatchRunner::Op::Watermark);
+        QCOMPARE(back[0].params.value(QStringLiteral("text")).toString(), QStringLiteral("SECRET"));
+        QCOMPARE(back[0].params.value(QStringLiteral("opacity")).toDouble(), 0.5);
+        QCOMPARE(back[1].op, BatchRunner::Op::Sanitize);
+
+        // A loaded action drives runFile exactly like a hand-built one.
+        const QString out = m_dir.filePath(QStringLiteral("from-action.pdf"));
+        QVERIFY2(BatchRunner::runFile(m_pdf, out, back, &err), qPrintable(err));
+        QCOMPARE(pages(out), 2);
+    }
+
+    void loadActionRejectsGarbage() {
+        const QString bad = m_dir.filePath(QStringLiteral("bad.json"));
+        QFile f(bad);
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write("not json at all");
+        f.close();
+        QString err;
+        QList<BatchRunner::Step> steps;
+        QVERIFY(!BatchRunner::loadAction(bad, &steps, &err));
+        QVERIFY(!err.isEmpty());
+        // An unknown op id is rejected too.
+        const QString unknown = m_dir.filePath(QStringLiteral("unknown.json"));
+        QFile g(unknown);
+        QVERIFY(g.open(QIODevice::WriteOnly));
+        g.write(R"({"feather-action":1,"steps":[{"op":"teleport","params":{}}]})");
+        g.close();
+        QVERIFY(!BatchRunner::loadAction(unknown, &steps, &err));
+    }
+
     void catalogIsConsistent() {
         const QList<BatchRunner::Op> ops = BatchRunner::allOps();
         QVERIFY(ops.size() >= 8);

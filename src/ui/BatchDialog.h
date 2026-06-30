@@ -45,6 +45,8 @@ private:
     void editSelectedStep();
     void removeSelectedStep();
     void moveStep(int delta);
+    void saveActionToFile();
+    void loadActionFromFile();
     void chooseOutputFolder();
     void refreshSteps();
     void updateRunState();

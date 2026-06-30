@@ -32,6 +32,7 @@
 #include <QMenu>
 #include <QProgressBar>
 #include <QPushButton>
+#include <QStandardPaths>
 #include <QVBoxLayout>
 
 namespace {
@@ -146,6 +147,20 @@ BatchDialog::BatchDialog(const QStringList& initialFiles, QWidget* parent) : QDi
     stepsButtons->addWidget(upBtn);
     stepsButtons->addWidget(downBtn);
     stepsCol->addLayout(stepsButtons);
+
+    // Reusable actions: save the assembled steps to a file, or load one back
+    // (the same file the `feather-pdf watch` daemon consumes).
+    auto* actionButtons = new QHBoxLayout;
+    auto* saveActionBtn = new QPushButton(tr("Save action…"), this);
+    saveActionBtn->setObjectName(QStringLiteral("Ghost"));
+    saveActionBtn->setCursor(Qt::PointingHandCursor);
+    auto* loadActionBtn = new QPushButton(tr("Load action…"), this);
+    loadActionBtn->setObjectName(QStringLiteral("Ghost"));
+    loadActionBtn->setCursor(Qt::PointingHandCursor);
+    actionButtons->addWidget(saveActionBtn);
+    actionButtons->addWidget(loadActionBtn);
+    actionButtons->addStretch(1);
+    stepsCol->addLayout(actionButtons);
     columns->addLayout(stepsCol, 1);
 
     root->addLayout(columns, 1);
@@ -197,6 +212,8 @@ BatchDialog::BatchDialog(const QStringList& initialFiles, QWidget* parent) : QDi
     connect(removeStepBtn, &QPushButton::clicked, this, &BatchDialog::removeSelectedStep);
     connect(upBtn, &QPushButton::clicked, this, [this] { moveStep(-1); });
     connect(downBtn, &QPushButton::clicked, this, [this] { moveStep(1); });
+    connect(saveActionBtn, &QPushButton::clicked, this, &BatchDialog::saveActionToFile);
+    connect(loadActionBtn, &QPushButton::clicked, this, &BatchDialog::loadActionFromFile);
     connect(changeFolder, &QPushButton::clicked, this, &BatchDialog::chooseOutputFolder);
     connect(m_steps, &QListWidget::itemDoubleClicked, this, &BatchDialog::editSelectedStep);
     connect(m_run, &QPushButton::clicked, this, &BatchDialog::run);
@@ -288,6 +305,47 @@ void BatchDialog::moveStep(int delta) {
     m_stepData.move(row, target);
     refreshSteps();
     m_steps->setCurrentRow(target);
+}
+
+void BatchDialog::saveActionToFile() {
+    if (m_stepData.isEmpty()) {
+        m_status->setText(tr("Add a step before saving an action."));
+        return;
+    }
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                  + QStringLiteral("/actions");
+    QDir().mkpath(dir);
+    QString path = QFileDialog::getSaveFileName(this, tr("Save action"),
+                                                dir + QStringLiteral("/action.json"),
+                                                tr("Feather actions (*.json)"));
+    if (path.isEmpty())
+        return;
+    if (!path.endsWith(QStringLiteral(".json"), Qt::CaseInsensitive))
+        path += QStringLiteral(".json");
+    QString err;
+    if (BatchRunner::saveAction(path, m_stepData, &err))
+        m_status->setText(tr("Saved action to %1").arg(QFileInfo(path).fileName()));
+    else
+        m_status->setText(err);
+}
+
+void BatchDialog::loadActionFromFile() {
+    const QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                        + QStringLiteral("/actions");
+    const QString path = QFileDialog::getOpenFileName(this, tr("Load action"), dir,
+                                                      tr("Feather actions (*.json)"));
+    if (path.isEmpty())
+        return;
+    QList<BatchRunner::Step> steps;
+    QString err;
+    if (!BatchRunner::loadAction(path, &steps, &err)) {
+        m_status->setText(err);
+        return;
+    }
+    m_stepData = steps;
+    refreshSteps();
+    m_status->setText(
+        tr("Loaded %n step(s) from %1", "", int(steps.size())).arg(QFileInfo(path).fileName()));
 }
 
 void BatchDialog::chooseOutputFolder() {

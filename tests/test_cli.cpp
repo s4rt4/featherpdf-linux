@@ -171,6 +171,18 @@ private slots:
         QCOMPARE(runHelper({QStringLiteral("bogus"), m_pdf}).code, 2);    // unknown action
     }
 
+    void batchRunsSavedAction() {
+        const QString action = m_dir.filePath(QStringLiteral("act.json"));
+        QFile f(action);
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write(R"({"feather-action":1,"steps":[{"op":"sanitize","params":{}}]})");
+        f.close();
+        const QString out = m_dir.filePath(QStringLiteral("batched.pdf"));
+        const Result r = run({QStringLiteral("batch"), m_pdf, out, QStringLiteral("--action"), action});
+        QCOMPARE(r.code, 0);
+        QVERIFY2(QFileInfo::exists(out), qPrintable(r.err));
+    }
+
     void mergeConcatenates() {
         const QString out = m_dir.filePath(QStringLiteral("four.pdf"));
         const Result r = run({QStringLiteral("merge"), out, m_pdf, m_pdf});

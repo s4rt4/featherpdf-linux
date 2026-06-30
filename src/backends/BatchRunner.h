@@ -53,6 +53,16 @@ public:
     static bool runFile(const QString& inputPath, const QString& outputPath,
                         const QList<Step>& steps, QString* error);
 
+    // Persist an action (its ordered steps) to a JSON file and read one back.
+    // Format is stable and human-editable: {"feather-action":1,"steps":[{"op":
+    // "<id>","params":{…}}]}. loadAction seeds each step from defaultParams and
+    // overlays the saved values, so files survive new parameters being added.
+    static bool saveAction(const QString& path, const QList<Step>& steps, QString* error);
+    static bool loadAction(const QString& path, QList<Step>* steps, QString* error);
+
+    // Map a stable op id (see opId) back to its Op. Returns false for unknown ids.
+    static bool opFromId(const QString& id, Op* op);
+
     // Catalog helpers for the UI: every op's stable id, its human label, and the
     // default parameters to seed a new step with.
     static QString opId(Op op);

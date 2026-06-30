@@ -25,7 +25,11 @@
 #include "backends/Watermarker.h"
 
 #include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QObject>
+#include <QSaveFile>
 #include <QTemporaryDir>
 
 #include <memory>
@@ -170,6 +174,78 @@ bool BatchRunner::runFile(const QString& inputPath, const QString& outputPath,
         }
         current = next;
     }
+    return true;
+}
+
+bool BatchRunner::opFromId(const QString& id, Op* op) {
+    for (Op candidate : allOps()) {
+        if (opId(candidate) == id) {
+            if (op)
+                *op = candidate;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BatchRunner::saveAction(const QString& path, const QList<Step>& steps, QString* error) {
+    QJsonArray arr;
+    for (const Step& s : steps) {
+        QJsonObject o;
+        o[QStringLiteral("op")] = opId(s.op);
+        o[QStringLiteral("params")] = QJsonObject::fromVariantMap(s.params);
+        arr.append(o);
+    }
+    QJsonObject root;
+    root[QStringLiteral("feather-action")] = 1;
+    root[QStringLiteral("steps")] = arr;
+
+    QSaveFile f(path);
+    if (!f.open(QIODevice::WriteOnly)) {
+        if (error)
+            *error = QObject::tr("Couldn't write %1.").arg(path);
+        return false;
+    }
+    f.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+    if (!f.commit()) {
+        if (error)
+            *error = QObject::tr("Couldn't save %1.").arg(path);
+        return false;
+    }
+    return true;
+}
+
+bool BatchRunner::loadAction(const QString& path, QList<Step>* steps, QString* error) {
+    const auto fail = [&](const QString& m) {
+        if (error)
+            *error = m;
+        return false;
+    };
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly))
+        return fail(QObject::tr("Couldn't open %1.").arg(path));
+    QJsonParseError pe;
+    const QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &pe);
+    if (pe.error != QJsonParseError::NoError || !doc.isObject())
+        return fail(QObject::tr("%1 isn't a valid action file.").arg(path));
+    const QJsonArray arr = doc.object().value(QStringLiteral("steps")).toArray();
+
+    QList<Step> loaded;
+    for (const QJsonValue& v : arr) {
+        const QJsonObject o = v.toObject();
+        Op op;
+        if (!opFromId(o.value(QStringLiteral("op")).toString(), &op))
+            return fail(QObject::tr("%1 names an unknown operation.").arg(path));
+        // Start from the defaults so a step is complete even if the file predates
+        // a parameter, then overlay whatever the file specifies.
+        QVariantMap params = defaultParams(op);
+        const QVariantMap saved = o.value(QStringLiteral("params")).toObject().toVariantMap();
+        for (auto it = saved.constBegin(); it != saved.constEnd(); ++it)
+            params[it.key()] = it.value();
+        loaded.append({op, params});
+    }
+    if (steps)
+        *steps = loaded;
     return true;
 }
 
